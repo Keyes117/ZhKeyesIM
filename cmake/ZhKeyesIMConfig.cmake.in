@@ -1,0 +1,16 @@
+@PACKAGE_INIT@
+
+# 包含目标文件
+include("${CMAKE_CURRENT_LIST_DIR}/ZhKeyesIMTargets.cmake")
+
+# 检查依赖
+check_required_components(ZhKeyesIM)
+
+# 设置包含目录
+set(ZhKeyesIM_INCLUDE_DIRS "@PACKAGE_INCLUDE_DIR@")
+
+# 设置库目录
+set(ZhKeyesIM_LIBRARY_DIRS "@PACKAGE_LIBRARY_DIR@")
+
+# 设置库文件
+set(ZhKeyesIM_LIBRARIES ZhKeyesIM::net ZhKeyesIM::util)

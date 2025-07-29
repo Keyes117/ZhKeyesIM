@@ -1,0 +1,156 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1,
+						2,
+						3,
+						4
+					],
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-.-Debug-ce4dd1b676e6680ab62e.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"projectIndex" : 0,
+					"source" : "."
+				},
+				{
+					"build" : "util",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-util-Debug-99afaf6507d6e0648863.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "util",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "net",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-net-Debug-ba52d638caec4c342823.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "net",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"build" : "ZhKeyesIMClient",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-ZhKeyesIMClient-Debug-f68256e32ac114945268.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "ZhKeyesIMClient",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "ZhkeyesIMServer",
+					"hasInstallRule" : true,
+					"jsonFile" : "directory-ZhkeyesIMServer-Debug-661126d277684a0bdce0.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.16"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "ZhkeyesIMServer",
+					"targetIndexes" : 
+					[
+						1
+					]
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4
+					],
+					"name" : "ZhKeyesIM",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 3,
+					"id" : "ZhKeyesIMClient::@ed8470e260ced1b13d5f",
+					"jsonFile" : "target-ZhKeyesIMClient-Debug-66c67962bfe2a589afe2.json",
+					"name" : "ZhKeyesIMClient",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "ZhkeyesIMServer::@ee1f1e3b8f3cf5c0cff7",
+					"jsonFile" : "target-ZhkeyesIMServer-Debug-72122c5b88b317958f4d.json",
+					"name" : "ZhkeyesIMServer",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "net::@9c2d6179807f9007d92d",
+					"jsonFile" : "target-net-Debug-34f7f069a6361fec402d.json",
+					"name" : "net",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "util::@5865449b717dd869d2cd",
+					"jsonFile" : "target-util-Debug-bbb7cd58c5efff268c3d.json",
+					"name" : "util",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "F:/\u9879\u76ee/ZhKeyesIM/build",
+		"source" : "F:/\u9879\u76ee/ZhKeyesIM"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 6
+	}
+}

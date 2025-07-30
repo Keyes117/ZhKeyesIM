@@ -1,15 +1,33 @@
 #include "TCPServer.h"
 
-
-
+#ifdef _WIN32
+#include <winsock2.h>
+#include <WS2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
+#endif
 TCPServer::TCPServer()
     :m_acceptor(&m_baseEventLoop)
 {
+
+}
+
+TCPServer::~TCPServer()
+{
+    shutdown();
 }
 
 bool TCPServer::init(int32_t threadNum, const std::string& ip, uint16_t port)
 {
     LOG_INFO("初始化服务器...");
+
+    WSADATA wsaData;
+    int wsaRet = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (wsaRet != 0)
+    {
+        std::cout << "WSAStartup failed: %d" << wsaRet << std::endl;
+        return false;
+    }
+
     m_threadPool.start(threadNum);
     m_ip = ip;
     m_port = port;
@@ -40,10 +58,13 @@ void TCPServer::start()
 
 void TCPServer::shutdown()
 {
-
+#ifdef _WIN32
+    WSACleanup();
+#endif
     m_threadPool.stop();
     m_acceptor.stopListen();
     LOG_INFO("服务端已关闭");
+
 }
 
 void TCPServer::onAccept(SOCKET clientSocket)

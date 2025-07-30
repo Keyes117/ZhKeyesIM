@@ -297,7 +297,7 @@ void TCPConnector::cleanup()
         m_enableWrite = false;
     }
 
-    close(m_socket);
+    closesocket(m_socket);
     m_socket = INVALID_SOCKET;
 
 }

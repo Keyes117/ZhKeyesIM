@@ -27,24 +27,24 @@ bool Acceptor::startListen(const std::string& ip, int16_t port)
     }
 
     if (!setSocketOption()) {
-        close(m_listenSocket);
+        closesocket(m_listenSocket);
         m_listenSocket = INVALID_SOCKET;
         return false;
     }
 
     if (!bindAddress(ip, port)) {
-        close(m_listenSocket);
+        closesocket(m_listenSocket);
         m_listenSocket = INVALID_SOCKET;
         return false;
     }
 
     if (!startListening()) {
-        close(m_listenSocket);
+        closesocket(m_listenSocket);
         m_listenSocket = INVALID_SOCKET;
         return false;
     }
 
-    // ×¢²á¶ÁÊÂ¼şµ½EventLoop
+    // æ³¨å†Œè¯»äº‹ä»¶åˆ°EventLoop
     m_EventLoop->registerReadEvent(m_listenSocket, this);
     m_enableRead = true;
     m_listening = true;
@@ -67,7 +67,7 @@ void Acceptor::stopListen()
 
     if (m_listenSocket != INVALID_SOCKET)
     {
-        close(m_listenSocket);
+        closesocket(m_listenSocket);
         m_listenSocket = INVALID_SOCKET;
     }
 }
@@ -87,11 +87,11 @@ void Acceptor::onRead()
 
     if (clientfd != INVALID_SOCKET)
     {
-        //ÉèÖÃ·Ç×èÈû
+        //è®¾ç½®éé˜»å¡
         u_long mode = 1;
         if (::ioctlsocket(clientfd, FIONBIO, &mode) == SOCKET_ERROR)
         {
-            close(clientfd);
+            closesocket(clientfd);
             return;
         }
 
@@ -105,7 +105,7 @@ void Acceptor::onRead()
         int error = GetSocketError();
         if (error != EWOULDBLOCK)
         {
-            //TODO:µ÷ÓÃÈÕÖ¾
+            //TODO:è°ƒç”¨æ—¥å¿—
         }
     }
 #else
@@ -118,17 +118,17 @@ void Acceptor::onRead()
         int clientfd = ::accept4(m_listenSocket, (struct sockaddr*)&clientAddr, &clientAddrLen, SOCK_NONBLOCK);
         if (clientfd > 0)
         {
-            //³É¹¦½ÓÊÜÁ¬½Ó
+            //æˆåŠŸæ¥å—è¿æ¥
             m_acceptCallback(clientfd);
 
         }
         else if (clientfd == -1)
         {
             if (errno == EWOULDBLOCK)
-                //Ã»ÓĞÁ¬½ÓÁË
+                //æ²¡æœ‰è¿æ¥äº†
                 return;
             else
-                //³ö´íÁË
+                //å‡ºé”™äº†
                 return;
 
         }
@@ -192,7 +192,7 @@ bool Acceptor::setSocketOption()
     }
 
 #ifndef _WIN32
-    // LinuxÏÂÉèÖÃ¶Ë¿ÚÖØÓÃ
+    // Linuxä¸‹è®¾ç½®ç«¯å£é‡ç”¨
     if (::setsockopt(m_listenSocket, SOL_SOCKET, SO_REUSEPORT,
         reinterpret_cast<const char*>(&optval), sizeof(optval)) == SOCKET_ERROR) {
         return false;

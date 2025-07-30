@@ -16,7 +16,7 @@ TCPConnection::~TCPConnection()
     if (m_enableWrite)
         unregisterWriteEvent();
 
-    close(m_socket);
+    closesocket(m_socket);
 }
 
 void TCPConnection::startRead()

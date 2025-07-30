@@ -2,6 +2,11 @@
 
 #include "Logger.h"
 
+#ifdef _WIN32
+#include <winsock2.h>
+#include <WS2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
+#endif
 
 TCPClient::TCPClient(const std::shared_ptr<EventLoop>& eventLoop)
     :m_spEventLoop(eventLoop)
@@ -17,6 +22,17 @@ bool TCPClient::init(const std::string& serverIP, uint16_t serverPort,
     uint32_t timeoutMs)
 {
     LOG_INFO("客户端开始初始化...");
+
+#ifdef _WIN32
+    WSADATA wsaData;
+    int wsaRet = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    if (wsaRet != 0)
+    {
+        std::cout << "WSAStartup failed: %d" << wsaRet << std::endl;
+        return false;
+    }
+#endif
+
     if (m_initialized.load())
     {
         LOG_INFO("当前客户端已经初始化！");
@@ -177,6 +193,11 @@ void TCPClient::onDisconnected()
 void TCPClient::cleanup()
 {
     disconnect();
+
+#ifdef _WIN32
+    WSACleanup();
+#endif // _WIN32
+
     m_spConnection.reset();
     m_spConnector.reset();
 }

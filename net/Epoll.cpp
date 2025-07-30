@@ -38,7 +38,7 @@ Epoll::~Epoll()
 #else
     if (m_epollfd != -1)
     {
-        close(m_epollfd);
+        closesocket(m_epollfd);
     }
 
 #endif

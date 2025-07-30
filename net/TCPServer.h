@@ -25,7 +25,7 @@ class NET_API TCPServer
 {
 public:
     TCPServer();
-    ~TCPServer() = default;
+    ~TCPServer();
 
     bool init(int32_t threadNum, const std::string& ip, uint16_t port);
     void start();

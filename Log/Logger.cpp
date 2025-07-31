@@ -79,7 +79,7 @@ std::string Logger::levelToString(LogLevel level)
     return "INFO";
     case LogLevel::WARN:
     return "WARN";
-    case LogLevel::ERROR:
+    case LogLevel::ERR:
     return "ERROR";
     default:
     return "UNKNOWN";

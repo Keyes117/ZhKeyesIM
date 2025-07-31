@@ -24,7 +24,7 @@ enum class LogLevel
     DEBUG = 0,
     INFO,
     WARN,
-    ERROR
+    ERR
 };
 
 struct LogMessage

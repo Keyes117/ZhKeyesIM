@@ -21,7 +21,7 @@ TCPClient::~TCPClient()
 bool TCPClient::init(const std::string& serverIP, uint16_t serverPort,
     uint32_t timeoutMs)
 {
-    LOG_INFO("客户端开始初始化...");
+    LOG_INFO("TCPClient Initializing...");
 
 #ifdef _WIN32
     WSADATA wsaData;
@@ -35,14 +35,14 @@ bool TCPClient::init(const std::string& serverIP, uint16_t serverPort,
 
     if (m_initialized.load())
     {
-        LOG_INFO("当前客户端已经初始化！");
+        LOG_INFO("TCPClient has been already initialized ");
         return false;
     }
 
 
     if (serverIP.empty() || serverPort == 0)
     {
-        LOG_WARN("客户端初始化Ip和Port值非法");
+        LOG_WARN("illegal value of serverIp or serverPort");
         return false;
     }
 
@@ -54,7 +54,7 @@ bool TCPClient::init(const std::string& serverIP, uint16_t serverPort,
     // EventLoop应该在外部统一初始化
     // m_spEventLoop->init(IOMultiplexType::Epoll);
     m_initialized.store(true);
-    LOG_INFO("客户端初始化完成");
+    LOG_INFO("TCPClient initialized compeletely");
     return true;
 }
 
@@ -67,14 +67,14 @@ bool TCPClient::connect()
 
     if (m_connecting.load() || m_connected.load())
     {
-        LOG_ERROR("客户端状态异常");
+        LOG_ERROR("Illegal status of TCPClient");
         return false;
     }
 
-    LOG_INFO("创建TCPConnector...");
+    LOG_INFO("TCPConnector Creating...");
     if (!createConnector())
     {
-        LOG_ERROR("创建TCPConnector失败！");
+        LOG_ERROR("Failed to create TCPConnector!");
         return false;
     }
 
@@ -88,11 +88,11 @@ bool TCPClient::connect()
         std::bind(&TCPClient::onConnectFailed, this)
     );
 
-    LOG_INFO("客户端开始连接Ip:%s,port: %" PRIu16, m_serverIP.c_str(), m_serverPort);
+    LOG_INFO("Conneting Ip:%s,port: %" PRIu16, m_serverIP.c_str(), m_serverPort);
     if (!m_spConnector->startConnect(m_serverIP, m_serverPort, m_timeoutMs))
     {
         m_connecting.store(false);
-        LOG_INFO("连接失败");
+        LOG_INFO("failed to connect");
         return false;
     }
 
@@ -101,7 +101,7 @@ bool TCPClient::connect()
 
 void TCPClient::cancelConnect()
 {
-    LOG_INFO("客户端取消连接...");
+    LOG_INFO("TCPClient canceled connect...");
     if (!m_connecting.load())
         return;
 

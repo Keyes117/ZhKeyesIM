@@ -30,11 +30,13 @@
 *.exe
 *.out
 *.app
+*.log
 
 build/
 obj/
 .vs/
 bin/
-
+lib/
+include/
 
 *.user

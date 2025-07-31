@@ -7,10 +7,14 @@
 #include <string>
 #include <unordered_map>
 
+#include "Logger.h"
+
 #include "Acceptor.h"
 #include "common.h"
 #include "TCPConnection.h"
 #include "ThreadPool.h"
+
+
 
 #include "net_export.h"
 
@@ -21,7 +25,7 @@ class NET_API TCPServer
 {
 public:
     TCPServer();
-    ~TCPServer() = default;
+    ~TCPServer();
 
     bool init(int32_t threadNum, const std::string& ip, uint16_t port);
     void start();
@@ -44,7 +48,7 @@ public:
 
     void onAccept(SOCKET clientfd);
     void onConnected(std::shared_ptr<TCPConnection>& spConn);
-    void onDisConnected(std::shared_ptr<TCPConnection>& spConn);
+    void onDisConnected(SOCKET clientfd);
 
 private:
 

@@ -22,14 +22,14 @@
 #define LOG_DEBUG(fmt, ...) Logger::instance().log(LogLevel::DEBUG, fmt, ##__VA_ARGS__)
 #define LOG_INFO(fmt, ...) Logger::instance().log(LogLevel::INFO, fmt , ##__VA_ARGS__)
 #define LOG_WARN(fmt, ...) Logger::instance().log(LogLevel::WARN, fmt , ##__VA_ARGS__)
-#define LOG_ERROR(fmt, ...) Logger::instance().log(LogLevel::ERROR, fmt, ##__VA_ARGS__)
+#define LOG_ERROR(fmt, ...) Logger::instance().log(LogLevel::ERR, fmt, ##__VA_ARGS__)
 
 enum class LogLevel
 {
     DEBUG = 0,
     INFO,
     WARN,
-    ERROR
+    ERR
 };
 
 struct LogMessage

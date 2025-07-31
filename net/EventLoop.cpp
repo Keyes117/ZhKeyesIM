@@ -22,7 +22,7 @@ void EventLoop::run()
     while (m_running)
     {
 
-        //TODO: ��?���?��?����?�
+        //TODO: 完成定时器和唤醒逻辑
 
         std::vector<EventDispatcher*> activeDispatchers;
         m_spIOMultiplex->poll(1000000, activeDispatchers);

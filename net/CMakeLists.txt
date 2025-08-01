@@ -42,10 +42,12 @@ set_target_properties(net  PROPERTIES
 
 target_include_directories(net PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/Log>
     $<INSTALL_INTERFACE:include>
+
 )
 
-target_link_libraries(net PUBLIC util)
+target_link_libraries(net PUBLIC Log util )
 
 target_compile_definitions(net PRIVATE NET_EXPORTS)
 
@@ -85,3 +87,5 @@ install(TARGETS net
     ARCHIVE DESTINATION lib
     INCLUDES DESTINATION include
 )
+
+install(FILES ${NET_HEADERS} DESTINATION include/net)

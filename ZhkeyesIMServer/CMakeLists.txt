@@ -14,11 +14,12 @@ add_executable(ZhkeyesIMServer ${SERVER_SOURCES})
 target_include_directories(ZhkeyesIMServer PRIVATE
     ${CMAKE_SOURCE_DIR}/net   # 网络库头文件路径
     ${CMAKE_SOURCE_DIR}/util  # 工具库头文件路径
+    ${CMAKE_SOURCE_DIR}/Log
 )
 
 # ==================== 依赖库链接 ====================
 # 链接动态库（会自动链接导入库）
-target_link_libraries(ZhkeyesIMServer PRIVATE net util)
+target_link_libraries(ZhkeyesIMServer PRIVATE net util Log)
 
 # ==================== 平台特定设置 ====================
 if(WIN32)

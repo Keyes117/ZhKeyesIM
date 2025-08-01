@@ -46,14 +46,14 @@ bool TCPConnector::startConnect(const std::string& serverIP, uint16_t serverPort
 
     if (!createSocket())
     {
-        LOG_ERROR("TCPConnector����Socketʧ��");
+        LOG_ERROR("TCPConnector create Socket error!");
         return false;
     }
 
 
     if (!setSocketOption())
     {
-        LOG_ERROR("TCPConnector����Socketʧ��");
+        LOG_ERROR("TCPConnector set SocketOption error!");
         cleanup();
         return false;
     }
@@ -234,7 +234,7 @@ void TCPConnector::checkConnectResult()
     auto elapsed = std::chrono::steady_clock::now() - m_connectStartTime;
     if (elapsed > std::chrono::milliseconds(m_connectTimeoutMs))
     {
-        LOG_INFO("���ӳ�ʱ");
+        LOG_INFO("connecting time out");
         m_isConnecting.store(false);
         if (m_connectFailedCallback)
             m_connectFailedCallback();
@@ -260,7 +260,7 @@ void TCPConnector::checkConnectResult()
 
     if (error == 0)
     {
-        LOG_INFO("���ӳɹ�");
+        LOG_INFO("connection successful");
         m_isConnecting.store(false);
 
         if (m_enableWrite)

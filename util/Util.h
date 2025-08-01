@@ -1,7 +1,7 @@
 #ifndef  UtilS_Util_H_
 #define UtilS_Util_H_
 
-#include "Util_export.h"
+#include "util_export.h"
 
 class Util_API Util
 {

@@ -1,39 +1,66 @@
-# ==================== 客户端配置 ====================
-
-# 定义客户端源文件
 set(CLIENT_SOURCES
-    main.cpp          # 主程序入口
-    IMClient.cpp      # IM客户端实现
+    main.cpp
+    IMClient.cpp
+    LoginDlg.cpp
 )
 
-# 定义客户端头文件
 set(CLIENT_HEADERS
-    IMClient.h        # IM客户端头文件
+    IMClient.h
+    LoginDlg.h
 )
 
-# ==================== 创建可执行文件 ====================
+set(CLIENT_UI_FILES
+    LoginDlg.ui
+)
+
+# Qt配置
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
+find_package(Qt${QT_VERSION_MAJOR}
+    COMPONENTS
+        Core
+        Gui
+        Widgets
+)
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+
 # 创建客户端可执行文件
-add_executable(ZhKeyesIMClient ${CLIENT_SOURCES} ${CLIENT_HEADERS})
-
-# ==================== 包含目录设置 ====================
-# 设置包含目录
-target_include_directories(ZhKeyesIMClient PRIVATE
-    ${CMAKE_SOURCE_DIR}/net   # 网络库头文件路径
-    ${CMAKE_SOURCE_DIR}/util  # 工具库头文件路径
+add_executable(ZhKeyesIMClient 
+    ${CLIENT_SOURCES} 
+    ${CLIENT_HEADERS}
+    ${CLIENT_UI_FILES}
 )
 
-# ==================== 依赖库链接 ====================
-# 链接动态库（会自动链接导入库）
-target_link_libraries(ZhKeyesIMClient PRIVATE net util)
+# 包含目录
+target_include_directories(ZhKeyesIMClient PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/net
+    ${CMAKE_SOURCE_DIR}/util
+    ${CMAKE_SOURCE_DIR}/Log
+)
 
-# ==================== 平台特定设置 ====================
+# 链接库
+target_link_libraries(ZhKeyesIMClient PRIVATE
+    Qt::Core
+    Qt::Gui
+    Qt::Widgets
+    Log
+    net
+    util
+)
+
+# 平台特定设置
 if(WIN32)
     target_compile_definitions(ZhKeyesIMClient PRIVATE _WIN32)
-    target_link_libraries(ZhKeyesIMClient PRIVATE ws2_32)
+    set_target_properties(ZhKeyesIMClient
+        PROPERTIES
+            WIN32_EXECUTABLE TRUE
+    )
 endif()
 
-# 安装可执行文件
+# 安装规则
 install(TARGETS ZhKeyesIMClient
     RUNTIME DESTINATION bin
-    CONFIGURATIONS Debug Release
 )

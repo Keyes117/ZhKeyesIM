@@ -1,11 +1,10 @@
 #include "EventLoop.h"
-#include "ThreadPool.h"
+#include "Logger.h"
 
 void EventLoop::init(IOMultiplexType type)
 {
     if (m_running)
         return;
-
 
     if (type == IOMultiplexType::Select)
         m_spIOMultiplex = std::make_unique<Select>();
@@ -19,6 +18,9 @@ void EventLoop::init(IOMultiplexType type)
 
 void EventLoop::run()
 {
+    m_running = true;
+    m_threadID = std::this_thread::get_id();
+
     while (m_running)
     {
 
@@ -36,37 +38,33 @@ void EventLoop::run()
                 dispatcher->onWrite();
             }
         }
-
-
     }
+
+    m_running = false;
 }
-
-
 void EventLoop::stop()
 {
-    if (m_running)
-    {
-        m_running = false;
-    }
+    m_running = false;
 }
-
-
 
 void EventLoop::registerReadEvent(SOCKET fd, EventDispatcher* dispatcher)
 {
     if (m_spIOMultiplex)
         m_spIOMultiplex->registerReadEvent(fd, dispatcher);
 }
+
 void EventLoop::registerWriteEvent(SOCKET fd, EventDispatcher* dispatcher)
 {
     if (m_spIOMultiplex)
         m_spIOMultiplex->registerWriteEvent(fd, dispatcher);
 }
+
 void EventLoop::unregisterReadEvent(SOCKET fd, EventDispatcher* dispatcher)
 {
     if (m_spIOMultiplex)
         m_spIOMultiplex->unRegisterReadEvent(fd, dispatcher);
 }
+
 void EventLoop::unregisterWriteEvent(SOCKET fd, EventDispatcher* dispatcher)
 {
     if (m_spIOMultiplex)

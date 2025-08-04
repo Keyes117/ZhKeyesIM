@@ -31,8 +31,6 @@ add_subdirectory(net)
 add_subdirectory(ZhKeyesIMClient)
 add_subdirectory(ZhkeyesIMServer)
 
-set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install")
-
 
 #安装可执行文件
 install(TARGETS ZhKeyesIMClient ZhkeyesIMServer
@@ -41,7 +39,7 @@ install(TARGETS ZhKeyesIMClient ZhkeyesIMServer
 )
 
 # 安装动态库
-install(TARGETS util net
+install(TARGETS util net Log
     RUNTIME DESTINATION bin
     LIBRARY DESTINATION lib
     ARCHIVE DESTINATION lib
@@ -49,6 +47,12 @@ install(TARGETS util net
 )
 
 # 安装头文件
+install(DIRECTORY Log/
+    DESTINATION include/Log
+    FILES_MATCHING PATTERN "*.h"
+    PATTERN "*.hpp"
+)
+
 install(DIRECTORY util/
     DESTINATION include/util
     FILES_MATCHING PATTERN "*.h"

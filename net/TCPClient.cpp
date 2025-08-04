@@ -2,11 +2,6 @@
 
 #include "Logger.h"
 
-#ifdef _WIN32
-#include <winsock2.h>
-#include <WS2tcpip.h>
-#pragma comment(lib, "ws2_32.lib")
-#endif
 
 TCPClient::TCPClient(const std::shared_ptr<EventLoop>& eventLoop)
     :m_spEventLoop(eventLoop)

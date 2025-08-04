@@ -1,10 +1,5 @@
 #include "TCPServer.h"
 
-#ifdef _WIN32
-#include <winsock2.h>
-#include <WS2tcpip.h>
-#pragma comment(lib, "ws2_32.lib")
-#endif
 TCPServer::TCPServer()
     :m_acceptor(&m_baseEventLoop)
 {
@@ -40,9 +35,11 @@ bool TCPServer::init(int32_t threadNum, const std::string& ip, uint16_t port)
         LOG_ERROR("server is listening Ip:%s,port%" PRIu16 "!");
         return false;
     }
+
+    
+    LOG_INFO("server initialized");
     return true;
 
-    LOG_INFO("server initialized");
 }
 
 
@@ -73,8 +70,11 @@ void TCPServer::onAccept(SOCKET clientSocket)
     auto spEventLoop = m_threadPool.getNextEventLoop();
     auto spConnection = std::make_shared<TCPConnection>(clientSocket, spEventLoop);
 
+    {
+        std::lock_guard<std::mutex> lock(m_connectionMutex);
+        m_connections[clientSocket] = spConnection;
+    }
 
-    m_connections[clientSocket] = spConnection;
     spConnection->setCloseCallBack(std::bind(&TCPServer::onDisConnected, this, clientSocket));
     spConnection->startRead();
     if (m_connectionCallback)
@@ -90,6 +90,7 @@ void TCPServer::onConnected(std::shared_ptr<TCPConnection>& spConn)
 
 void TCPServer::onDisConnected(SOCKET clientSocket)
 {
+    std::lock_guard<std::mutex> lock(m_connectionMutex);
     m_connections.erase(clientSocket);
 }
 

@@ -2,11 +2,15 @@
 
 #include <iostream>
 
+#include <QtWidgets/QApplication>
+
 #include "IMClient.h"
 #include "Logger.h"
+#include "LoginDlg.h"
 
-int main()
+int main(int argc, char* argv[])
 {
+    QApplication app(argc, argv);
 
     Logger::instance().setLogLevel(LogLevel::INFO);
 
@@ -19,10 +23,13 @@ int main()
         return 0;
     }
 
-    while (1)
+    LoginDlg loginDlg;
+    if(loginDlg.exec() == QDialog::Accepted)
     {
-        int i = 0;
+        LOG_INFO("LoginDlg Success");
+        return 1;
     }
+
 
     return 1;
 

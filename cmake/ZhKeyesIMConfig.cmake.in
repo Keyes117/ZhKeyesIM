@@ -13,4 +13,4 @@ set(ZhKeyesIM_INCLUDE_DIRS "@PACKAGE_INCLUDE_DIR@")
 set(ZhKeyesIM_LIBRARY_DIRS "@PACKAGE_LIBRARY_DIR@")
 
 # 设置库文件
-set(ZhKeyesIM_LIBRARIES ZhKeyesIM::net ZhKeyesIM::util)
+set(ZhKeyesIM_LIBRARIES ZhKeyesIM::Log ZhKeyesIM::net ZhKeyesIM::util)

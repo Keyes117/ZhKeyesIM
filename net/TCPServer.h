@@ -59,6 +59,8 @@ private:
     EventLoop               m_baseEventLoop;
     Acceptor                m_acceptor;
 
+    std::mutex              m_connectionMutex;
+
     std::unordered_map<SOCKET, std::shared_ptr<TCPConnection>> m_connections;
 
     ConnectionCallback      m_connectionCallback;

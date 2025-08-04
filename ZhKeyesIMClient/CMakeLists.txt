@@ -1,20 +1,19 @@
-set(CLIENT_SOURCES
-    main.cpp
-    IMClient.cpp
-    LoginDlg.cpp
+set(CLIENT_NETWORK_SOURCE
+    NetWork/IMClient.cpp
+    NetWork/IMClient.h
 )
 
-set(CLIENT_HEADERS
-    IMClient.h
-    LoginDlg.h
+set(CLIENT_UI_SOURCE
+    UI/LoginDlg.cpp
+    UI/LoginDlg.h
+    UI/LoginDlg.ui
 )
 
-set(CLIENT_UI_FILES
-    LoginDlg.ui
+set(CLIENT_TASK_SOURCE
 )
 
 # Qt配置
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
+find_package(QT NAMES Qt6 REQUIRED COMPONENTS Core Gui Widgets)
 find_package(Qt${QT_VERSION_MAJOR}
     COMPONENTS
         Core
@@ -28,14 +27,18 @@ set(CMAKE_AUTORCC ON)
 
 # 创建客户端可执行文件
 add_executable(ZhKeyesIMClient 
-    ${CLIENT_SOURCES} 
-    ${CLIENT_HEADERS}
-    ${CLIENT_UI_FILES}
+    main.cpp   
+    ${CLIENT_NETWORK_SOURCE} 
+    ${CLIENT_UI_SOURCE}
+    ${CLIENT_TASK_SOURCE}
 )
 
 # 包含目录
 target_include_directories(ZhKeyesIMClient PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}/UI
+    ${CMAKE_CURRENT_SOURCE_DIR}/Task
+    ${CMAKE_CURRENT_SOURCE_DIR}/NetWork
     ${CMAKE_SOURCE_DIR}/net
     ${CMAKE_SOURCE_DIR}/util
     ${CMAKE_SOURCE_DIR}/Log

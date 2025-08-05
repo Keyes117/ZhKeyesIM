@@ -39,7 +39,7 @@ enum class HttpMethod
     PUT,
     DELETE,
     UNKNOWN
-}
+};
 
 enum class HttpStatusCode : int 
 {
@@ -92,7 +92,7 @@ enum class HttpStatusCode : int
    GatewayTimeout = 504,
    HTTPVersionNotSupported = 505,
    InsufficientStorage = 507
-}
+};
 
 enum class ParseState {
     PARSE_REQUEST_LINE,     // 解析请求行/状态行
@@ -164,11 +164,11 @@ const std::unordered_map<std::string, HttpMethod> METHOD_STRING_MAP = {
     {"POST", HttpMethod::POST},
     {"PUT", HttpMethod::PUT},
     {"DELETE", HttpMethod::DELETE},
-    {"HEAD", HttpMethod::HEAD},
-    {"OPTIONS", HttpMethod::OPTIONS},
-    {"PATCH", HttpMethod::PATCH},
-    {"TRACE", HttpMethod::TRACE},
-    {"CONNECT", HttpMethod::CONNECT}
+    // {"HEAD", HttpMethod::HEAD},
+    // {"OPTIONS", HttpMethod::OPTIONS},
+    // {"PATCH", HttpMethod::PATCH},
+    // {"TRACE", HttpMethod::TRACE},
+    // {"CONNECT", HttpMethod::CONNECT}
 };
 
 // HTTP方法到字符串映射
@@ -177,11 +177,11 @@ const std::unordered_map<HttpMethod, std::string> METHOD_TO_STRING_MAP = {
     {HttpMethod::POST, "POST"},
     {HttpMethod::PUT, "PUT"},
     {HttpMethod::DELETE, "DELETE"},
-    {HttpMethod::HEAD, "HEAD"},
-    {HttpMethod::OPTIONS, "OPTIONS"},
-    {HttpMethod::PATCH, "PATCH"},
-    {HttpMethod::TRACE, "TRACE"},
-    {HttpMethod::CONNECT, "CONNECT"},
+    // {HttpMethod::HEAD, "HEAD"},
+    // {HttpMethod::OPTIONS, "OPTIONS"},
+    // {HttpMethod::PATCH, "PATCH"},
+    // {HttpMethod::TRACE, "TRACE"},
+    // {HttpMethod::CONNECT, "CONNECT"},
     {HttpMethod::UNKNOWN, "UNKNOWN"}
 };
 

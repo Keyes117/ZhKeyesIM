@@ -24,15 +24,10 @@ int main(int argc, char* argv[])
     }
 
     LoginDlg loginDlg;
-    if(loginDlg.exec() == QDialog::Accepted)
+    if (loginDlg.exec() == QDialog::Accepted)
     {
         LOG_INFO("LoginDlg Success");
         return 1;
     }
-
-
     return 1;
-
-
-
 }

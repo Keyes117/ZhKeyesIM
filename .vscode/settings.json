@@ -57,7 +57,14 @@
         "stop_token": "cpp",
         "streambuf": "cpp",
         "thread": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "*.tcc": "cpp",
+        "cstring": "cpp",
+        "map": "cpp",
+        "set": "cpp",
+        "future": "cpp",
+        "optional": "cpp",
+        "variant": "cpp"
     },
     "C_Cpp.default.configurationProvider": "go2sh.cmake-integration",
     "qt.designerPath": "D:/QT/QT6.3/6.3.2/msvc2019_64/bin/designer.exe",

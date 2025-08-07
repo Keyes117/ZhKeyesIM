@@ -3,8 +3,8 @@
  * @author: ZhKeyes
  * @date:   2025/8/5
  */
-#ifndef NET_HTTP_HTTPCOMMON_H_
-#define NET_HTTP_HTTPCOMMON_H_
+#ifndef NET_HTTP_HTTPPROTOCOL_H_
+#define NET_HTTP_HTTPPROTOCOL_H_
 
 #include <string>
 #include <unordered_map>
@@ -151,12 +151,12 @@ class HttpResponse;
 class HttpMessage;
 
 // 回调函数类型定义
-using RequestHandler = std::function<HttpResponse(const HttpRequest&)>;
-using ResponseCallback = std::function<void(const HttpResponse&, HttpError)>;
-using MessageCallback = std::function<void(const HttpMessage&)>;
-using ErrorCallback = std::function<void(HttpError, const std::string&)>;
-using CloseCallback = std::function<void()>;
-using ProgressCallback = std::function<void(size_t current, size_t total)>;
+// using RequestHandler = std::function<HttpResponse(const HttpRequest&)>;
+// using ResponseCallback = std::function<void(const HttpResponse&, HttpError)>;
+// using MessageCallback = std::function<void(const HttpMessage&)>;
+// using ErrorCallback = std::function<void(HttpError, const std::string&)>;
+// using CloseCallback = std::function<void()>;
+// using ProgressCallback = std::function<void(size_t current, size_t total)>;
 
 // HTTP方法字符串映射
 const std::unordered_map<std::string, HttpMethod> METHOD_STRING_MAP = {
@@ -323,4 +323,4 @@ namespace HttpUtils {
     std::string normalizeHeaderName(const std::string& name);
 }
 
- #endif
+ #endif //!NET_HTTP_HTTPPROTOCOL_H_

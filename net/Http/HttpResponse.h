@@ -100,4 +100,4 @@ private:
     std::string m_reasonPhrase;
 };
 
-#endif
+#endif //!NET_HTTP_HTTPRESPONSE_H_

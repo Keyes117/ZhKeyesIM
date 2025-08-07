@@ -7,6 +7,7 @@
 #ifndef NET_HTTP_HTTPPARSER_H_
 #define NET_HTTP_HTTPPARSER_H_
 
+#include "Buffer.h"
 #include "HttpProtocol.h"
 #include "HttpRequest.h"
 #include "HttpResponse.h"
@@ -30,12 +31,7 @@ public:
     void setMaxUrlLength(size_t maxLength) { m_maxUrlLength = maxLength; }
 
     // ============== 解析方法 ==============
-    ParseResult feed(const char* data, size_t length);
-    ParseResult feed(const std::string& data);
-    
-    // 解析完整消息（一次性解析）
-    ParseResult parseRequest(const std::string& data, HttpRequest& request);
-    ParseResult parseResponse(const std::string& data, HttpResponse& response);
+    ParseResult feed(Buffer& buffer);  // 唯一的解析入口
     
     // ============== 状态查询 ==============
     ParseState getState() const { return m_parseState; }
@@ -64,28 +60,23 @@ public:
 
 private:
     // ============== 状态机解析方法 ==============
-    ParseResult parseRequestLine();
-    ParseResult parseStatusLine();
-    ParseResult parseHeaders();
-    ParseResult parseBody();
-    ParseResult parseChunkedBody();
+    ParseResult parseRequestLine(Buffer& buffer);
+    ParseResult parseStatusLine(Buffer& buffer);
+    ParseResult parseHeaders(Buffer& buffer);
+    ParseResult parseBody(Buffer& buffer);
+    ParseResult parseChunkedBody(Buffer& buffer);
     
     // ============== 辅助解析方法 ==============
-    bool findLine(std::string& line);
-    bool findHeaderEnd();
+    bool findLine(Buffer& buffer, std::string& line);
+    bool findHeaderEnd(Buffer& buffer);
     size_t getContentLength() const;
     bool isChunkedEncoding() const;
-    bool needMoreData() const;
+    bool needMoreData(Buffer& buffer) const;
     
     // ============== 错误处理 ==============
     void setError(HttpError error, const std::string& message);
     bool checkLimits();
-    
-    // ============== 数据处理 ==============
-    void appendBuffer(const char* data, size_t length);
-    void consumeBuffer(size_t length);
-    std::string extractLine();
-    
+
 private:
     // ============== 解析状态 ==============
     SessionMode m_sessionMode = SessionMode::UNKNOWN;
@@ -96,10 +87,6 @@ private:
     // ============== 解析结果 ==============
     std::shared_ptr<HttpRequest> m_request;
     std::shared_ptr<HttpResponse> m_response;
-    
-    // ============== 数据缓冲区 ==============
-    std::string m_buffer;           // 输入数据缓冲区
-    size_t m_bufferOffset = 0;      // 当前解析位置
     
     // ============== 解析进度 ==============
     size_t m_parsedBytes = 0;       // 已解析字节数
@@ -118,5 +105,4 @@ private:
     bool m_chunkSizeRead = false;   // 是否已读取块大小
     bool m_finalChunk = false;      // 是否最后一块
 };
-
 #endif

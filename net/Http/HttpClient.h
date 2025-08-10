@@ -8,19 +8,19 @@
 #define NET_HTTP_HTTPCLIENT_H_
 
 
-#include <memory>
-#include <functional>
-#include <string>
 #include <cstdint>
+#include <functional>
+#include <memory>
 #include <regex>
+#include <string>
 
 
-#include "HttpSession.h"
+#include "EventLoop.h"
 #include "HttpRequest.h"
 #include "HttpResponse.h"
-#include "TCPClient.h"
-#include "EventLoop.h"
+#include "HttpSession.h"
 #include "net_export.h"
+#include "TCPClient.h"
 
 class NET_API HttpClient
 {
@@ -42,18 +42,18 @@ public:
 
     bool get(const std::string& url, ResponseCallback callback, ErrorCallback errorCallback = nullptr);
     bool post(const std::string& url, const std::string& body, ResponseCallback callback, ErrorCallback errorCallback = nullptr);
-    bool postJson(const std::string& url, const std::string& jsonData, ResponseCallback responseHandler, ErrorCallback errorHandler = nullptr);
+    bool postJson(const std::string& url, const std::string& jsonData, ResponseCallback responseCallback, ErrorCallback errorCallback = nullptr);
     bool postForm(const std::string& url, const std::unordered_map<std::string, std::string>& formData,
-        ResponseCallback responseHandler, ErrorCallback errorHandler = nullptr);
+        ResponseCallback responseCallback, ErrorCallback errorCallback = nullptr);
 
     void handleResponse(const HttpResponse& response);
     void onSessionClosed(HttpSession::SessionID sessionId);
 
+    void onConnected(std::shared_ptr<TCPConnection>& spConn);
+    void onConnectFailed();
+    void onDisconnected();
 private:
-    // TCPClient 回调
-    void onTcpConnected(std::shared_ptr<TCPConnection>& spConn);
-    void onTcpConnectFailed();
-    void onTcpDisconnected();
+
 
     // URL 解析
     struct UrlInfo {
@@ -72,13 +72,13 @@ private:
     std::unique_ptr<TCPClient>      m_tcpClient;
     std::shared_ptr<HttpSession>    m_session;
 
-    ResponseCallback                m_responseHandler;
-    ErrorCallback                   m_errorHandler;
+    ResponseCallback                m_responseCallback;
+    ErrorCallback                   m_errorCallback;
 
     UrlInfo                        m_currentUrlInfo;  // 当前连接的URL信息
     bool                           m_isConnected = false;
 
-}
+};
 
 
 

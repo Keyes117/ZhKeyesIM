@@ -38,15 +38,15 @@ public:
         m_enableWrite = isEnabled;
     }
 
-    void setReadCallBack(ReadCallBack&& readCallBack)
+    void setReadCallback(ReadCallBack&& readCallBack)
     {
         m_readCallBack = std::move(readCallBack);
     }
-    void setWriteCallBack(WriteCallBack&& writeCallBack)
+    void setWriteCallback(WriteCallBack&& writeCallBack)
     {
         m_writeCallBack = std::move(writeCallBack);
     }
-    void setCloseCallBack(CloseCallBack&& closeCallBack)
+    void setCloseCallback(CloseCallBack&& closeCallBack)
     {
         m_closeCallBack = std::move(closeCallBack);
     }

@@ -36,7 +36,7 @@ bool TCPServer::init(int32_t threadNum, const std::string& ip, uint16_t port)
         return false;
     }
 
-    
+
     LOG_INFO("server initialized");
     return true;
 
@@ -75,7 +75,7 @@ void TCPServer::onAccept(SOCKET clientSocket)
         m_connections[clientSocket] = spConnection;
     }
 
-    spConnection->setCloseCallBack(std::bind(&TCPServer::onDisConnected, this, clientSocket));
+    spConnection->setCloseCallback(std::bind(&TCPServer::onDisConnected, this, clientSocket));
     spConnection->startRead();
     if (m_connectionCallback)
     {

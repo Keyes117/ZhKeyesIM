@@ -29,7 +29,6 @@ void HttpServer::onConnected(std::shared_ptr<TCPConnection>& spConn)
     auto spHttpSession = std::make_shared<HttpSession>(spConn);
     m_sessions.insert(std::make_pair(spHttpSession->getID(), spHttpSession));
 
-    LOG_INFO("New Http Session from %s", spConn->getRemoteAddress().c_str());
 }
 
 void HttpServer::onDisConnected(HttpSession::SessionID sessionID)
@@ -42,7 +41,7 @@ void HttpServer::onDisConnected(HttpSession::SessionID sessionID)
         m_pendingToDeleteSessions.emplace_back(spHttpSession);
         m_sessions.erase(iter);
 
-        LOG_INFO("HTTP session disconnected, ID: " + std::to_string(sessionID));
+
     }
 }
 

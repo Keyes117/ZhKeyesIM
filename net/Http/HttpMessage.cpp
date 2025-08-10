@@ -4,11 +4,14 @@
  * @date:   2025/8/5
  */
 
- #include "HttpMessage.h"
- #include <algorithm>
- #include <sstream>
 
-void HttpMessage::setHeader(const std::string&name, const std::string value)
+#include "HttpMessage.h"
+#include <algorithm>
+#include <sstream>
+
+#include "HttpProtocol.h"
+
+void HttpMessage::setHeader(const std::string& name, const std::string value)
 {
     std::string nomalizedName = normalizeHeaderName(name);
     m_headers[nomalizedName] = value;
@@ -51,7 +54,8 @@ size_t HttpMessage::getContentLength() const {
     }
     try {
         return std::stoull(lengthStr);
-    } catch (...) {
+    }
+    catch (...) {
         return 0;
     }
 }
@@ -69,7 +73,8 @@ bool HttpMessage::isKeepAlive() const {
     if (m_version == HttpVersion::HTTP_1_1) {
         // HTTP/1.1默认是keep-alive，除非明确指定close
         return connection != "close";
-    } else {
+    }
+    else {
         // HTTP/1.0默认是close，除非明确指定keep-alive
         return connection == "keep-alive";
     }
@@ -94,7 +99,7 @@ std::string HttpMessage::normalizeHeaderName(const std::string& name) const {
 std::string HttpMessage::headersToString() const {
     std::ostringstream oss;
     for (const auto& header : m_headers) {
-        oss << header.first << HttpConstants::HEARDER_SEPARATOR 
+        oss << header.first << HttpConstants::HEARDER_SEPARATOR
             << header.second << HttpConstants::CRLF;
     }
     return oss.str();
@@ -103,33 +108,33 @@ std::string HttpMessage::headersToString() const {
 bool HttpMessage::parseHeaders(const std::string& headerData) {
     std::istringstream iss(headerData);
     std::string line;
-    
+
     while (std::getline(iss, line)) {
         // 移除行尾的\r
         if (!line.empty() && line.back() == '\r') {
             line.pop_back();
         }
-        
+
         // 空行表示头部结束
         if (line.empty()) {
             break;
         }
-        
+
         // 查找冒号分隔符
         size_t colonPos = line.find(':');
         if (colonPos == std::string::npos) {
             return false; // 格式错误
         }
-        
+
         std::string name = HttpUtils::trim(line.substr(0, colonPos));
         std::string value = HttpUtils::trim(line.substr(colonPos + 1));
-        
+
         if (name.empty()) {
             return false; // 头部名称不能为空
         }
-        
+
         setHeader(name, value);
     }
-    
+
     return true;
 }

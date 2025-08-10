@@ -10,14 +10,16 @@
 #include <atomic>
 #include <cstdint>
 #include <memory>
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
 
 #include "Buffer.h"
 #include "HttpParser.h"
 #include "HttpProtocol.h"
-#include "TCPConnection.h"
+#include "HttpRequest.h"
+#include "HttpResponse.h"
 #include "net_export.h"
+#include "TCPConnection.h"
 
 class HttpServer;
 class HttpClient;
@@ -27,13 +29,15 @@ public:
     using SessionID = uint32_t;
 
     HttpSession(HttpServer* pServer, std::shared_ptr<TCPConnection>&& spConn);
-    HttpSession(HttpClient& pClient, std::shared_ptr<TCPConnection>&& spConn);
+    HttpSession(HttpClient* pClient, std::shared_ptr<TCPConnection>&& spConn);
     ~HttpSession();
 
     void onRead(Buffer& byteBuffer);
     void onWrite();
     void onClose();
 
+    bool sendRequest(const HttpRequest& request);
+    bool sendResponse(const HttpResponse& response);
 
     HttpSession::SessionID getID() { return m_sessionID; }
 

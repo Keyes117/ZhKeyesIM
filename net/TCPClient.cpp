@@ -139,7 +139,7 @@ void TCPClient::onConnected(SOCKET socket)
     m_spConnection = std::make_shared<TCPConnection>(socket, m_spEventLoop);
 
     if (m_spConnection) {
-        m_spConnection->setCloseCallBack(
+        m_spConnection->setCloseCallback(
             std::bind(&TCPClient::onDisconnected, this)
         );
 

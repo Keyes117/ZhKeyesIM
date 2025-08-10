@@ -8,11 +8,11 @@ HttpClient::HttpClient() {
 
     // 设置 TCPClient 回调
     m_tcpClient->setConnectionCallback(
-        std::bind(&HttpClient::onTcpConnected, this, std::placeholders::_1));
+        std::bind(&HttpClient::onConnected, this, std::placeholders::_1));
     m_tcpClient->setConnectionFailedCallback(
-        std::bind(&HttpClient::onTcpConnectFailed, this));
+        std::bind(&HttpClient::onConnectFailed, this));
     m_tcpClient->setDisconnectedCallback(
-        std::bind(&HttpClient::onTcpDisconnected, this));
+        std::bind(&HttpClient::onDisconnected, this));
 }
 
 HttpClient::HttpClient(std::shared_ptr<EventLoop> eventLoop)
@@ -21,11 +21,11 @@ HttpClient::HttpClient(std::shared_ptr<EventLoop> eventLoop)
 
     // 设置 TCPClient 回调
     m_tcpClient->setConnectionCallback(
-        std::bind(&HttpClient::onTcpConnected, this, std::placeholders::_1));
+        std::bind(&HttpClient::onConnected, this, std::placeholders::_1));
     m_tcpClient->setConnectionFailedCallback(
-        std::bind(&HttpClient::onTcpConnectFailed, this));
+        std::bind(&HttpClient::onConnectFailed, this));
     m_tcpClient->setDisconnectedCallback(
-        std::bind(&HttpClient::onTcpDisconnected, this));
+        std::bind(&HttpClient::onDisconnected, this));
 }
 
 HttpClient::~HttpClient() {
@@ -40,8 +40,8 @@ bool HttpClient::connect(const std::string& url, uint32_t timeoutMs) {
     // 解析 URL
     m_currentUrlInfo = parseUrl(url);
     if (m_currentUrlInfo.host.empty() || m_currentUrlInfo.port == 0) {
-        if (m_errorHandler) {
-            m_errorHandler("Invalid URL: " + url);
+        if (m_errorCallback) {
+            m_errorCallback("Invalid URL: " + url);
         }
         return false;
     }
@@ -56,8 +56,8 @@ bool HttpClient::connect(const std::string& host, uint16_t port, uint32_t timeou
 
     // 初始化并连接 TCPClient
     if (!m_tcpClient->init(host, port, timeoutMs)) {
-        if (m_errorHandler) {
-            m_errorHandler("Failed to initialize TCP client");
+        if (m_errorCallback) {
+            m_errorCallback("Failed to initialize TCP client");
         }
         return false;
     }
@@ -67,7 +67,7 @@ bool HttpClient::connect(const std::string& host, uint16_t port, uint32_t timeou
 
 void HttpClient::disconnect() {
     if (m_session) {
-        m_session->close();
+        m_session->onClose();
         m_session.reset();
     }
 
@@ -82,23 +82,23 @@ bool HttpClient::isConnected() const {
     return m_isConnected && m_tcpClient && m_tcpClient->isConnected();
 }
 
-bool HttpClient::sendRequest(const HttpRequest& request, ResponseCallback responseHandler,
-    ErrorCallback errorHandler) {
+bool HttpClient::sendRequest(const HttpRequest& request, ResponseCallback responseCallback,
+    ErrorCallback errorCallback) {
     if (!isConnected()) {
-        if (errorHandler) {
-            errorHandler("Not connected");
+        if (errorCallback) {
+            errorCallback("Not connected");
         }
         return false;
     }
 
-    m_responseHandler = responseHandler;
-    m_errorHandler = errorHandler;
+    m_responseCallback = responseCallback;
+    m_errorCallback = errorCallback;
 
     return m_session->sendRequest(request);
 }
 
-bool HttpClient::get(const std::string& url, ResponseHandler responseHandler,
-    ErrorHandler errorHandler) {
+bool HttpClient::get(const std::string& url, ResponseCallback responseCallback,
+    ErrorCallback errorCallback) {
     // 解析 URL 获取路径
     UrlInfo urlInfo = parseUrl(url);
     std::string requestUrl = buildRequestUrl(urlInfo);
@@ -109,11 +109,11 @@ bool HttpClient::get(const std::string& url, ResponseHandler responseHandler,
     request.setHeader("Accept", "*/*");
     request.setHeader("Connection", "keep-alive");
 
-    return sendRequest(request, responseHandler, errorHandler);
+    return sendRequest(request, responseCallback, errorCallback);
 }
 
 bool HttpClient::post(const std::string& url, const std::string& body,
-    ResponseHandler responseHandler, ErrorHandler errorHandler) {
+    ResponseCallback responseCallback, ErrorCallback errorCallback) {
     UrlInfo urlInfo = parseUrl(url);
     std::string requestUrl = buildRequestUrl(urlInfo);
 
@@ -124,11 +124,11 @@ bool HttpClient::post(const std::string& url, const std::string& body,
     request.setHeader("Connection", "keep-alive");
     request.setBody(body);
 
-    return sendRequest(request, responseHandler, errorHandler);
+    return sendRequest(request, responseCallback, errorCallback);
 }
 
 bool HttpClient::postJson(const std::string& url, const std::string& jsonData,
-    ResponseHandler responseHandler, ErrorHandler errorHandler) {
+    ResponseCallback responseCallback, ErrorCallback errorCallback) {
     UrlInfo urlInfo = parseUrl(url);
     std::string requestUrl = buildRequestUrl(urlInfo);
 
@@ -138,12 +138,12 @@ bool HttpClient::postJson(const std::string& url, const std::string& jsonData,
     request.setJsonBody(jsonData);
     request.setHeader("Connection", "keep-alive");
 
-    return sendRequest(request, responseHandler, errorHandler);
+    return sendRequest(request, responseCallback, errorCallback);
 }
 
 bool HttpClient::postForm(const std::string& url,
     const std::unordered_map<std::string, std::string>& formData,
-    ResponseHandler responseHandler, ErrorHandler errorHandler) {
+    ResponseCallback responseCallback, ErrorCallback errorCallback) {
     UrlInfo urlInfo = parseUrl(url);
     std::string requestUrl = buildRequestUrl(urlInfo);
 
@@ -153,12 +153,12 @@ bool HttpClient::postForm(const std::string& url,
     request.setHeader("Connection", "keep-alive");
     request.setFormData(formData);
 
-    return sendRequest(request, responseHandler, errorHandler);
+    return sendRequest(request, responseCallback, errorCallback);
 }
 
 void HttpClient::handleResponse(const HttpResponse& response) {
-    if (m_responseHandler) {
-        m_responseHandler(response);
+    if (m_responseCallback) {
+        m_responseCallback(response);
     }
 }
 
@@ -166,40 +166,39 @@ void HttpClient::onSessionClosed(HttpSession::SessionID sessionId) {
     m_isConnected = false;
     m_session.reset();
 
-    if (m_errorHandler) {
-        m_errorHandler("Session closed");
+    if (m_errorCallback) {
+        m_errorCallback("Session closed");
     }
 
-    LOG_INFO("HTTP session closed, ID: " + std::to_string(sessionId));
+
 }
 
-void HttpClient::onTcpConnected(std::shared_ptr<TCPConnection>& spConn) {
+void HttpClient::onConnected(std::shared_ptr<TCPConnection>& spConn) {
     // 创建 HttpSession
     m_session = std::make_shared<HttpSession>(this, std::move(spConn));
     m_isConnected = true;
 
-    LOG_INFO("HTTP client connected successfully");
+
 }
 
-void HttpClient::onTcpConnectFailed() {
+void HttpClient::onConnectFailed() {
     m_isConnected = false;
 
-    if (m_errorHandler) {
-        m_errorHandler("TCP connection failed");
+    if (m_errorCallback) {
+        m_errorCallback("TCP connection failed");
     }
 
-    LOG_ERROR("HTTP client TCP connection failed");
+
 }
 
-void HttpClient::onTcpDisconnected() {
+void HttpClient::onDisconnected() {
     m_isConnected = false;
     m_session.reset();
 
-    if (m_errorHandler) {
-        m_errorHandler("TCP connection disconnected");
+    if (m_errorCallback) {
+        m_errorCallback("TCP connection disconnected");
     }
 
-    LOG_INFO("HTTP client TCP connection disconnected");
 }
 
 HttpClient::UrlInfo HttpClient::parseUrl(const std::string& url) {

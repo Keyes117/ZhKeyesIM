@@ -4,14 +4,16 @@
  * @date:   2025/8/6
  */
 
- #ifndef NET_HTTP_HTTPSERVER_H_
- #define NET_HTTP_HTTPSERVER_H_
+#ifndef NET_HTTP_HTTPSERVER_H_
+#define NET_HTTP_HTTPSERVER_H_
 
 #include <memory>
 
+#include "HttpRequest.h"
+#include "HttpResponse.h"
 #include "HttpSession.h"
-#include "TCPServer.h"
 #include "net_export.h"
+#include "TCPServer.h"
 
 class NET_API HttpServer final
 {
@@ -26,7 +28,7 @@ public:
     void shutdown();
 
     //Session管理
-    size_t getActiveSessionCount() const; {return m_sessions.size();}
+    size_t getActiveSessionCount() const { return m_sessions.size(); }
     void cleanupSessions();
 
     // 内部回调
@@ -34,19 +36,21 @@ public:
     //请求回调
     void setRequestCallBack(RequestCallBack&& callback)
     {
-        m_requestCallBack = std::move(callback); 
+        m_requestCallBack = std::move(callback);
     }
+
+    void onDisConnected(HttpSession::SessionID sessionID);
 private:
     void onConnected(std::shared_ptr<TCPConnection>& spConn);
-    void onDisConnected(HttpSession::SessionID sessionID);
+
 
 private:
     std::unique_ptr<TCPServer>                         m_spTcpServer;
     std::unordered_map<HttpSession::SessionID, std::shared_ptr<HttpSession>>    m_sessions;
     std::vector<std::shared_ptr<HttpSession>> m_pendingToDeleteSessions;
-    
-    RequestCallBack m_requestCallBack; 
+
+    RequestCallBack m_requestCallBack;
 };
 
 
- #endif //!NET_HTTP_HTTPSERVER_H_
+#endif //!NET_HTTP_HTTPSERVER_H_

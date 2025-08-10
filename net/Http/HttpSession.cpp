@@ -1,15 +1,18 @@
 #include "HttpSession.h"
 
-#include "HttpServer.h"
+#include <functional>
+
 #include "HttpClient.h"
+#include "HttpServer.h"
 #include "Logger.h"
 
 HttpSession::HttpSession(HttpServer* pServer, std::shared_ptr<TCPConnection>&& spConn) :
     m_pHttpServer(pServer),
-    m_HttpParser(SessionMode::SERVER)
+    m_HttpParser(SessionMode::SERVER),
     m_spConnection(std::move(spConn))
 {
-    m_id = HttpSession::generateID();
+    m_sessionID = HttpSession::generateID();
+
 
     m_spConnection->setReadCallback(std::bind(&HttpSession::onRead, this, std::placeholders::_1));
     m_spConnection->setWriteCallback(std::bind(&HttpSession::onWrite, this));
@@ -18,10 +21,10 @@ HttpSession::HttpSession(HttpServer* pServer, std::shared_ptr<TCPConnection>&& s
 
 HttpSession::HttpSession(HttpClient* pClient, std::shared_ptr<TCPConnection>&& spConn) :
     m_pHttpClient(pClient),
-    m_HttpParser(SessionMode::CLIENT)
+    m_HttpParser(SessionMode::CLIENT),
     m_spConnection(std::move(spConn))
 {
-    m_id = HttpSession::generateID();
+    m_sessionID = HttpSession::generateID();
 
     m_spConnection->setReadCallback(std::bind(&HttpSession::onRead, this, std::placeholders::_1));
     m_spConnection->setWriteCallback(std::bind(&HttpSession::onWrite, this));
@@ -73,24 +76,33 @@ void HttpSession::onClose()
 {
     if (m_pHttpServer)
     {
-        m_pHttpServer->onDisConnected(m_id);
+        m_pHttpServer->onDisConnected(m_sessionID);
     }
     else if (m_pHttpClient)
     {
-        m_pHttpClient->onDisConnected(m_id);
+        m_pHttpClient->onDisconnected();
     }
 }
 
-void HttpSession::handleResponse(std::shared_ptr<HttpResposne>& spResponse)
+bool HttpSession::sendRequest(const HttpRequest& request)
+{
+    return false;
+}
+
+bool HttpSession::sendResponse(const HttpResponse& response)
+{
+    return false;
+}
+
+void HttpSession::handleResponse(std::shared_ptr<HttpResponse>& spResponse)
 {
     if (m_pHttpClient)
     {
-        m_pHttpClient->handleRespose(spResponse)
+        m_pHttpClient->handleResponse(*spResponse);
     }
     else
     {
-        LOG_ERROR("Client Session received unexpected response");
-        close();
+        onClose();
     }
 }
 

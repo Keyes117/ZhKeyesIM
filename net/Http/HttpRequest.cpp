@@ -4,14 +4,14 @@
  * @date:   2025/8/5
  */
 #include "HttpRequest.h"
-#include <sstream>
 #include <algorithm>
+#include <sstream>
 
 HttpRequest::HttpRequest() : m_method(HttpMethod::GET) {
     // 默认构造函数
 }
 
-HttpRequest::HttpRequest(HttpMethod method, const std::string& url) 
+HttpRequest::HttpRequest(HttpMethod method, const std::string& url)
     : m_method(method) {
     setUrl(url);
 }
@@ -96,7 +96,7 @@ std::string HttpRequest::getAuthorization() const {
 void HttpRequest::setCookie(const std::string& name, const std::string& value) {
     auto cookies = parseCookies();
     cookies[name] = value;
-    
+
     std::ostringstream oss;
     bool first = true;
     for (const auto& cookie : cookies) {
@@ -158,57 +158,57 @@ void HttpRequest::setJsonBody(const std::string& json) {
 
 std::string HttpRequest::toString() const {
     std::ostringstream oss;
-    
+
     // 请求行
     oss << getMethodString() << HttpConstants::SPACE << m_path;
     if (!m_query.empty()) {
         oss << "?" << m_query;
     }
     oss << HttpConstants::SPACE << getVersionString() << HttpConstants::CRLF;
-    
+
     // 头部
     oss << headersToString();
-    
+
     // 空行分隔头部和消息体
     oss << HttpConstants::CRLF;
-    
+
     // 消息体
     oss << getBody();
-    
+
     return oss.str();
 }
 
 bool HttpRequest::fromString(const std::string& data) {
     clear();
-    
+
     std::istringstream iss(data);
     std::string line;
-    
+
     // 解析请求行
     if (!std::getline(iss, line)) {
         return false;
     }
-    
+
     // 移除行尾的\r
     if (!line.empty() && line.back() == '\r') {
         line.pop_back();
     }
-    
+
     std::istringstream lineStream(line);
     std::string methodStr, url, versionStr;
     if (!(lineStream >> methodStr >> url >> versionStr)) {
         return false;
     }
-    
+
     m_method = HttpUtils::stringToMethod(methodStr);
     setUrl(url);
     setVersion(HttpUtils::stringToVersion(versionStr));
-    
+
     // 读取剩余数据用于解析头部和消息体
     std::ostringstream remainingData;
     remainingData << iss.rdbuf();
     std::string remaining = remainingData.str();
-    
+
     // 查找头部和消息体的分界线（空行）
     size_t headerEndPos = remaining.find("\r\n\r\n");
     if (headerEndPos == std::string::npos) {
@@ -218,22 +218,23 @@ bool HttpRequest::fromString(const std::string& data) {
             return parseHeaders(remaining);
         }
         headerEndPos += 2; // \n\n的长度
-    } else {
+    }
+    else {
         headerEndPos += 4; // \r\n\r\n的长度
     }
-    
+
     // 解析头部
     std::string headerData = remaining.substr(0, headerEndPos - 4);
     if (!parseHeaders(headerData)) {
         return false;
     }
-    
+
     // 解析消息体
     if (headerEndPos < remaining.length()) {
         std::string bodyData = remaining.substr(headerEndPos);
         setBody(bodyData);
     }
-    
+
     return true;
 }
 
@@ -273,7 +274,8 @@ void HttpRequest::parseUrl(const std::string& url) {
         m_path = url.substr(0, queryPos);
         m_query = url.substr(queryPos + 1);
         parseQueryString(m_query);
-    } else {
+    }
+    else {
         m_path = url;
         m_query.clear();
         m_queryParams.clear();
@@ -285,7 +287,7 @@ void HttpRequest::updateQueryString() {
         m_query.clear();
         return;
     }
-    
+
     std::ostringstream oss;
     bool first = true;
     for (const auto& param : m_queryParams) {
@@ -298,14 +300,14 @@ void HttpRequest::updateQueryString() {
 
 void HttpRequest::parseQueryString(const std::string& queryString) {
     m_queryParams.clear();
-    
+
     if (queryString.empty()) {
         return;
     }
-    
+
     std::istringstream iss(queryString);
     std::string pair;
-    
+
     while (std::getline(iss, pair, '&')) {
         size_t equalPos = pair.find('=');
         if (equalPos != std::string::npos) {
@@ -319,23 +321,23 @@ void HttpRequest::parseQueryString(const std::string& queryString) {
 std::unordered_map<std::string, std::string> HttpRequest::parseCookies() const {
     std::unordered_map<std::string, std::string> cookies;
     std::string cookieHeader = getHeader("Cookie");
-    
+
     if (cookieHeader.empty()) {
         return cookies;
     }
-    
+
     std::istringstream iss(cookieHeader);
     std::string pair;
-    
+
     while (std::getline(iss, pair, ';')) {
-        pair = HttpUtils::trim(pair);
+        pair = HttpUtils::trimString(pair);
         size_t equalPos = pair.find('=');
         if (equalPos != std::string::npos) {
-            std::string name = HttpUtils::trim(pair.substr(0, equalPos));
-            std::string value = HttpUtils::trim(pair.substr(equalPos + 1));
+            std::string name = HttpUtils::trimString(pair.substr(0, equalPos));
+            std::string value = HttpUtils::trimString(pair.substr(equalPos + 1));
             cookies[name] = value;
         }
     }
-    
+
     return cookies;
 }

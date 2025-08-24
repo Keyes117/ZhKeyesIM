@@ -11,9 +11,8 @@
 #include <iomanip>
 #include <sstream>
 
+using namespace ZhKeyesIM::Net::Http;
 
-
- // ============== 字符串工具函数 ==============
 
 std::string HttpUtils::trimString(const std::string& str) {
     if (str.empty()) return str;
@@ -21,12 +20,11 @@ std::string HttpUtils::trimString(const std::string& str) {
     size_t start = 0;
     size_t end = str.length() - 1;
 
-    // 找到第一个非空白字符
     while (start <= end && std::isspace(str[start])) {
         start++;
     }
 
-    // 找到最后一个非空白字符
+
     while (end >= start && std::isspace(str[end])) {
         end--;
     }
@@ -48,7 +46,7 @@ std::string HttpUtils::toUpper(const std::string& str) {
     return result;
 }
 
-// ============== HTTP方法转换函数 ==============
+
 
 HttpMethod HttpUtils::stringToMethod(const std::string& method) {
     std::string upperMethod = HttpUtils::toUpper(method);
@@ -67,7 +65,7 @@ std::string HttpUtils::methodToString(HttpMethod method) {
     return "UNKNOWN";
 }
 
-// ============== HTTP版本转换函数 ==============
+
 
 HttpVersion HttpUtils::stringToVersion(const std::string& version) {
     auto it = VERSION_STRING_MAP.find(version);
@@ -82,10 +80,10 @@ std::string HttpUtils::versionToString(HttpVersion version) {
     if (it != VERSION_TO_STRING_MAP.end()) {
         return it->second;
     }
-    return "HTTP/1.1"; // 默认版本
+    return "HTTP/1.1";
 }
 
-// ============== HTTP状态码转换函数 ==============
+
 
 std::string HttpUtils::getReasonPhrase(HttpStatusCode statusCode) {
     auto it = STATUS_REASON_MAP.find(statusCode);
@@ -110,12 +108,12 @@ bool HttpUtils::isServerErrorStatusCode(HttpStatusCode statusCode) {
     return code >= 500 && code < 600;
 }
 
-// ============== MIME类型获取函数 ==============
+
 
 std::string HttpUtils::getMimeType(const std::string& extension) {
     std::string lowerExt = HttpUtils::toLower(extension);
 
-    // 确保扩展名以点开头
+
     if (!lowerExt.empty() && lowerExt[0] != '.') {
         lowerExt = "." + lowerExt;
     }
@@ -124,10 +122,10 @@ std::string HttpUtils::getMimeType(const std::string& extension) {
     if (it != MIME_TYPE_MAP.end()) {
         return it->second;
     }
-    return "application/octet-stream"; // 默认MIME类型
+    return "application/octet-stream"; 
 }
 
-// ============== URL编码/解码函数 ==============
+
 
 std::string HttpUtils::urlEncode(const std::string& str) {
     std::ostringstream encoded;
@@ -135,12 +133,12 @@ std::string HttpUtils::urlEncode(const std::string& str) {
     encoded << std::hex;
 
     for (char c : str) {
-        // 保留字母、数字和一些安全字符
+        
         if (std::isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~') {
             encoded << c;
         }
         else {
-            // 编码其他字符
+           
             encoded << std::uppercase;
             encoded << '%' << std::setw(2) << static_cast<int>(static_cast<unsigned char>(c));
             encoded << std::nouppercase;
@@ -154,9 +152,10 @@ std::string HttpUtils::urlDecode(const std::string& str) {
     std::string decoded;
     decoded.reserve(str.length());
 
-    for (size_t i = 0; i < str.length(); ++i) {
-        if (str[i] == '%' && i + 2 < str.length()) {
-            // 解码百分号编码
+    for (size_t i = 0; i < str.length(); ++i) 
+    {
+        if (str[i] == '%' && i + 2 < str.length()) 
+        {
             std::string hex = str.substr(i + 1, 2);
             char* end;
             long value = std::strtol(hex.c_str(), &end, 16);
@@ -169,7 +168,6 @@ std::string HttpUtils::urlDecode(const std::string& str) {
             }
         }
         else if (str[i] == '+') {
-            // 将+号转换为空格（在表单数据中）
             decoded += ' ';
         }
         else {

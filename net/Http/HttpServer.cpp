@@ -2,6 +2,9 @@
 
 #include "Logger.h"
 
+
+using namespace ZhKeyesIM::Net::Http;
+
 bool HttpServer::init(uint32_t threadNum, const std::string& ip/*=""*/)
 {
     m_spTcpServer = std::make_unique<TCPServer>();
@@ -26,7 +29,7 @@ void HttpServer::shutdown()
 
 void HttpServer::onConnected(std::shared_ptr<TCPConnection>& spConn)
 {
-    auto spHttpSession = std::make_shared<HttpSession>(spConn);
+    auto spHttpSession = std::make_shared<HttpSession>(this,std::move(spConn));
     m_sessions.insert(std::make_pair(spHttpSession->getID(), spHttpSession));
 
 }

@@ -8,6 +8,9 @@
 #define NET_HTTP_HTTPREQUEST_H_
 
 #include "HttpMessage.h"
+namespace ZhKeyesIM {
+    namespace Net {
+    namespace Http {
 
 class NET_API HttpRequest : public HttpMessage
 {
@@ -19,7 +22,7 @@ public:
     HttpRequest(HttpMethod method, const std::string& url);
     virtual ~HttpRequest() = default;
 
-    void setMethod(HttpMethod method) ;
+    void setMethod(HttpMethod method) { m_method = method; }
     HttpMethod getMethod() const {return m_method;}
     std::string getMethodString() const {return HttpUtils::methodToString(m_method);}
 
@@ -97,7 +100,7 @@ private:
     
 
 };
-
+    }}}
 
 
 #endif

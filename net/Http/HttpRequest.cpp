@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <sstream>
 
+using namespace ZhKeyesIM::Net::Http;
+
 HttpRequest::HttpRequest() : m_method(HttpMethod::GET) {
     // 默认构造函数
 }

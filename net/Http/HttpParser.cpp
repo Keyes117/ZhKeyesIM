@@ -9,6 +9,9 @@
 #include <cctype>
 #include <set>
 
+
+using namespace ZhKeyesIM::Net::Http;
+
 HttpParser::HttpParser() 
 {
     reset();
@@ -24,7 +27,7 @@ HttpParser::HttpParser(SessionMode mode) : m_sessionMode(mode)
 ParseResult HttpParser::feed(Buffer& buffer) 
 {
     if (buffer.readableBytes() == 0) {
-        return ParseResult::NEED_MORE_DATA;
+        return ParseResult::PARSE_RESULT_NEED_MORE_DATA;
     }
     
     // 检查是否已经完成或出错
@@ -38,7 +41,7 @@ ParseResult HttpParser::feed(Buffer& buffer)
            m_parseState != ParseState::PARSE_ERROR && 
            !needMoreData(buffer)) {
         
-        ParseResult result = ParseResult::PARSE_ERROR;
+        ParseResult result = ParseResult::PARSE_RESULT_ERROR;
         
         switch (m_parseState) {
             case ParseState::PARSE_REQUEST_LINE:
@@ -58,13 +61,13 @@ ParseResult HttpParser::feed(Buffer& buffer)
                 break;
                 
             default:
-                setError(HttpError::PARSE_ERROR, "Unknown parse state");
-                return ParseResult::PARSE_ERROR;
+                setError(HttpError::HTTPERROR_PARSE_ERROR, "Unknown parse state");
+                return ParseResult::PARSE_RESULT_ERROR;
         }
         
-        if (result == ParseResult::PARSE_ERROR) {
-            return ParseResult::PARSE_ERROR;
-        } else if (result == ParseResult::NEED_MORE_DATA) {
+        if (result == ParseResult::PARSE_RESULT_ERROR) {
+            return ParseResult::PARSE_RESULT_ERROR;
+        } else if (result == ParseResult::PARSE_RESULT_NEED_MORE_DATA) {
             break;
         }
     }
@@ -75,19 +78,19 @@ ParseResult HttpParser::feed(Buffer& buffer)
 
 ParseResult HttpParser::parseRequestLine(Buffer& buffer) {
     // 根据会话模式决定解析请求行还是状态行
-    if (m_sessionMode == SessionMode::CLIENT || m_sessionMode == SessionMode::UNKNOWN) {
+    if (m_sessionMode == SessionMode::SESSION_MODE_CLIENT || m_sessionMode == SessionMode::SESSION_MODE_UNEXPECTED) {
         return parseStatusLine(buffer); // 客户端接收响应
     } else {
         // 服务端接收请求
         std::string line;
         if (!findLine(buffer,line)) {
-            return ParseResult::NEED_MORE_DATA;
+            return ParseResult::PARSE_RESULT_NEED_MORE_DATA;
         }
         
         // 检查URL长度限制
         if (line.length() > m_maxUrlLength) {
-            setError(HttpError::INVALID_REQUEST, "Request line too long");
-            return ParseResult::PARSE_ERROR;
+            setError(HttpError::HTTPERROR_INVALID_REQUEST, "Request line too long");
+            return ParseResult::PARSE_RESULT_ERROR;
         }
         
         // 解析请求行: METHOD URL HTTP/VERSION
@@ -95,20 +98,20 @@ ParseResult HttpParser::parseRequestLine(Buffer& buffer) {
         std::string method, url, version;
         
         if (!(iss >> method >> url >> version)) {
-            setError(HttpError::INVALID_REQUEST, "Invalid request line format");
-            return ParseResult::PARSE_ERROR;
+            setError(HttpError::HTTPERROR_INVALID_REQUEST, "Invalid request line format");
+            return ParseResult::PARSE_RESULT_ERROR;
         }
         
         // 验证HTTP方法
         if (!isValidHttpMethod(method)) {
-            setError(HttpError::INVALID_REQUEST, "Invalid HTTP method: " + method);
-            return ParseResult::PARSE_ERROR;
+            setError(HttpError::HTTPERROR_INVALID_REQUEST, "Invalid HTTP method: " + method);
+            return ParseResult::PARSE_RESULT_ERROR;
         }
         
         // 验证HTTP版本
         if (!isValidHttpVersion(version)) {
-            setError(HttpError::UNSUPPORTED_VERSION, "Unsupported HTTP version: " + version);
-            return ParseResult::PARSE_ERROR;
+            setError(HttpError::HTTPERROR_UNSUPPORTED_VERSION, "Unsupported HTTP version: " + version);
+            return ParseResult::PARSE_RESULT_ERROR;
         }
         
         // 创建请求对象
@@ -122,14 +125,14 @@ ParseResult HttpParser::parseRequestLine(Buffer& buffer) {
         
         // 转到头部解析状态
         m_parseState = ParseState::PARSE_HEADERS;
-        return ParseResult::NEED_MORE_DATA;
+        return ParseResult::PARSE_RESULT_NEED_MORE_DATA;
     }
 }
 
 ParseResult HttpParser::parseStatusLine(Buffer& buffer) {
     std::string line;
     if (!findLine(buffer,line)) {
-        return ParseResult::NEED_MORE_DATA;
+        return ParseResult::PARSE_RESULT_NEED_MORE_DATA;
     }
     
     // 解析状态行: HTTP/VERSION STATUS_CODE REASON_PHRASE
@@ -139,24 +142,24 @@ ParseResult HttpParser::parseStatusLine(Buffer& buffer) {
     std::string reasonPhrase;
     
     if (!(iss >> version >> statusCode)) {
-        setError(HttpError::INVALID_RESPONSE, "Invalid status line format");
-        return ParseResult::PARSE_ERROR;
+        setError(HttpError::HTTPERROR_INVALID_REQUEST, "Invalid status line format");
+        return ParseResult::PARSE_RESULT_ERROR;
     }
     
     // 读取原因短语（可能包含空格）
     std::getline(iss, reasonPhrase);
-    reasonPhrase = HttpUtils::trim(reasonPhrase);
+    reasonPhrase = HttpUtils::trimString(reasonPhrase);
     
     // 验证HTTP版本
     if (!isValidHttpVersion(version)) {
-        setError(HttpError::UNSUPPORTED_VERSION, "Unsupported HTTP version: " + version);
-        return ParseResult::PARSE_ERROR;
+        setError(HttpError::HTTPERROR_UNSUPPORTED_VERSION, "Unsupported HTTP version: " + version);
+        return ParseResult::PARSE_RESULT_ERROR;
     }
     
     // 验证状态码
     if (!isValidStatusCode(statusCode)) {
-        setError(HttpError::INVALID_RESPONSE, "Invalid status code: " + std::to_string(statusCode));
-        return ParseResult::PARSE_ERROR;
+        setError(HttpError::HTTPERROR_INVALID_RESPONSE, "Invalid status code: " + std::to_string(statusCode));
+        return ParseResult::PARSE_RESULT_ERROR;
     }
     
     // 创建响应对象
@@ -172,14 +175,14 @@ ParseResult HttpParser::parseStatusLine(Buffer& buffer) {
     
     // 转到头部解析状态
     m_parseState = ParseState::PARSE_HEADERS;
-    return ParseResult::NEED_MORE_DATA;
+    return ParseResult::PARSE_RESULT_NEED_MORE_DATA;
 }
 
 ParseResult HttpParser::parseHeaders(Buffer& buffer) {
     while (true) {
         std::string line;
         if (!findLine(buffer,line)) {
-            return ParseResult::NEED_MORE_DATA;
+            return ParseResult::PARSE_RESULT_NEED_MORE_DATA;
         }
         
         // 空行表示头部结束
@@ -196,22 +199,22 @@ ParseResult HttpParser::parseHeaders(Buffer& buffer) {
                 m_parseState = ParseState::PARSE_COMPLETE;
             }
             
-            return ParseResult::NEED_MORE_DATA;
+            return ParseResult::PARSE_RESULT_NEED_MORE_DATA;
         }
         
         // 解析头部字段: name: value
         size_t colonPos = line.find(':');
         if (colonPos == std::string::npos) {
-            setError(HttpError::PARSE_ERROR, "Invalid header format: " + line);
-            return ParseResult::PARSE_ERROR;
+            setError(HttpError::HTTPERROR_PARSE_ERROR, "Invalid header format: " + line);
+            return ParseResult::PARSE_RESULT_ERROR;
         }
         
-        std::string name = HttpUtils::trim(line.substr(0, colonPos));
-        std::string value = HttpUtils::trim(line.substr(colonPos + 1));
+        std::string name = HttpUtils::trimString(line.substr(0, colonPos));
+        std::string value = HttpUtils::trimString(line.substr(colonPos + 1));
         
         if (name.empty()) {
-            setError(HttpError::PARSE_ERROR, "Empty header name");
-            return ParseResult::PARSE_ERROR;
+            setError(HttpError::HTTPERROR_PARSE_ERROR, "Empty header name");
+            return ParseResult::PARSE_RESULT_ERROR;
         }
         
         // 添加头部到相应的对象
@@ -228,7 +231,7 @@ ParseResult HttpParser::parseHeaders(Buffer& buffer) {
 ParseResult HttpParser::parseBody(Buffer& buffer) {
     if (m_expectedBodySize == 0) {
         m_parseState = ParseState::PARSE_COMPLETE;
-        return ParseResult::PARSE_COMPLETE;
+        return ParseResult::PARSE_RESULT_COMPLETE;
     }
     
     size_t availableData =  buffer.readableBytes();
@@ -246,7 +249,7 @@ ParseResult HttpParser::parseBody(Buffer& buffer) {
         m_currentBodySize += availableData;
         m_parsedBytes += availableData;
         
-        return ParseResult::NEED_MORE_DATA;
+        return ParseResult::PARSE_RESULT_NEED_MORE_DATA;
     } else {
         // 读取剩余数据
         std::string bodyPart = buffer.retrieveAsString(needData);
@@ -260,10 +263,10 @@ ParseResult HttpParser::parseBody(Buffer& buffer) {
        m_parsedBytes += needData;
         
         m_parseState = ParseState::PARSE_COMPLETE;
-        return ParseResult::PARSE_COMPLETE;
+        return ParseResult::PARSE_RESULT_COMPLETE;
         
         m_parseState = ParseState::PARSE_COMPLETE;
-        return ParseResult::PARSE_COMPLETE;
+        return ParseResult::PARSE_RESULT_COMPLETE;
     }
 }
 
@@ -273,7 +276,7 @@ ParseResult HttpParser::parseChunkedBody(Buffer& buffer) {
             // 读取块大小行
             std::string line;
             if (!findLine(buffer, line)) {
-                return ParseResult::NEED_MORE_DATA;
+                return ParseResult::PARSE_RESULT_NEED_MORE_DATA;
             }
             
             // 解析块大小（十六进制）
@@ -284,8 +287,8 @@ ParseResult HttpParser::parseChunkedBody(Buffer& buffer) {
             try {
                 m_chunkSize = std::stoull(sizeStr, nullptr, 16);
             } catch (...) {
-                setError(HttpError::PARSE_ERROR, "Invalid chunk size: " + sizeStr);
-                return ParseResult::PARSE_ERROR;
+                setError(HttpError::HTTPERROR_PARSE_ERROR, "Invalid chunk size: " + sizeStr);
+                return ParseResult::PARSE_RESULT_ERROR;
             }
             
             m_chunkSizeRead = true;
@@ -295,13 +298,13 @@ ParseResult HttpParser::parseChunkedBody(Buffer& buffer) {
                 m_finalChunk = true;
                 // 读取可能的尾随头部（暂时忽略）
                 m_parseState = ParseState::PARSE_COMPLETE;
-                return ParseResult::PARSE_COMPLETE;
+                return ParseResult::PARSE_RESULT_COMPLETE;
             }
         } else {
             // 读取块数据
             size_t availableData = buffer.readableBytes();
             if (availableData < m_chunkSize + 2) { // +2 for trailing CRLF
-                return ParseResult::NEED_MORE_DATA;
+                return ParseResult::PARSE_RESULT_NEED_MORE_DATA;
             }
             
             // 读取块数据
@@ -401,12 +404,12 @@ void HttpParser::setError(HttpError error, const std::string& message) {
 
 bool HttpParser::checkLimits() {
     if (m_currentHeaderSize > m_maxHeaderSize) {
-        setError(HttpError::HEADER_TOO_LARGE, "Header size exceeds limit");
+        setError(HttpError::HTTPERROR_HEADER_TOO_LARGE, "Header size exceeds limit");
         return false;
     }
     
     if (m_currentBodySize > m_maxBodySize) {
-        setError(HttpError::BODY_TOO_LARGE, "Body size exceeds limit");
+        setError(HttpError::HTTPERROR_BODY_TOO_LARGE, "Body size exceeds limit");
         return false;
     }
     
@@ -416,9 +419,9 @@ bool HttpParser::checkLimits() {
 // ============== 重置和清理 ==============
 
 void HttpParser::reset() {
-    m_parseState = (m_sessionMode == SessionMode::SERVER) ? 
+    m_parseState = (m_sessionMode == SessionMode::SESSION_MODE_SERVER) ? 
                    ParseState::PARSE_REQUEST_LINE : ParseState::PARSE_REQUEST_LINE;
-    m_lastError = HttpError::NONE;
+    m_lastError = HttpError::HTTPERROR_NONE;
     m_errorMessage.clear();
     
     m_request.reset();
@@ -437,7 +440,7 @@ void HttpParser::reset() {
 
 void HttpParser::clear() {
     reset();
-    m_sessionMode = SessionMode::UNKNOWN;
+    m_sessionMode = SessionMode::SESSION_MODE_UNEXPECTED;
 }
 
 // ============== 工具方法 ==============
@@ -450,7 +453,7 @@ bool HttpParser::isValidHttpMethod(const std::string& method) {
 }
 
 bool HttpParser::isValidHttpVersion(const std::string& version) {
-    return version == "HTTP/1.0" || version == "HTTP/1.1" || version == "HTTP/2.0";
+    return version == "HTTP/1.0" || version == "HTTP/1.1";/*|| version == "HTTP/2.0";*/ //暂时不考虑http2.0
 }
 
 bool HttpParser::isValidStatusCode(int statusCode) {

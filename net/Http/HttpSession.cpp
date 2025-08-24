@@ -6,9 +6,11 @@
 #include "HttpServer.h"
 #include "Logger.h"
 
+using namespace ZhKeyesIM::Net::Http;
+
 HttpSession::HttpSession(HttpServer* pServer, std::shared_ptr<TCPConnection>&& spConn) :
     m_pHttpServer(pServer),
-    m_HttpParser(SessionMode::SERVER),
+    m_HttpParser(SessionMode::SESSION_MODE_SERVER),
     m_spConnection(std::move(spConn))
 {
     m_sessionID = HttpSession::generateID();
@@ -21,7 +23,7 @@ HttpSession::HttpSession(HttpServer* pServer, std::shared_ptr<TCPConnection>&& s
 
 HttpSession::HttpSession(HttpClient* pClient, std::shared_ptr<TCPConnection>&& spConn) :
     m_pHttpClient(pClient),
-    m_HttpParser(SessionMode::CLIENT),
+    m_HttpParser(SessionMode::SESSION_MODE_CLIENT),
     m_spConnection(std::move(spConn))
 {
     m_sessionID = HttpSession::generateID();
@@ -31,11 +33,15 @@ HttpSession::HttpSession(HttpClient* pClient, std::shared_ptr<TCPConnection>&& s
     m_spConnection->setCloseCallback(std::bind(&HttpSession::onClose, this));
 }
 
+ZhKeyesIM::Net::Http::HttpSession::~HttpSession()
+{
+}
+
 void HttpSession::onRead(Buffer& buffer)
 {
     ParseResult result = m_HttpParser.feed(buffer);
 
-    if (result == ParseResult::PARSE_COMPLETE)
+    if (result == ParseResult::PARSE_RESULT_COMPLETE)
     {
         if (m_pHttpServer)
         {  // 服务端模式
@@ -63,7 +69,7 @@ void HttpSession::onRead(Buffer& buffer)
             m_HttpParser.reset();
         }
     }
-    else if (result == ParseResult::PARSE_ERROR)
+    else if (result == ParseResult::PARSE_RESULT_ERROR)
     {
         handleParseError();
     }
@@ -94,6 +100,10 @@ bool HttpSession::sendResponse(const HttpResponse& response)
     return false;
 }
 
+void HttpSession::handleRequest(std::shared_ptr<HttpRequest>& spRequest)
+{
+}
+
 void HttpSession::handleResponse(std::shared_ptr<HttpResponse>& spResponse)
 {
     if (m_pHttpClient)
@@ -104,6 +114,15 @@ void HttpSession::handleResponse(std::shared_ptr<HttpResponse>& spResponse)
     {
         onClose();
     }
+}
+
+void ZhKeyesIM::Net::Http::HttpSession::handleParseError()
+{
+}
+
+bool ZhKeyesIM::Net::Http::HttpSession::shouldKeepAlive() const
+{
+    return false;
 }
 
 uint32_t HttpSession::generateID()

@@ -22,6 +22,10 @@
 #include "net_export.h"
 #include "TCPClient.h"
 
+namespace ZhKeyesIM {
+    namespace Net {
+    namespace Http {
+
 class NET_API HttpClient
 {
 public:
@@ -80,6 +84,6 @@ private:
 
 };
 
-
+    }}}
 
 #endif //!NET_HTTP_HTTPCLIENT_H_

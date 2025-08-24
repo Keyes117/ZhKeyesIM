@@ -1,6 +1,8 @@
 #include "HttpClient.h"
 #include "Logger.h"
 
+using namespace ZhKeyesIM::Net::Http;
+
 HttpClient::HttpClient() {
     // 创建默认的事件循环
     m_eventLoop = std::make_shared<EventLoop>();

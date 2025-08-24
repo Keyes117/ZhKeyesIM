@@ -21,6 +21,10 @@
 #include "net_export.h"
 #include "TCPConnection.h"
 
+namespace ZhKeyesIM {
+    namespace Net {
+    namespace Http {
+
 class HttpServer;
 class HttpClient;
 class NET_API HttpSession
@@ -58,5 +62,5 @@ private:
     SessionID                       m_sessionID;
 };
 
-
+    }}}
 #endif //!NET_HTTP_HTTPSESSION_H_

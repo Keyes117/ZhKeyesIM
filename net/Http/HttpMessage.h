@@ -13,11 +13,15 @@
 #include "HttpProtocol.h"
 #include "net_export.h"
 
+namespace ZhKeyesIM {
+    namespace Net {
+    namespace Http {
+
 class NET_API HttpMessage
 {
 public:
     using HeaderMap = std::unordered_map<std::string, std::string>;
-    HttpMessage();
+    HttpMessage() = default;
     virtual ~HttpMessage() = default;
 
     // ============== Version ===============
@@ -81,4 +85,6 @@ private:
     std::string m_body;  
 };
 
+
+    }}}
 #endif

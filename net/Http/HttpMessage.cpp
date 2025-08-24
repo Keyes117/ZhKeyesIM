@@ -11,6 +11,8 @@
 
 #include "HttpProtocol.h"
 
+using namespace ZhKeyesIM::Net::Http;
+
 void HttpMessage::setHeader(const std::string& name, const std::string value)
 {
     std::string nomalizedName = normalizeHeaderName(name);
@@ -126,8 +128,8 @@ bool HttpMessage::parseHeaders(const std::string& headerData) {
             return false; // 格式错误
         }
 
-        std::string name = HttpUtils::trim(line.substr(0, colonPos));
-        std::string value = HttpUtils::trim(line.substr(colonPos + 1));
+        std::string name = HttpUtils::trimString(line.substr(0, colonPos));
+        std::string value = HttpUtils::trimString(line.substr(colonPos + 1));
 
         if (name.empty()) {
             return false; // 头部名称不能为空

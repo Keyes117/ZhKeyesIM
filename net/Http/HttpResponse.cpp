@@ -8,6 +8,8 @@
 #include <fstream>
 #include <sstream>
 
+using namespace ZhKeyesIM::Net::Http;
+
  // ============== Cookie结构体实现 ==============
 
 std::string HttpResponse::Cookie::toString() const {

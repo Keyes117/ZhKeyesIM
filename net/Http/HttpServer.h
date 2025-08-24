@@ -15,6 +15,10 @@
 #include "net_export.h"
 #include "TCPServer.h"
 
+namespace ZhKeyesIM {
+    namespace Net {
+    namespace Http {
+
 class NET_API HttpServer final
 {
 public:
@@ -52,5 +56,5 @@ private:
     RequestCallBack m_requestCallBack;
 };
 
-
+    }}}
 #endif //!NET_HTTP_HTTPSERVER_H_

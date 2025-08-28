@@ -4,6 +4,14 @@ project(ZhKeyesIM VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+enable_testing()
+
+set(GTEST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest")
+
+list(APPEND CMAKE_PREFIX_PATH ${GTEST_ROOT})
+
+find_package(GTest CONFIG REQUIRED)
+
 
 if(MSVC)  #Microsoft Visual C++
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")   #/W4 启动所有编译警告
@@ -30,6 +38,12 @@ add_subdirectory(util)
 add_subdirectory(net)
 add_subdirectory(ZhKeyesIMClient)
 add_subdirectory(ZhkeyesIMServer)
+
+if(EXSITS "${MAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
+    add_subdirectory(tests))
+endif()
+
+# 添加GTest测试
 
 
 #安装可执行文件

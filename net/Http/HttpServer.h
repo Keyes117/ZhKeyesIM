@@ -26,7 +26,7 @@ public:
     using RequestCallBack = std::function<void(const HttpRequest&, HttpResponse&)>;
 
     HttpServer() = default;
-    ~HttpServer() = default;
+    ~HttpServer();
 
     bool init(uint32_t threadNum, const std::string& ip = "");
     void shutdown();

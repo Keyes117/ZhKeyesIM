@@ -5,6 +5,11 @@
 
 using namespace ZhKeyesIM::Net::Http;
 
+ZhKeyesIM::Net::Http::HttpServer::~HttpServer()
+{
+    shutdown();
+}
+
 bool HttpServer::init(uint32_t threadNum, const std::string& ip/*=""*/)
 {
     m_spTcpServer = std::make_unique<TCPServer>();
@@ -19,9 +24,6 @@ bool HttpServer::init(uint32_t threadNum, const std::string& ip/*=""*/)
 
 void HttpServer::shutdown()
 {
-    if (m_spTcpServer)
-        m_spTcpServer->shutdown();
-
     m_sessions.clear();
     m_pendingToDeleteSessions.clear();
 }

@@ -21,68 +21,32 @@ TCPConnection::~TCPConnection()
 
 void TCPConnection::startRead()
 {
-    if (!m_enableRead)
-    {
-        enableRead(true);
-        registerReadEvent();
+    if (m_spEventLoop) {
+        m_spEventLoop->registerCustomTask([this] {
+            if (!m_enableRead) {
+                enableRead(true);
+                registerReadEvent(); // 此时已在所属 EventLoop 线程
+            }
+            });
     }
 }
 
 bool TCPConnection::send(const char* buf, size_t bufLen)
 {
-    if (bufLen == 0)
-        return true;
-
-    if (m_socket == INVALID_SOCKET)
-        return false;
-
-    m_sendBuf.append(buf, bufLen);
-
-    if (!m_enableRead)
-    {
-        int n = ::send(m_socket, m_sendBuf.peek(), static_cast<int>(m_sendBuf.readableBytes()), 0);
-        if (n > 0)
-        {
-            //send ����ֵ >0 �ɹ�������n�ֽ�
-            m_sendBuf.retrieve(n);
-
-            if (m_sendBuf.readableBytes() > 0)
-            {
-                //��������û�з���
-                //��Socket�ķ��ͻ���������
-                enableRead(true);
-                registerReadEvent();
-                return true;
-            }
-            //���ݳɹ��������
-        }
-        else if (n < 0)
-        {
-            auto err = GetSocketError();
-
-            if (err != EWOULDBLOCK && err != EAGAIN)
-            {
-                onClose();
-                return false;
-            }
-            enableWrite(true);
-            registerWriteEvent();
-
-        }
-        else if (n == 0)
-        {
-            //�Զ˹ر�������
-            onClose();
-            return false;
-        }
-
-    }
-    return true;
+    return send(std::string(buf, bufLen));
 }
 
 bool TCPConnection::send(const std::string& buf)
 {
-    return send(buf.data(), buf.size());
+    if (isCallableInOwnerThread())
+    {
+        return sendInterval(buf.c_str(), buf.length());
+    }
+    else
+    {
+        m_spEventLoop->registerCustomTask(std::bind(static_cast<bool(TCPConnection::*)(const std::string&)>(&TCPConnection::send), this, buf));
+        return true;
+    }
 }
 
 void TCPConnection::onRead()
@@ -178,6 +142,63 @@ void TCPConnection::onClose()
     if (m_closeCallBack)
         m_closeCallBack();
 
+}
+
+bool TCPConnection::sendInterval(const char* buf, size_t bufLen)
+{
+    if (bufLen == 0)
+        return true;
+
+    if (m_socket == INVALID_SOCKET)
+        return false;
+
+    m_sendBuf.append(buf, bufLen);
+
+    if (!m_enableRead)
+    {
+        int n = ::send(m_socket, m_sendBuf.peek(), static_cast<int>(m_sendBuf.readableBytes()), 0);
+        if (n > 0)
+        {
+            //send ����ֵ >0 �ɹ�������n�ֽ�
+            m_sendBuf.retrieve(n);
+
+            if (m_sendBuf.readableBytes() > 0)
+            {
+                //��������û�з���
+                //��Socket�ķ��ͻ���������
+                enableRead(true);
+                registerReadEvent();
+                return true;
+            }
+            //���ݳɹ��������
+        }
+        else if (n < 0)
+        {
+            auto err = GetSocketError();
+
+            if (err != EWOULDBLOCK && err != EAGAIN)
+            {
+                onClose();
+                return false;
+            }
+            enableWrite(true);
+            registerWriteEvent();
+
+        }
+        else if (n == 0)
+        {
+            //�Զ˹ر�������
+            onClose();
+            return false;
+        }
+
+    }
+    return true;
+}
+
+bool TCPConnection::isCallableInOwnerThread()
+{
+    return std::this_thread::get_id() == m_spEventLoop->getThreadID();
 }
 
 void TCPConnection::registerReadEvent()

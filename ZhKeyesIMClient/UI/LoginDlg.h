@@ -12,6 +12,15 @@ public:
     ~LoginDlg();
 
 private:
-    Ui::LoginDlgClass ui;
+    bool isLineEditEmpty();
+    bool isAccountAndPassWordRight();
+
+private slots:
+    void onLoginButtonClicked();
+    void onRegisterButtonClicked();
+private:
+
+    void setUpSignals();
+    Ui::LoginDlgClass* m_ui;
 };
 

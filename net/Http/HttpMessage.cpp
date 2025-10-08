@@ -6,8 +6,12 @@
 
 
 #include "HttpMessage.h"
+
 #include <algorithm>
-#include <sstream>
+#include <iterator>
+
+
+#include "fmt/format.h"
 
 #include "HttpProtocol.h"
 
@@ -99,37 +103,43 @@ std::string HttpMessage::normalizeHeaderName(const std::string& name) const {
 }
 
 std::string HttpMessage::headersToString() const {
-    std::ostringstream oss;
-    for (const auto& header : m_headers) {
-        oss << header.first << HttpConstants::HEARDER_SEPARATOR
-            << header.second << HttpConstants::CRLF;
+    fmt::memory_buffer buf;
+    for (const auto& header : m_headers)
+    {
+        fmt::format_to(std::back_inserter(buf),"{}: {}\r\n",header.first, header.second);
     }
-    return oss.str();
+    return fmt::to_string(buf);
 }
 
 bool HttpMessage::parseHeaders(const std::string& headerData) {
-    std::istringstream iss(headerData);
-    std::string line;
+    std::string_view sv(headerData);
 
-    while (std::getline(iss, line)) {
-        // 移除行尾的\r
-        if (!line.empty() && line.back() == '\r') {
-            line.pop_back();
+
+    while (!sv.empty()) 
+    {
+        size_t posCRLF = sv.find("\r\n");
+        if (posCRLF == std::string_view::npos)
+        {
+            posCRLF = sv.find('\n');
+            if (posCRLF == std::string_view::npos)
+                break;
         }
 
-        // 空行表示头部结束
-        if (line.empty()) {
+        std::string_view line = sv.substr(0, posCRLF);
+        sv.remove_prefix(posCRLF + (sv[posCRLF] == '\r' ? 2 : 1));
+
+        if (line.empty())
             break;
-        }
+
 
         // 查找冒号分隔符
         size_t colonPos = line.find(':');
-        if (colonPos == std::string::npos) {
+        if (colonPos == std::string_view::npos) {
             return false; // 格式错误
         }
 
-        std::string name = HttpUtils::trimString(line.substr(0, colonPos));
-        std::string value = HttpUtils::trimString(line.substr(colonPos + 1));
+        std::string name = HttpUtils::trimString(std::string(line.substr(0, colonPos)));
+        std::string value = HttpUtils::trimString(std::string(line.substr(colonPos + 1)));
 
         if (name.empty()) {
             return false; // 头部名称不能为空

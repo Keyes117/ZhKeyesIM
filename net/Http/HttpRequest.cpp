@@ -4,8 +4,11 @@
  * @date:   2025/8/5
  */
 #include "HttpRequest.h"
+
 #include <algorithm>
-#include <sstream>
+#include <iterator>
+
+#include "fmt/format.h"
 
 using namespace ZhKeyesIM::Net::Http;
 
@@ -25,19 +28,22 @@ void HttpRequest::setUrl(const std::string& url) {
     parseUrl(url);
 }
 
-void HttpRequest::setQuery(const std::string& query) {
+void HttpRequest::setQuery(const std::string& query)
+{
     m_query = query;
     parseQueryString(query);
 }
 
 // ============== 查询参数操作 ==============
 
-void HttpRequest::setQueryParam(const std::string& name, const std::string& value) {
+void HttpRequest::setQueryParam(const std::string& name, const std::string& value) 
+{
     m_queryParams[name] = value;
     updateQueryString();
 }
 
-std::string HttpRequest::getQueryParam(const std::string& name) const {
+std::string HttpRequest::getQueryParam(const std::string& name) const 
+{
     auto it = m_queryParams.find(name);
     return (it != m_queryParams.end()) ? it->second : "";
 }
@@ -46,50 +52,61 @@ bool HttpRequest::hasQueryParam(const std::string& name) const {
     return m_queryParams.find(name) != m_queryParams.end();
 }
 
-void HttpRequest::removeQueryParam(const std::string& name) {
+void HttpRequest::removeQueryParam(const std::string& name)
+{
     m_queryParams.erase(name);
     updateQueryString();
 }
 
 // ============== 常用头部便捷方法 ==============
 
-void HttpRequest::setHost(const std::string& host) {
+void HttpRequest::setHost(const std::string& host)
+{
     setHeader("Host", host);
 }
 
-std::string HttpRequest::getHost() const {
+std::string HttpRequest::getHost() const
+{
     return getHeader("Host");
 }
 
-void HttpRequest::setUserAgent(const std::string& userAgent) {
+void HttpRequest::setUserAgent(const std::string& userAgent)
+{
     setHeader("User-Agent", userAgent);
 }
 
-std::string HttpRequest::getUserAgent() const {
+std::string HttpRequest::getUserAgent() const
+{
     return getHeader("User-Agent");
 }
 
-void HttpRequest::setReferer(const std::string& referer) {
+void HttpRequest::setReferer(const std::string& referer)
+{
     setHeader("Referer", referer);
 }
 
-std::string HttpRequest::getReferer() const {
+std::string HttpRequest::getReferer() const
+{
     return getHeader("Referer");
 }
 
-void HttpRequest::setAccept(const std::string& accept) {
+void HttpRequest::setAccept(const std::string& accept)
+{
     setHeader("Accept", accept);
 }
 
-std::string HttpRequest::getAccept() const {
+std::string HttpRequest::getAccept() const
+{
     return getHeader("Accept");
 }
 
-void HttpRequest::setAuthorization(const std::string& auth) {
+void HttpRequest::setAuthorization(const std::string& auth) 
+{
     setHeader("Authorization", auth);
 }
 
-std::string HttpRequest::getAuthorization() const {
+std::string HttpRequest::getAuthorization() const
+{
     return getHeader("Authorization");
 }
 
@@ -99,14 +116,17 @@ void HttpRequest::setCookie(const std::string& name, const std::string& value) {
     auto cookies = parseCookies();
     cookies[name] = value;
 
-    std::ostringstream oss;
+    fmt::memory_buffer buf;
     bool first = true;
-    for (const auto& cookie : cookies) {
-        if (!first) oss << "; ";
-        oss << cookie.first << "=" << cookie.second;
+    for (const auto& cookie : cookies) 
+    {
+        if (!first) 
+            fmt::format_to(std::back_inserter(buf), "; ");
+
+        fmt::format_to(std::back_inserter(buf),"{}={}", cookie.first, cookie.second);
         first = false;
     }
-    setHeader("Cookie", oss.str());
+    setHeader("Cookie", fmt::to_string(buf));
 }
 
 std::string HttpRequest::getCookie(const std::string& name) const {
@@ -139,14 +159,21 @@ void HttpRequest::addFormData(const std::string& name, const std::string& value)
 }
 
 std::string HttpRequest::getFormDataString() const {
-    std::ostringstream oss;
+    fmt::memory_buffer buf;
     bool first = true;
-    for (const auto& pair : m_formData) {
-        if (!first) oss << "&";
-        oss << HttpUtils::urlEncode(pair.first) << "=" << HttpUtils::urlEncode(pair.second);
+    for (const auto& pair : m_formData)
+    {
+        if (!first)
+            fmt::format_to(std::back_inserter(buf), "&");
+
+        fmt::format_to(std::back_inserter(buf), "{}={}",
+                     HttpUtils::urlEncode(pair.first),
+                     HttpUtils::urlEncode(pair.second));
+  
         first = false;
     }
-    return oss.str();
+    return fmt::to_string(buf);
+    
 }
 
 // ============== JSON数据处理 ==============
@@ -159,82 +186,85 @@ void HttpRequest::setJsonBody(const std::string& json) {
 // ============== 序列化和解析 ==============
 
 std::string HttpRequest::toString() const {
-    std::ostringstream oss;
+    fmt::memory_buffer buf;
 
+    fmt::format_to(std::back_inserter(buf), "{} {}", getMethodString(), m_path);
     // 请求行
-    oss << getMethodString() << HttpConstants::SPACE << m_path;
-    if (!m_query.empty()) {
-        oss << "?" << m_query;
-    }
-    oss << HttpConstants::SPACE << getVersionString() << HttpConstants::CRLF;
 
+    if (!m_query.empty()) {
+        fmt::format_to(std::back_inserter(buf), "?{}",m_query);
+    }
+
+    fmt::format_to(std::back_inserter(buf), "{}{}{}", HttpConstants::SPACE, getMethodString(), HttpConstants::CRLF);
     // 头部
-    oss << headersToString();
+    fmt::format_to(std::back_inserter(buf), "{}", headersToString());
+
 
     // 空行分隔头部和消息体
-    oss << HttpConstants::CRLF;
+    fmt::format_to(std::back_inserter(buf), "{}", HttpConstants::CRLF);
 
     // 消息体
-    oss << getBody();
+    fmt::format_to(std::back_inserter(buf), "{}", getBody());
 
-    return oss.str();
+
+    return fmt::to_string(buf);
 }
 
-bool HttpRequest::fromString(const std::string& data) {
+bool HttpRequest::fromString(const std::string& data)
+{
     clear();
 
-    std::istringstream iss(data);
-    std::string line;
+    std::string_view sv(data);
 
-    // 解析请求行
-    if (!std::getline(iss, line)) {
-        return false;
+    // 查找第一行结束符
+    size_t lineEnd = sv.find("\r\n");
+    if (lineEnd == std::string_view::npos) {
+        lineEnd = sv.find('\n');
+        if (lineEnd == std::string_view::npos) {
+            return false;
+        }
     }
 
-    // 移除行尾的\r
-    if (!line.empty() && line.back() == '\r') {
-        line.pop_back();
-    }
+    std::string_view requestLine = sv.substr(0, lineEnd);
+    sv.remove_prefix(lineEnd + (sv[lineEnd] == '\r' ? 2 : 1));
 
-    std::istringstream lineStream(line);
-    std::string methodStr, url, versionStr;
-    if (!(lineStream >> methodStr >> url >> versionStr)) {
-        return false;
-    }
+    // 解析请求行: METHOD SP URL SP HTTP/VERSION
+    size_t sp1 = requestLine.find(' ');
+    if (sp1 == std::string_view::npos) return false;
+
+    size_t sp2 = requestLine.find(' ', sp1 + 1);
+    if (sp2 == std::string_view::npos) return false;
+
+    std::string methodStr(requestLine.substr(0, sp1));
+    std::string url(requestLine.substr(sp1 + 1, sp2 - sp1 - 1));
+    std::string versionStr(requestLine.substr(sp2 + 1));
 
     m_method = HttpUtils::stringToMethod(methodStr);
     setUrl(url);
     setVersion(HttpUtils::stringToVersion(versionStr));
 
-    // 读取剩余数据用于解析头部和消息体
-    std::ostringstream remainingData;
-    remainingData << iss.rdbuf();
-    std::string remaining = remainingData.str();
-
     // 查找头部和消息体的分界线（空行）
-    size_t headerEndPos = remaining.find("\r\n\r\n");
-    if (headerEndPos == std::string::npos) {
-        headerEndPos = remaining.find("\n\n");
-        if (headerEndPos == std::string::npos) {
+    size_t headerEndPos = sv.find("\r\n\r\n");
+    size_t headerLen = 4;
+    if (headerEndPos == std::string_view::npos) {
+        headerEndPos = sv.find("\n\n");
+        headerLen = 2;
+        if (headerEndPos == std::string_view::npos) {
             // 没有找到分界线，假设只有头部没有消息体
-            return parseHeaders(remaining);
+            return parseHeaders(std::string(sv));
         }
-        headerEndPos += 2; // \n\n的长度
-    }
-    else {
-        headerEndPos += 4; // \r\n\r\n的长度
     }
 
     // 解析头部
-    std::string headerData = remaining.substr(0, headerEndPos - 4);
+    std::string headerData(sv.substr(0, headerEndPos));
     if (!parseHeaders(headerData)) {
         return false;
     }
 
     // 解析消息体
-    if (headerEndPos < remaining.length()) {
-        std::string bodyData = remaining.substr(headerEndPos);
-        setBody(bodyData);
+    sv.remove_prefix(headerEndPos + headerLen);
+    if (!sv.empty()) {
+        setBody(std::string(sv));
     }
 
     return true;
@@ -290,33 +320,44 @@ void HttpRequest::updateQueryString() {
         return;
     }
 
-    std::ostringstream oss;
+    fmt::memory_buffer buf;
     bool first = true;
     for (const auto& param : m_queryParams) {
-        if (!first) oss << "&";
-        oss << HttpUtils::urlEncode(param.first) << "=" << HttpUtils::urlEncode(param.second);
+        if (!first) fmt::format_to(std::back_inserter(buf), "&");
+        fmt::format_to(std::back_inserter(buf), "{}={}",
+            HttpUtils::urlEncode(param.first),
+            HttpUtils::urlEncode(param.second));
         first = false;
     }
-    m_query = oss.str();
+    m_query = fmt::to_string(buf);
 }
 
 void HttpRequest::parseQueryString(const std::string& queryString) {
     m_queryParams.clear();
 
-    if (queryString.empty()) {
+    if (queryString.empty()) 
+    {
         return;
     }
 
-    std::istringstream iss(queryString);
-    std::string pair;
+    std::string_view sv(queryString);
+    while (!sv.empty()) 
+    {
+        size_t ampPos = sv.find('&');
+        std::string_view pair = sv.substr(0, ampPos);
 
-    while (std::getline(iss, pair, '&')) {
         size_t equalPos = pair.find('=');
-        if (equalPos != std::string::npos) {
-            std::string name = HttpUtils::urlDecode(pair.substr(0, equalPos));
-            std::string value = HttpUtils::urlDecode(pair.substr(equalPos + 1));
+        if (equalPos != std::string_view::npos)
+        {
+            std::string name = HttpUtils::urlDecode(std::string(pair.substr(0, equalPos)));
+            std::string value = HttpUtils::urlDecode(std::string(pair.substr(equalPos + 1)));
             m_queryParams[name] = value;
         }
+
+        if (ampPos == std::string_view::npos)
+            break;
+
+        sv.remove_prefix(ampPos + 1);
     }
 }
 
@@ -328,17 +369,24 @@ std::unordered_map<std::string, std::string> HttpRequest::parseCookies() const {
         return cookies;
     }
 
-    std::istringstream iss(cookieHeader);
-    std::string pair;
+    std::string_view sv(cookieHeader);
+    while (!sv.empty())
+    {
+        size_t semicolonPos = sv.find(';');
+        std::string_view pair = HttpUtils::trimString(std::string(sv.substr(0, semicolonPos)));
 
-    while (std::getline(iss, pair, ';')) {
-        pair = HttpUtils::trimString(pair);
         size_t equalPos = pair.find('=');
-        if (equalPos != std::string::npos) {
-            std::string name = HttpUtils::trimString(pair.substr(0, equalPos));
-            std::string value = HttpUtils::trimString(pair.substr(equalPos + 1));
+        if (equalPos != std::string_view::npos) 
+        {
+            std::string name = HttpUtils::trimString(std::string(pair.substr(0, equalPos)));
+            std::string value = HttpUtils::trimString(std::string(pair.substr(equalPos + 1)));
             cookies[name] = value;
         }
+
+
+        if (semicolonPos == std::string_view::npos)
+            break;
+        sv.remove_prefix(semicolonPos + 1);
     }
 
     return cookies;

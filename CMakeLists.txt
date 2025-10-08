@@ -4,6 +4,9 @@ project(ZhKeyesIM VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 # 启用测试支持
 enable_testing()
 
@@ -51,8 +54,72 @@ set_target_properties(GTest::gmock_main PROPERTIES
     INTERFACE_LINK_LIBRARIES GTest::gmock
 )
 
+
+#引入fmt 库
+set(fmt_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/fmt")
+
+# 根据构建类型选择正确的库文件路径
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(FMT_LIB_DIR "${fmt_DIR}/lib/Debug")
+else()
+    set(FMT_LIB_DIR "${fmt_DIR}/lib/Release")
+endif()
+
+add_library(fmt::fmt STATIC IMPORTED)
+set_target_properties(fmt::fmt PROPERTIES
+    IMPORTED_LOCATION_DEBUG "${fmt_DIR}/lib/Debug/fmt.lib"
+    IMPORTED_LOCATION_RELEASE "${fmt_DIR}/lib/Release/fmt.lib"
+    INTERFACE_INCLUDE_DIRECTORIES "${fmt_DIR}/include"
+)
+
+#引入gprc 库
+set(GRPC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/grpc")
+set(GRPC_LIB_DIR "${GRPC_DIR}/lib")
+
+# 设置protobuf的路径
+set(protobuf_DIR "${GRPC_LIB_DIR}/cmake/protobuf")
+list(APPEND CMAKE_PREFIX_PATH "${GRPC_LIB_DIR}/cmake")
+
+find_package(Protobuf CONFIG REQUIRED)
+
+# 手动设置protobuf目标的库文件位置（因为预编译包的CMake配置不完整）
+set_target_properties(protobuf::libprotobuf PROPERTIES
+    IMPORTED_LOCATION "${GRPC_LIB_DIR}/libprotobuf.lib"
+    IMPORTED_LOCATION_DEBUG "${GRPC_LIB_DIR}/libprotobuf.lib"
+    IMPORTED_LOCATION_RELEASE "${GRPC_LIB_DIR}/libprotobuf.lib"
+)
+
+set_target_properties(protobuf::libprotoc PROPERTIES
+    IMPORTED_LOCATION "${GRPC_LIB_DIR}/libprotoc.lib"
+    IMPORTED_LOCATION_DEBUG "${GRPC_LIB_DIR}/libprotoc.lib"
+    IMPORTED_LOCATION_RELEASE "${GRPC_LIB_DIR}/libprotoc.lib"
+)
+find_package(gRPC CONFIG REQUIRED)
+
+# 创建gRPC目标别名（如果需要）
+if(NOT TARGET grpc::grpc++)
+    add_library(grpc::grpc++ INTERFACE IMPORTED)
+    set_target_properties(grpc::grpc++ PROPERTIES
+        INTERFACE_LINK_LIBRARIES "grpc++"
+        INTERFACE_INCLUDE_DIRECTORIES "${GRPC_DIR}/include"
+    )
+endif()
+
+# 引入nlohmann/json库
+set(NLOHMANN_JSON_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/json")
+
+# 创建nlohmann::json目标
+add_library(nlohmann::json INTERFACE IMPORTED)
+set_target_properties(nlohmann::json PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${NLOHMANN_JSON_DIR}"
+)
+
+
 # 编译器特定设置 - 修复运行时库不匹配问题
 if(MSVC)
+
+    add_compile_options(/utf-8)
+
     # 统一设置运行时库 - 这是关键修复
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
     
@@ -101,6 +168,7 @@ add_subdirectory(util)
 add_subdirectory(net)
 add_subdirectory(ZhKeyesIMClient)
 add_subdirectory(ZhkeyesIMServer)
+add_subdirectory(GateServer)
 
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
     add_subdirectory(tests)

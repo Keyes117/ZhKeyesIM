@@ -11,17 +11,12 @@
 int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
+    QApplication::setStyle("fusion");
+    QApplication::setFont(QFont("Microsoft YaHei", 9));
 
     Logger::instance().setLogLevel(LogLevel::INFO);
 
     Logger::instance().setLogFile("client.log");
-
-    IMClient client;
-    client.init("127.0.0.1", 9000);
-    if (!client.connect())
-    {
-        return 0;
-    }
 
     LoginDlg loginDlg;
     if (loginDlg.exec() == QDialog::Accepted)

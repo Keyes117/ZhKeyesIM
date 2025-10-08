@@ -210,4 +210,6 @@ bool TCPClient::createConnector()
     catch (const std::exception&) {
         return false;
     }
+
+    return true;
 }

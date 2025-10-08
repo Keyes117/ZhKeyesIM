@@ -18,6 +18,10 @@ set(NET_SOURCES
     TCPConnector.cpp
     TCPServer.cpp
     ThreadPool.cpp
+    SocketUtil.cpp
+    TimerService.cpp
+    Timer.cpp
+    WakeUpEventDispatcher.cpp
 )
 
 set(NET_HEADERS
@@ -44,10 +48,18 @@ set(NET_HEADERS
     TCPConnector.h
     TCPServer.h
     ThreadPool.h    
+    TimerService.h
+    Timer.h
+    WakeUpEventDispatcher.h
 )
 
 
 add_library(net SHARED ${NET_SOURCES} ${NET_HEADERS})
+
+source_group(
+    TREE ${CMAKE_CURRENT_SOURCE_DIR}
+    FILES ${NET_SOURCES} ${NET_HEADERS}
+)
 
 set_target_properties(net  PROPERTIES
     OUTPUT_NAME "net"
@@ -63,20 +75,22 @@ target_include_directories(net PUBLIC
 
 )
 
-target_link_libraries(net PUBLIC Log util )
+target_link_libraries(net PUBLIC Log util fmt::fmt)
 
 target_compile_definitions(net PRIVATE NET_EXPORTS)
 
 if(WIN32)
-    target_compile_definitions(net PRIVATE _WIN32)
+    target_compile_definitions(net PRIVATE 
+        _WIN32
+        _CRT_NO_POSIX_ERROR_CODES
+    )
     
     # 链接Windows Socket库
     target_link_libraries(net PRIVATE ws2_32)
     
     # Windows下设置动态库属性
     set_target_properties(net PROPERTIES
-        # 自动导出所有符号（简化导出过程）
-        WINDOWS_EXPORT_ALL_SYMBOLS ON
+
         
         # 设置导入库的输出名称
         IMPORT_PREFIX "lib"

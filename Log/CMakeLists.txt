@@ -24,7 +24,6 @@ target_compile_definitions(Log PRIVATE LOG_EXPORTS)
 if(WIN32)
     target_compile_definitions(Log PRIVATE _WIN32)
     set_target_properties(Log PROPERTIES
-        WINDOWS_EXPORT_ALL_SYMBOLS ON
         IMPORT_PREFIX "lib"
         PREFIX ""
     )

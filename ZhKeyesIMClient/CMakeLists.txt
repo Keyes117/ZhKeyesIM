@@ -7,9 +7,16 @@ set(CLIENT_UI_SOURCE
     UI/LoginDlg.cpp
     UI/LoginDlg.h
     UI/LoginDlg.ui
+    UI/RegisterDlg.cpp
+    UI/RegisterDlg.h
+    UI/RegisterDlg.ui
 )
 
 set(CLIENT_TASK_SOURCE
+    Task/Task.cpp
+    Task/Task.h
+    Task/TaskHandler.cpp
+    Task/TaskHandler.h
 )
 
 # Qt配置
@@ -32,6 +39,13 @@ add_executable(ZhKeyesIMClient
     ${CLIENT_UI_SOURCE}
     ${CLIENT_TASK_SOURCE}
 )
+
+source_group(
+  TREE ${CMAKE_CURRENT_SOURCE_DIR}
+  FILES ${CLIENT_NETWORK_SOURCE} ${CLIENT_UI_SOURCE} ${CLIENT_TASK_SOURCE} main.cpp
+)
+
+set_target_properties(ZhKeyesIMClient PROPERTIES AUTOGEN_SOURCE_GROUP "Generated")
 
 # 包含目录
 target_include_directories(ZhKeyesIMClient PRIVATE

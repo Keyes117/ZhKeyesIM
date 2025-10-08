@@ -36,14 +36,15 @@ ParseResult HttpParser::feed(Buffer& buffer)
         return static_cast<ParseResult>(m_parseState);
     }  
     
+
+    ParseResult result = ParseResult::PARSE_RESULT_ERROR;
     // 状态机解析
     while (m_parseState != ParseState::PARSE_COMPLETE && 
            m_parseState != ParseState::PARSE_ERROR && 
-           !needMoreData(buffer)) {
-        
-        ParseResult result = ParseResult::PARSE_RESULT_ERROR;
-        
-        switch (m_parseState) {
+           !needMoreData(buffer))
+    {        
+        switch (m_parseState) 
+        {
             case ParseState::PARSE_REQUEST_LINE:
                 result = parseRequestLine(buffer);
                 break;
@@ -53,9 +54,11 @@ ParseResult HttpParser::feed(Buffer& buffer)
                 break;
                 
             case ParseState::PARSE_BODY:
-                if (m_isChunked) {
+                if (m_isChunked) 
+                {
                     result = parseChunkedBody(buffer);
-                } else {
+                } else 
+                {
                     result = parseBody(buffer);
                 }
                 break;
@@ -65,14 +68,17 @@ ParseResult HttpParser::feed(Buffer& buffer)
                 return ParseResult::PARSE_RESULT_ERROR;
         }
         
-        if (result == ParseResult::PARSE_RESULT_ERROR) {
+        if (result == ParseResult::PARSE_RESULT_ERROR)
+        {
             return ParseResult::PARSE_RESULT_ERROR;
-        } else if (result == ParseResult::PARSE_RESULT_NEED_MORE_DATA) {
+        }
+        else if (result == ParseResult::PARSE_RESULT_NEED_MORE_DATA) 
+        {
             break;
         }
     }
     
-    return static_cast<ParseResult>(m_parseState);
+    return result;
 }
 // ============== 状态机解析方法 ==============
 
@@ -84,6 +90,12 @@ ParseResult HttpParser::parseRequestLine(Buffer& buffer) {
         // 服务端接收请求
         std::string line;
         if (!findLine(buffer,line)) {
+            if (line.empty())
+            {
+                m_parseState = ParseState::PARSE_ERROR;
+                return ParseResult::PARSE_RESULT_ERROR;
+            }
+     
             return ParseResult::PARSE_RESULT_NEED_MORE_DATA;
         }
         
@@ -125,7 +137,7 @@ ParseResult HttpParser::parseRequestLine(Buffer& buffer) {
         
         // 转到头部解析状态
         m_parseState = ParseState::PARSE_HEADERS;
-        return ParseResult::PARSE_RESULT_NEED_MORE_DATA;
+        return ParseResult::PARSE_RESULT_PARSING;
     }
 }
 
@@ -175,7 +187,7 @@ ParseResult HttpParser::parseStatusLine(Buffer& buffer) {
     
     // 转到头部解析状态
     m_parseState = ParseState::PARSE_HEADERS;
-    return ParseResult::PARSE_RESULT_NEED_MORE_DATA;
+    return ParseResult::PARSE_RESULT_PARSING;
 }
 
 ParseResult HttpParser::parseHeaders(Buffer& buffer) {
@@ -199,7 +211,7 @@ ParseResult HttpParser::parseHeaders(Buffer& buffer) {
                 m_parseState = ParseState::PARSE_COMPLETE;
             }
             
-            return ParseResult::PARSE_RESULT_NEED_MORE_DATA;
+            return ParseResult::PARSE_RESULT_PARSING;
         }
         
         // 解析头部字段: name: value
@@ -212,6 +224,12 @@ ParseResult HttpParser::parseHeaders(Buffer& buffer) {
         std::string name = HttpUtils::trimString(line.substr(0, colonPos));
         std::string value = HttpUtils::trimString(line.substr(colonPos + 1));
         
+        if (value.size() > m_maxHeaderSize)
+        {
+            setError(HttpError::HTTPERROR_HEADER_TOO_LARGE, "Header Too Long");
+            return ParseResult::PARSE_RESULT_ERROR;
+        }
+
         if (name.empty()) {
             setError(HttpError::HTTPERROR_PARSE_ERROR, "Empty header name");
             return ParseResult::PARSE_RESULT_ERROR;
@@ -300,7 +318,8 @@ ParseResult HttpParser::parseChunkedBody(Buffer& buffer) {
                 m_parseState = ParseState::PARSE_COMPLETE;
                 return ParseResult::PARSE_RESULT_COMPLETE;
             }
-        } else {
+        } 
+        else {
             // 读取块数据
             size_t availableData = buffer.readableBytes();
             if (availableData < m_chunkSize + 2) { // +2 for trailing CRLF
@@ -316,7 +335,12 @@ ParseResult HttpParser::parseChunkedBody(Buffer& buffer) {
             }
             
             m_currentBodySize += m_chunkSize;
-            m_parsedBytes += m_chunkSize + 2;
+            m_parsedBytes += m_chunkSize;
+
+            if (buffer.readableBytes() >= 2) {
+                buffer.retrieve(2);  // 跳过 \r\n
+                m_parsedBytes += 2;
+            }
             
             // 重置块状态
             m_chunkSizeRead = false;
@@ -387,6 +411,8 @@ bool HttpParser::isChunkedEncoding() const {
 bool HttpParser::needMoreData(Buffer& buffer) const {
     return buffer.readableBytes() == 0;
 }
+
+
 
 bool HttpParser::findHeaderEnd(Buffer& buffer) {
     const char* headerEnd = std::search(buffer.peek(), 

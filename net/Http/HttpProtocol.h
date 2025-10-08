@@ -110,7 +110,8 @@ namespace ZhKeyesIM {
 
 
             enum class ParseResult : int {
-                PARSE_RESULT_NEED_MORE_DATA = 0,      
+                PARSE_RESULT_NEED_MORE_DATA = 0,     
+                PARSE_RESULT_PARSING,
                 PARSE_RESULT_COMPLETE,       
                 PARSE_RESULT_ERROR           
             };

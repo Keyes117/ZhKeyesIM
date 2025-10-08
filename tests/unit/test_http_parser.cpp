@@ -75,7 +75,7 @@ TEST_F(HttpParserTest, ParseHttpResponse) {
     std::string rawResponse =
         "HTTP/1.1 200 OK\r\n"
         "Content-Type: text/html\r\n"
-        "Content-Length: 13\r\n"
+        "Content-Length: 12\r\n"
         "\r\n"
         "Hello World!";
 
@@ -94,7 +94,7 @@ TEST_F(HttpParserTest, ParseHttpResponse) {
     EXPECT_EQ(response->getReasonPhrase(), "OK");
     EXPECT_EQ(response->getVersion(), HttpVersion::HTTP_1_1);
     EXPECT_EQ(response->getHeader("Content-Type"), "text/html");
-    EXPECT_EQ(response->getHeader("Content-Length"), "13");
+    EXPECT_EQ(response->getHeader("Content-Length"), "12");
     EXPECT_EQ(response->getBody(), "Hello World!");
 }
 

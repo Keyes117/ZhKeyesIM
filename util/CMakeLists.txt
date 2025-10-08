@@ -28,7 +28,6 @@ if(WIN32)
     target_compile_definitions(util PRIVATE _WIN32)
 
     set_target_properties(util PROPERTIES
-        WINDOWS_EXPORT_ALL_SYMBOLS ON
 
         IMPORT_PREFIX "lib"
 

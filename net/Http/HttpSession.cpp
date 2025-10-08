@@ -51,7 +51,7 @@ void HttpSession::onRead(Buffer& buffer)
                 handleRequest(request);
             }
         }
-        else if (m_pHttpServer)
+        else if (m_pHttpClient)
         {  // 客户端模式
             auto response = m_HttpParser.getResponse();
             if (response)
@@ -92,16 +92,20 @@ void HttpSession::onClose()
 
 bool HttpSession::sendRequest(const HttpRequest& request)
 {
-    return false;
+    m_spConnection->send(request.toString());
 }
 
 bool HttpSession::sendResponse(const HttpResponse& response)
 {
-    return false;
+    m_spConnection->send(response.toString());
 }
 
 void HttpSession::handleRequest(std::shared_ptr<HttpRequest>& spRequest)
 {
+    if (m_pHttpServer)
+    {
+        m_pHttpServer->handleRequest(*spRequest);
+    }
 }
 
 void HttpSession::handleResponse(std::shared_ptr<HttpResponse>& spResponse)

@@ -6,45 +6,49 @@
 #include "HttpResponse.h"
 #include <ctime>
 #include <fstream>
-#include <sstream>
+#include <iterator>
+
+#include "fmt/format.h"
+
 
 using namespace ZhKeyesIM::Net::Http;
 
  // ============== Cookie结构体实现 ==============
 
-std::string HttpResponse::Cookie::toString() const {
-    std::ostringstream oss;
-    oss << name << "=" << value;
+std::string HttpResponse::Cookie::toString() const 
+{
+    fmt::memory_buffer buf;
+    fmt::format_to(std::back_inserter(buf), "{}={}", name, value);
 
     if (!path.empty()) {
-        oss << "; Path=" << path;
+        fmt::format_to(std::back_inserter(buf), "; Path={}", path);
     }
 
     if (!domain.empty()) {
-        oss << "; Domain=" << domain;
+        fmt::format_to(std::back_inserter(buf), "; Domain={}", domain);
     }
 
     if (!expires.empty()) {
-        oss << "; Expires=" << expires;
+        fmt::format_to(std::back_inserter(buf), "; Expires={}", expires);
     }
 
     if (maxAge >= 0) {
-        oss << "; Max-Age=" << maxAge;
+        fmt::format_to(std::back_inserter(buf), "; Max-Age={}", maxAge);
     }
 
     if (secure) {
-        oss << "; Secure";
+        fmt::format_to(std::back_inserter(buf), "; Secure");
     }
 
     if (httpOnly) {
-        oss << "; HttpOnly";
+        fmt::format_to(std::back_inserter(buf), "; HttpOnly");
     }
 
     if (!sameSite.empty()) {
-        oss << "; SameSite=" << sameSite;
+        fmt::format_to(std::back_inserter(buf), "; SameSite={}", sameSite);
     }
 
-    return oss.str();
+    return fmt::to_string(buf);
 }
 
 // ============== 构造函数 ==============
@@ -260,88 +264,90 @@ void HttpResponse::setErrorResponse(HttpStatusCode statusCode, const std::string
 
 // ============== 序列化和解析 ==============
 
-std::string HttpResponse::toString() const {
-    std::ostringstream oss;
+std::string HttpResponse::toString() const
+{
+    fmt::memory_buffer buf;
 
     // 状态行
-    oss << getVersionString() << HttpConstants::SPACE
-        << static_cast<int>(m_statusCode) << HttpConstants::SPACE
-        << getReasonPhrase() << HttpConstants::CRLF;
+    fmt::format_to(std::back_inserter(buf), "{} {} {}\r\n",
+        getVersionString(),
+        static_cast<int>(m_statusCode),
+        getReasonPhrase());
 
     // 头部
-    oss << headersToString();
+    fmt::format_to(std::back_inserter(buf), "{}", headersToString());
 
     // 空行分隔头部和消息体
-    oss << HttpConstants::CRLF;
+    fmt::format_to(std::back_inserter(buf), "\r\n");
 
     // 消息体
-    oss << getBody();
+    fmt::format_to(std::back_inserter(buf), "{}", getBody());
 
-    return oss.str();
+    return fmt::to_string(buf);
 }
 
-bool HttpResponse::fromString(const std::string& data) {
+bool HttpResponse::fromString(const std::string& data)
+{
     clear();
 
-    std::istringstream iss(data);
-    std::string line;
+    std::string_view sv(data);
 
-    // 解析状态行
-    if (!std::getline(iss, line)) {
-        return false;
+    // 查找第一行结束符
+    size_t lineEnd = sv.find("\r\n");
+    if (lineEnd == std::string_view::npos) {
+        lineEnd = sv.find('\n');
+        if (lineEnd == std::string_view::npos) {
+            return false;
+        }
     }
 
-    // 移除行尾的\r
-    if (!line.empty() && line.back() == '\r') {
-        line.pop_back();
-    }
+    std::string_view statusLine = sv.substr(0, lineEnd);
+    sv.remove_prefix(lineEnd + (sv[lineEnd] == '\r' ? 2 : 1));
 
-    std::istringstream lineStream(line);
-    std::string versionStr;
-    int statusCode;
-    std::string reasonPhrase;
+    // 解析状态行: HTTP/VERSION SP STATUS_CODE SP REASON_PHRASE
+    size_t sp1 = statusLine.find(' ');
+    if (sp1 == std::string_view::npos) return false;
 
-    if (!(lineStream >> versionStr >> statusCode)) {
-        return false;
-    }
+    size_t sp2 = statusLine.find(' ', sp1 + 1);
+    if (sp2 == std::string_view::npos) return false;
 
-    // 读取原因短语（可能包含空格）
-    std::getline(lineStream, reasonPhrase);
-    reasonPhrase = HttpUtils::trimString(reasonPhrase);
+    std::string versionStr(statusLine.substr(0, sp1));
+    std::string statusCodeStr(statusLine.substr(sp1 + 1, sp2 - sp1 - 1));
+    std::string reasonPhrase(statusLine.substr(sp2 + 1));
 
     setVersion(HttpUtils::stringToVersion(versionStr));
-    m_statusCode = static_cast<HttpStatusCode>(statusCode);
-    m_reasonPhrase = reasonPhrase;
 
-    // 读取剩余数据用于解析头部和消息体
-    std::ostringstream remainingData;
-    remainingData << iss.rdbuf();
-    std::string remaining = remainingData.str();
+    try {
+        m_statusCode = static_cast<HttpStatusCode>(std::stoi(statusCodeStr));
+    }
+    catch (...) {
+        return false;
+    }
+
+    m_reasonPhrase = HttpUtils::trimString(reasonPhrase);
 
     // 查找头部和消息体的分界线（空行）
-    size_t headerEndPos = remaining.find("\r\n\r\n");
-    if (headerEndPos == std::string::npos) {
-        headerEndPos = remaining.find("\n\n");
-        if (headerEndPos == std::string::npos) {
+    size_t headerEndPos = sv.find("\r\n\r\n");
+    size_t headerLen = 4;
+    if (headerEndPos == std::string_view::npos) {
+        headerEndPos = sv.find("\n\n");
+        headerLen = 2;
+        if (headerEndPos == std::string_view::npos) {
             // 没有找到分界线，假设只有头部没有消息体
-            return parseHeaders(remaining);
+            return parseHeaders(std::string(sv));
         }
-        headerEndPos += 2; // \n\n的长度
-    }
-    else {
-        headerEndPos += 4; // \r\n\r\n的长度
     }
 
     // 解析头部
-    std::string headerData = remaining.substr(0, headerEndPos - 4);
+    std::string headerData(sv.substr(0, headerEndPos));
     if (!parseHeaders(headerData)) {
         return false;
     }
 
     // 解析消息体
-    if (headerEndPos < remaining.length()) {
-        std::string bodyData = remaining.substr(headerEndPos);
-        setBody(bodyData);
+    sv.remove_prefix(headerEndPos + headerLen);
+    if (!sv.empty()) {
+        setBody(std::string(sv));
     }
 
     return true;
@@ -364,35 +370,44 @@ std::vector<HttpResponse::Cookie> HttpResponse::parseCookiesFromHeaders() const 
     }
 
     // 解析Set-Cookie头部（可能有多个，用\r\n分隔）
-    std::istringstream iss(setCookieHeader);
-    std::string cookieLine;
+    std::string_view sv(setCookieHeader);
 
-    while (std::getline(iss, cookieLine)) {
-        if (cookieLine.empty()) continue;
+    while (!sv.empty()) {
+        size_t lineEnd = sv.find("\r\n");
+        if (lineEnd == std::string_view::npos) {
+            lineEnd = sv.find('\n');
+        }
+
+        std::string_view cookieLine = sv.substr(0, lineEnd);
+        if (cookieLine.empty()) {
+            if (lineEnd == std::string_view::npos) break;
+            sv.remove_prefix(lineEnd + 1);
+            continue;
+        }
 
         Cookie cookie;
-        std::istringstream cookieStream(cookieLine);
-        std::string attribute;
-
         bool isFirst = true;
-        while (std::getline(cookieStream, attribute, ';')) {
-            attribute = HttpUtils::trimString(attribute);
+
+        while (!cookieLine.empty()) {
+            size_t semicolonPos = cookieLine.find(';');
+            std::string_view attribute = cookieLine.substr(0, semicolonPos);
+            attribute = std::string_view(HttpUtils::trimString(std::string(attribute)));
 
             if (isFirst) {
                 // 第一个部分是name=value
                 size_t equalPos = attribute.find('=');
-                if (equalPos != std::string::npos) {
-                    cookie.name = HttpUtils::trimString(attribute.substr(0, equalPos));
-                    cookie.value = HttpUtils::trimString(attribute.substr(equalPos + 1));
+                if (equalPos != std::string_view::npos) {
+                    cookie.name = HttpUtils::trimString(std::string(attribute.substr(0, equalPos)));
+                    cookie.value = HttpUtils::trimString(std::string(attribute.substr(equalPos + 1)));
                 }
                 isFirst = false;
             }
             else {
                 // 解析其他属性
                 size_t equalPos = attribute.find('=');
-                if (equalPos != std::string::npos) {
-                    std::string attrName = HttpUtils::toLower(HttpUtils::trimString(attribute.substr(0, equalPos)));
-                    std::string attrValue = HttpUtils::trimString(attribute.substr(equalPos + 1));
+                if (equalPos != std::string_view::npos) {
+                    std::string attrName = HttpUtils::toLower(HttpUtils::trimString(std::string(attribute.substr(0, equalPos))));
+                    std::string attrValue = HttpUtils::trimString(std::string(attribute.substr(equalPos + 1)));
 
                     if (attrName == "path") {
                         cookie.path = attrValue;
@@ -417,7 +432,7 @@ std::vector<HttpResponse::Cookie> HttpResponse::parseCookiesFromHeaders() const 
                 }
                 else {
                     // 布尔属性
-                    std::string attrName = HttpUtils::toLower(attribute);
+                    std::string attrName = HttpUtils::toLower(std::string(attribute));
                     if (attrName == "secure") {
                         cookie.secure = true;
                     }
@@ -426,11 +441,17 @@ std::vector<HttpResponse::Cookie> HttpResponse::parseCookiesFromHeaders() const 
                     }
                 }
             }
+
+            if (semicolonPos == std::string_view::npos) break;
+            cookieLine.remove_prefix(semicolonPos + 1);
         }
 
         if (!cookie.name.empty()) {
             cookies.push_back(cookie);
         }
+
+        if (lineEnd == std::string_view::npos) break;
+        sv.remove_prefix(lineEnd + (sv[lineEnd] == '\r' ? 2 : 1));
     }
 
     return cookies;

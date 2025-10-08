@@ -52,6 +52,11 @@ public:
     }
 
 private:
+
+    bool sendInterval(const char* buf, size_t bufLen);
+
+    bool isCallableInOwnerThread();
+
     void registerReadEvent();
     void registerWriteEvent();
     void unregisterReadEvent();

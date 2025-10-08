@@ -14,12 +14,14 @@
 #include <memory>
 #include <mutex>
 
-#include "Logger.h"
+#include <QObject>
 
+#include "Logger.h"
 #include "Task.h"
 
-class TaskHandler final
+class TaskHandler final : public QObject
 {
+    Q_OBJECT
 public:
     static TaskHandler& getInstance();              
 

@@ -7,7 +7,8 @@
 
 #include <algorithm>
 #include <iterator>
-
+#include <regex>
+#include <string_view>
 #include "fmt/format.h"
 
 using namespace ZhKeyesIM::Net::Http;
@@ -300,17 +301,56 @@ bool HttpRequest::isMultipartRequest() const {
 // ============== 私有方法实现 ==============
 
 void HttpRequest::parseUrl(const std::string& url) {
-    // 查找问号分隔路径和查询字符串
-    size_t queryPos = url.find('?');
-    if (queryPos != std::string::npos) {
-        m_path = url.substr(0, queryPos);
-        m_query = url.substr(queryPos + 1);
+
+    // 检查是否是完整 URL（包含协议）
+    std::regex urlRegex(R"(^(https?)://([^:/\?#]+)(?::(\d+))?([^?\#]*)(?:\?([^#]*))?(?:#.*)?$)");
+    std::smatch match;
+
+    if (std::regex_match(url, match, urlRegex)) {
+        // 完整 URL：提取各部分
+        std::string scheme = match[1].str();
+        std::string host = match[2].str();
+        std::string portStr = match[3].matched ? match[3].str() : "";
+
+        // 解析路径
+        m_path = match[4].matched ? match[4].str() : "/";
+        if (m_path.empty()) {
+            m_path = "/";
+        }
+
+        // 解析查询字符串
+        m_query = match[5].matched ? match[5].str() : "";
         parseQueryString(m_query);
+
+        // 设置 Host 头部（如果还没有设置）
+        if (getHost().empty()) {
+            std::string hostHeader = host;
+            if (!portStr.empty()) {
+                hostHeader += ":" + portStr;
+            }
+            else {
+                // 默认端口
+                uint16_t port = (scheme == "https") ? 443 : 80;
+                if (port != 80 && port != 443) {
+                    hostHeader += ":" + std::to_string(port);
+                }
+            }
+            setHost(hostHeader);
+        }
     }
     else {
-        m_path = url;
-        m_query.clear();
-        m_queryParams.clear();
+        // 简单 URL：只包含路径和查询字符串
+        size_t queryPos = url.find('?');
+        if (queryPos != std::string::npos) {
+            m_path = url.substr(0, queryPos);
+            m_query = url.substr(queryPos + 1);
+            parseQueryString(m_query);
+        }
+        else {
+            m_path = url;
+            m_query.clear();
+            m_queryParams.clear();
+        }
     }
 }
 
@@ -372,20 +412,58 @@ std::unordered_map<std::string, std::string> HttpRequest::parseCookies() const {
     std::string_view sv(cookieHeader);
     while (!sv.empty())
     {
-        size_t semicolonPos = sv.find(';');
-        std::string_view pair = HttpUtils::trimString(std::string(sv.substr(0, semicolonPos)));
-
-        size_t equalPos = pair.find('=');
-        if (equalPos != std::string_view::npos) 
-        {
-            std::string name = HttpUtils::trimString(std::string(pair.substr(0, equalPos)));
-            std::string value = HttpUtils::trimString(std::string(pair.substr(equalPos + 1)));
-            cookies[name] = value;
+        // 先 trim 掉开头的空格
+        while (!sv.empty() && (sv[0] == ' ' || sv[0] == '\t')) {
+            sv.remove_prefix(1);
         }
 
+        if (sv.empty()) break;
 
-        if (semicolonPos == std::string_view::npos)
+        // 查找分号或等号来确定当前的 cookie pair 范围
+        size_t semicolonPos = sv.find(';');
+        size_t equalPos = sv.find('=');
+
+        // 如果没有找到等号，说明格式错误，跳过
+        if (equalPos == std::string_view::npos) {
             break;
+        }
+
+        // 确定当前 cookie pair 的结束位置
+        // 如果找到了分号，且分号在等号之前，说明格式错误
+        if (semicolonPos != std::string_view::npos && semicolonPos < equalPos) {
+            // 格式错误，跳过这个分号
+            sv.remove_prefix(semicolonPos + 1);
+            continue;
+        }
+
+        // 提取当前 cookie pair（从开头到分号或结尾）
+        std::string_view pairView;
+        if (semicolonPos != std::string_view::npos) {
+            pairView = sv.substr(0, semicolonPos);
+        }
+        else {
+            // 没有分号，说明是最后一个或唯一的 cookie
+            pairView = sv;
+        }
+
+        // 修复悬空引用：先转换为 string，再 trim
+        std::string pair = HttpUtils::trimString(std::string(pairView));
+
+        // 解析 name=value
+        equalPos = pair.find('=');
+        if (equalPos != std::string::npos)
+        {
+            std::string name = HttpUtils::trimString(pair.substr(0, equalPos));
+            std::string value = HttpUtils::trimString(pair.substr(equalPos + 1));
+            if (!name.empty()) {
+                cookies[name] = value;
+            }
+        }
+
+        // 移动到下一个 cookie
+        if (semicolonPos == std::string_view::npos) {
+            break;  // 没有更多 cookie 了
+        }
         sv.remove_prefix(semicolonPos + 1);
     }
 

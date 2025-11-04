@@ -107,7 +107,7 @@ TEST_F(HttpClientTest, FormDataTest) {
     request.setFormData(formData);
     request.addFormData("email", "test@example.com");
 
-    EXPECT_EQ(request.getFormDataString(), "username=testuser&password=testpass&email=test@example.com");
+    EXPECT_EQ(request.getFormDataString(), "username=testuser&password=testpass&email=test%40example.com");
 }
 
 TEST_F(HttpClientTest, CookieOperationsTest) {

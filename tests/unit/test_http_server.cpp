@@ -49,8 +49,6 @@ TEST_F(HttpServerTest, InitTest) {
     EXPECT_TRUE(m_spServer->init(0, m_strIp));
     EXPECT_EQ(m_spServer->getActiveSessionCount(), 0);
 
-    std::this_thread::sleep_for(std::chrono::seconds(10));
-
 }
 
 TEST_F(HttpServerTest, RequestCallbackTest) {

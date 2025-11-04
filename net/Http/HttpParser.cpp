@@ -209,6 +209,7 @@ ParseResult HttpParser::parseHeaders(Buffer& buffer) {
                 m_parseState = ParseState::PARSE_BODY;
             } else {
                 m_parseState = ParseState::PARSE_COMPLETE;
+                return ParseResult::PARSE_RESULT_COMPLETE;
             }
             
             return ParseResult::PARSE_RESULT_PARSING;

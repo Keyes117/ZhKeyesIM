@@ -67,6 +67,11 @@ void HttpSession::onRead(Buffer& buffer)
         // 重置解析器，准备处理下一个消息
         if (shouldKeepAlive()) {
             m_HttpParser.reset();
+      
+        }
+        else
+        {
+            m_spConnection->onClose();
         }
     }
     else if (result == ParseResult::PARSE_RESULT_ERROR)
@@ -92,19 +97,31 @@ void HttpSession::onClose()
 
 bool HttpSession::sendRequest(const HttpRequest& request)
 {
-    m_spConnection->send(request.toString());
+    return m_spConnection->send(request.toString());
 }
 
 bool HttpSession::sendResponse(const HttpResponse& response)
 {
-    m_spConnection->send(response.toString());
+    return m_spConnection->send(response.toString());
 }
 
 void HttpSession::handleRequest(std::shared_ptr<HttpRequest>& spRequest)
 {
     if (m_pHttpServer)
     {
-        m_pHttpServer->handleRequest(*spRequest);
+        HttpResponse response;
+        m_pHttpServer->handleRequest(*spRequest, response);
+
+        sendResponse(response);
+
+        if (!shouldKeepAlive())
+        {
+            
+        }
+    }
+    else
+    {
+        onClose();
     }
 }
 

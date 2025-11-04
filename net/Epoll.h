@@ -12,8 +12,50 @@
 #include <sys/epoll.h>
 #endif
 
+#include <memory>
 #include <vector>
 #include <unordered_map>
+
+#ifdef _WIN32
+
+struct OverlappedContext
+{
+    OVERLAPPED overlapped;
+    WSABUF wsaBuf;
+    char* buffer;
+    bool isReadContext;
+
+
+    OverlappedContext(bool isRead):
+        buffer(nullptr),isReadContext(isRead)
+    {
+        ZeroMemory(&overlapped, sizeof(OVERLAPPED));
+        wsaBuf.buf = nullptr;
+        wsaBuf.len = 0;
+    }
+
+    ~OverlappedContext()
+    {
+        cleanup();
+    }
+
+    void cleanup()
+    {
+        if (buffer)
+        {
+            delete[] buffer;
+            buffer = nullptr;
+            wsaBuf.buf = nullptr;
+            wsaBuf.len = 0;
+        }
+    }
+
+    // 禁止拷贝
+    OverlappedContext(const OverlappedContext&) = delete;
+    OverlappedContext& operator=(const OverlappedContext&) = delete;
+};
+
+#endif
 
 class Epoll : public IOMultiplex
 {
@@ -34,9 +76,16 @@ public:
 private:
 #ifdef _WIN32
 
+    void cleanupSocketResources(SOCKET fd);
+
     HANDLE m_iocp;
     std::unordered_map<SOCKET, EventDispatcher*> m_EventMap;
     std::vector<OVERLAPPED_ENTRY> m_completionEntries;
+
+    // 管理每个 socket 的读上下文
+    std::unordered_map<SOCKET, std::unique_ptr<OverlappedContext>> m_readContexts;
+    // 管理每个 socket 的写上下文
+    std::unordered_map<SOCKET, std::unique_ptr<OverlappedContext>> m_writeContexts;
 #else
     int m_epollfd;
     std::unordered_map<SOCKET, int32_t>  m_fdEventFlag;

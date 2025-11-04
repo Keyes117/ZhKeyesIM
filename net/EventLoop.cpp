@@ -18,10 +18,10 @@ void EventLoop::init(IOMultiplexType type)
     else if (type == IOMultiplexType::Epoll)
         m_spIOMultiplex = std::make_unique<Epoll>();
 
+
+
     if (!createWakeUpSocket())
         return;
-
-    m_spWakeUpEventDispatcher = std::make_unique<WakeUpEventDispatcher>(m_wakeUpSocket);
 
     registerReadEvent(m_wakeUpSocket, m_spWakeUpEventDispatcher.get());
 
@@ -204,6 +204,7 @@ bool EventLoop::createWakeUpSocket()
         return false;
     }
 
+    m_spWakeUpEventDispatcher = std::make_unique<WakeUpEventDispatcher>(m_wakeUpSocket);
     m_spWakeUpEventDispatcher->setWakeUpSocketAddr(m_wakeUpAddr);
 #else
 

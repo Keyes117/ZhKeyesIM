@@ -159,18 +159,15 @@ bool TCPConnection::sendInterval(const char* buf, size_t bufLen)
         int n = ::send(m_socket, m_sendBuf.peek(), static_cast<int>(m_sendBuf.readableBytes()), 0);
         if (n > 0)
         {
-            //send ����ֵ >0 �ɹ�������n�ֽ�
             m_sendBuf.retrieve(n);
 
             if (m_sendBuf.readableBytes() > 0)
             {
-                //��������û�з���
-                //��Socket�ķ��ͻ���������
-                enableRead(true);
-                registerReadEvent();
+
+                enableWrite(true);
+                registerWriteEvent();
                 return true;
             }
-            //���ݳɹ��������
         }
         else if (n < 0)
         {
@@ -187,7 +184,7 @@ bool TCPConnection::sendInterval(const char* buf, size_t bufLen)
         }
         else if (n == 0)
         {
-            //�Զ˹ر�������
+
             onClose();
             return false;
         }

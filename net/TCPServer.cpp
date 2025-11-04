@@ -27,7 +27,7 @@ bool TCPServer::init(int32_t threadNum, const std::string& ip, uint16_t port)
     m_ip = ip;
     m_port = port;
 
-    m_baseEventLoop.init(IOMultiplexType::Select);
+    m_baseEventLoop.init(IOMultiplexType::Epoll);
     m_acceptor.setAcceptCallback(std::bind(&TCPServer::onAccept, this, std::placeholders::_1));
 
     if (!m_acceptor.startListen(m_ip, m_port))
@@ -86,6 +86,7 @@ void TCPServer::onAccept(SOCKET clientSocket)
 
 void TCPServer::onConnected(std::shared_ptr<TCPConnection>& spConn)
 {
+
 }
 
 void TCPServer::onDisConnected(SOCKET clientSocket)

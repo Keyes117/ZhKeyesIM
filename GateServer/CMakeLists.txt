@@ -20,6 +20,7 @@ target_include_directories(GateServer PRIVATE
     ${CMAKE_SOURCE_DIR}/net   # 网络库头文件路径
     ${CMAKE_SOURCE_DIR}/util  # 工具库头文件路径
     ${CMAKE_SOURCE_DIR}/Log
+    ${CMAKE_SOURCE_DIR}/third_party/json
 )
 
 # ==================== 依赖库链接 ====================

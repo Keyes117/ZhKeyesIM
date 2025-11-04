@@ -1,3 +1,4 @@
+#include "GateServer.h"
 #include "TaskHandler.h"
 
 #include <functional>
@@ -17,6 +18,7 @@ bool TaskHandler::init()
 
     return true;
 }
+
 
 void TaskHandler::close()
 {

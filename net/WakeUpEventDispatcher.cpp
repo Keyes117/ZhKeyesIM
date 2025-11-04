@@ -102,7 +102,7 @@ void WakeUpEventDispatcher::WakeUp()
     if (n == SOCKET_ERROR)
     {
         int err = GetSocketError();
-        if (err != WSAEWOULDBLOCK || err != WSAEINTR)
+        if (err != WSAEWOULDBLOCK && err != WSAEINTR)
         {
             LOG_ERROR("WakeUpEventDispatcher::WakeUp send failed, error = %d", err);
         }

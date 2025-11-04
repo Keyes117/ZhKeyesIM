@@ -29,6 +29,7 @@ public:
     ~HttpServer();
 
     bool init(uint32_t threadNum, const std::string& ip = "");
+    void start();
     void shutdown();
 
     //Session管理

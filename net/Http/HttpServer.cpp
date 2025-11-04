@@ -22,6 +22,11 @@ bool HttpServer::init(uint32_t threadNum, const std::string& ip/*=""*/)
     return true;
 }
 
+void HttpServer::start()
+{
+    m_spTcpServer->start();
+}
+
 void HttpServer::shutdown()
 {
     m_sessions.clear();

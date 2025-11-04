@@ -1,7 +1,10 @@
 #include "Epoll.h"
-#include "Util.h"
+
 
 #include <string.h>
+
+#include "Logger.h"
+#include "Util.h"
 
 Epoll::Epoll()
 #ifdef _WIN32
@@ -31,6 +34,17 @@ Epoll::Epoll()
 Epoll::~Epoll()
 {
 #ifdef _WIN32
+    // 清理所有资源
+    for (auto& pair : m_readContexts) {
+        pair.second->cleanup();
+    }
+    m_readContexts.clear();
+
+    for (auto& pair : m_writeContexts) {
+        pair.second->cleanup();
+    }
+    m_writeContexts.clear();
+
     if (m_iocp)
     {
         CloseHandle(m_iocp);
@@ -47,7 +61,7 @@ Epoll::~Epoll()
 void Epoll::poll(uint32_t timeOutUs, std::vector<EventDispatcher*>& triggerEventDispatchers)
 {
 #ifdef _WIN32
-    //Window iocpʵ��
+    //Window iocp实现
     ULONG numEntries = 0;
     DWORD timeoutMs = timeOutUs / 1000;
 
@@ -74,6 +88,12 @@ void Epoll::poll(uint32_t timeOutUs, std::vector<EventDispatcher*>& triggerEvent
     bool enableWrite = false;
 
     int n = ::epoll_wait(m_epollfd, events, 1024, timeoutMs);
+
+    if (n < 0)
+    {
+        LOG_ERROR("epoll_wait failed: errno = %d", errno);
+    }
+
     for (int i = 0; i < n; i++)
     {
         if (events[i].events & EPOLLIN)
@@ -93,6 +113,9 @@ void Epoll::poll(uint32_t timeOutUs, std::vector<EventDispatcher*>& triggerEvent
 
         triggerEventDispatchers.push_back(dispatcher);
     }
+
+
+
 #endif // _WIN32
 
 }
@@ -103,26 +126,95 @@ void  Epoll::registerReadEvent(SOCKET fd, EventDispatcher* dispatcher)
 
     m_EventMap[fd] = dispatcher;
 
-    OVERLAPPED* overlapped = new OVERLAPPED();
-    ZeroMemory(overlapped, sizeof(OVERLAPPED));
+    auto it = m_readContexts.find(fd);
+    if (it != m_readContexts.end()) {
+        // 如果之前的操作还在进行，先取消
+        if (HasOverlappedIoCompleted(&it->second->overlapped) == FALSE) {
+            CancelIoEx((HANDLE)fd, &it->second->overlapped);
+        }
+        it->second->cleanup();
+        m_readContexts.erase(it);
+    }
 
-    CreateIoCompletionPort((HANDLE)fd, m_iocp, (ULONG_PTR)fd, 0);
 
-    WSABUF wsaBuf;
-    DWORD bytesReceived;
+
+    m_EventMap[fd] = dispatcher;
+
+    HANDLE hIocp = CreateIoCompletionPort((HANDLE)fd, m_iocp, (ULONG_PTR)fd, 0);
+    if (hIocp == NULL) {
+        int error = GetLastError();
+        // 如果 socket 已经关联到同一个 IOCP，不会返回 NULL
+        // 所以这里返回 NULL 说明 socket 可能无效或已关联到其他 IOCP
+        LOG_ERROR("Failed to associate socket with IOCP, error: %d, fd: %d", error, fd);
+        return;
+    }
+
+    // 检查返回的 IOCP 是否是我们期望的
+    if (hIocp != m_iocp) {
+        LOG_ERROR("Socket already associated with different IOCP, fd: %d", fd);
+        return;
+    }
+
+    int socketType = SOCK_STREAM;
+    int optLen = sizeof(socketType);
+    if (::getsockopt(fd, SOL_SOCKET, SO_TYPE, (char*)&socketType, &optLen) != 0)
+    {
+        LOG_ERROR("Failed to get socket type, error: %d", GetSocketError());
+        socketType = SOCK_STREAM;
+    }
+
+    // 创建新的读上下文
+    auto context = std::make_unique<OverlappedContext>(true);
+
+    // 分配缓冲区
+    context->buffer = new char[8192];
+    context->wsaBuf.buf = context->buffer;
+    context->wsaBuf.len = 8192;
+
+    DWORD bytesReceived = 0;
     DWORD flags = 0;
-    wsaBuf.buf = new char[8192];
-    wsaBuf.len = 8192;
 
-    WSARecv(fd, &wsaBuf, 1, &bytesReceived, &flags, overlapped, NULL);
+    // 启动异步读操作
+    int result = SOCKET_ERROR;
+    if (socketType == SOCK_STREAM)
+    {
+        result = WSARecv(fd, &context->wsaBuf, 1, &bytesReceived, &flags,
+            &context->overlapped, NULL);
+    }
+    else
+    {
+        sockaddr_in fromAddr;
+        int fromLen = sizeof(fromAddr);
+        result = WSARecvFrom(fd, &context->wsaBuf, 1, &bytesReceived, &flags,
+            (sockaddr*)&fromAddr, &fromLen, &context->overlapped, NULL);
+    }
+
+
+    // 如果操作不是立即完成且没有错误，保存上下文
+    if (result == SOCKET_ERROR) {
+        int error = WSAGetLastError();
+        if (error != WSA_IO_PENDING) {
+            // 真正的错误，清理资源
+            context->cleanup();
+            LOG_ERROR("WSARecv failed, error: %d", error);
+            return;
+        }
+    }
+
+    // 保存上下文（IO操作已提交）
+    m_readContexts[fd] = std::move(context);
 #else
     int32_t eventFlag = 0;
+
+    int operation;
 
     auto iter = m_fdEventFlag.find(fd);
     if (iter == m_fdEventFlag.end())
     {
         eventFlag |= EPOLLIN;
         m_fdEventFlag[fd] = eventFlag;
+        //fd 未注册， 则使用 EPOLL_CTL_ADD
+        operation = EPOLL_CTL_ADD;
     }
     else
     {
@@ -132,6 +224,8 @@ void  Epoll::registerReadEvent(SOCKET fd, EventDispatcher* dispatcher)
 
         eventFlag |= EPOLLIN;
         m_fdEventFlag[fd] = eventFlag;
+        //已经存在 则使用EPOLL_CTL_MOD
+        operation = EPOLL_CTL_MOD;
     }
 
 
@@ -140,9 +234,10 @@ void  Epoll::registerReadEvent(SOCKET fd, EventDispatcher* dispatcher)
     iEvent.events = eventFlag;
 
     iEvent.data.ptr = dispatcher;
-    if (::epoll_ctl(m_epollfd, EPOLL_CTL_ADD, fd, &iEvent) < 0)
+    if (::epoll_ctl(m_epollfd, operation, fd, &iEvent) < 0)
     {
-        //TODO:: ��ӡ������־
+        //TODO:: 打印错误日志
+        
         Util::crash();
     }
 #endif
@@ -153,20 +248,38 @@ void  Epoll::registerWriteEvent(SOCKET fd, EventDispatcher* dispatcher)
 
     m_EventMap[fd] = dispatcher;
 
-    // �����ص�IO�ṹ
-    OVERLAPPED* overlapped = new OVERLAPPED();
-    ZeroMemory(overlapped, sizeof(OVERLAPPED));
+    // 如果已经存在写上下文，先清理
+    auto it = m_writeContexts.find(fd);
+    if (it != m_writeContexts.end()) {
+        // 如果之前的操作还在进行，先取消
+        if (HasOverlappedIoCompleted(&it->second->overlapped) == FALSE) {
+            CancelIoEx((HANDLE)fd, &it->second->overlapped);
+        }
+        it->second->cleanup();
+        m_writeContexts.erase(it);
+    }
 
-    // ����socket��IOCP
+    m_EventMap[fd] = dispatcher;
+
+    // 创建新的写上下文（写操作不需要预先分配缓冲区，在实际发送时分配）
+    auto context = std::make_unique<OverlappedContext>(false);
+
     CreateIoCompletionPort((HANDLE)fd, m_iocp, (ULONG_PTR)fd, 0);
+
+    // 写操作的上下文已经准备好，缓冲区在实际发送时分配
+    m_writeContexts[fd] = std::move(context);
+
 #else
     int32_t eventFlag = 0;
+    int operation;
+
 
     auto iter = m_fdEventFlag.find(fd);
     if (iter == m_fdEventFlag.end())
     {
         eventFlag |= EPOLLOUT;
         m_fdEventFlag[fd] = eventFlag;
+        operation = EPOLL_CTL_ADD;
     }
     else
     {
@@ -176,6 +289,7 @@ void  Epoll::registerWriteEvent(SOCKET fd, EventDispatcher* dispatcher)
 
         eventFlag |= EPOLLOUT;
         m_fdEventFlag[fd] = eventFlag;
+        operation = EPOLL_CTL_MOD;
     }
 
 
@@ -184,9 +298,10 @@ void  Epoll::registerWriteEvent(SOCKET fd, EventDispatcher* dispatcher)
     iEvent.events = eventFlag;
 
     iEvent.data.ptr = dispatcher;
-    if (::epoll_ctl(m_epollfd, EPOLL_CTL_ADD, fd, &iEvent) < 0)
+    if (::epoll_ctl(m_epollfd, operation, fd, &iEvent) < 0)
     {
-        //TODO:: ��ӡ������־
+        //TODO:: 打印错误日志
+        LOG_ERROR("epoll_ctl failed: operation=%d, fd=%d, errno=%d", operation, fd, errno);
         Util::crash();
     }
 #endif
@@ -196,7 +311,14 @@ void  Epoll::unRegisterReadEvent(SOCKET fd, EventDispatcher* dispatcher)
 {
 #ifdef _WIN32
 
-    m_EventMap.erase(fd);
+    // 清理读上下文资源
+    cleanupSocketResources(fd);
+
+    // 从事件映射中移除
+    if (m_writeContexts.find(fd) == m_writeContexts.end()) {
+        // 如果没有写上下文，也从事件映射中移除
+        m_EventMap.erase(fd);
+    }
 #else
     int32_t eventFlag = 0;
     int operation;
@@ -232,7 +354,8 @@ void  Epoll::unRegisterReadEvent(SOCKET fd, EventDispatcher* dispatcher)
     iEvent.data.ptr = dispatcher;
     if (::epoll_ctl(m_epollfd, operation, fd, &iEvent) < 0)
     {
-        //TODO:: ��ӡ������־
+        //TODO:: 打印错误日志
+        LOG_ERROR("epoll_ctl failed: operation=%d, fd=%d, errno=%d", operation, fd, errno);
         Util::crash();
     }
 #endif
@@ -240,7 +363,23 @@ void  Epoll::unRegisterReadEvent(SOCKET fd, EventDispatcher* dispatcher)
 void  Epoll::unRegisterWriteEvent(SOCKET fd, EventDispatcher* dispatcher)
 {
 #ifdef _WIN32
-    m_EventMap.erase(fd);
+    // 清理写上下文资源
+    auto writeIt = m_writeContexts.find(fd);
+    if (writeIt != m_writeContexts.end()) {
+        if (HasOverlappedIoCompleted(&writeIt->second->overlapped) == FALSE) {
+            CancelIoEx((HANDLE)fd, &writeIt->second->overlapped);
+        }
+        DWORD bytesTransferred;
+        GetOverlappedResult((HANDLE)fd, &writeIt->second->overlapped, &bytesTransferred, FALSE);
+        writeIt->second->cleanup();
+        m_writeContexts.erase(writeIt);
+    }
+
+    // 从事件映射中移除
+    if (m_readContexts.find(fd) == m_readContexts.end()) {
+        // 如果没有读上下文，也从事件映射中移除
+        m_EventMap.erase(fd);
+    }
 #else
     int32_t eventFlag = 0;
     int operation;
@@ -272,7 +411,8 @@ void  Epoll::unRegisterWriteEvent(SOCKET fd, EventDispatcher* dispatcher)
     iEvent.data.ptr = dispatcher;
     if (::epoll_ctl(m_epollfd, operation, fd, &iEvent) < 0)
     {
-        //TODO:: ��ӡ������־
+        //TODO:: 打印错误日志
+        LOG_ERROR("epoll_ctl failed: operation=%d, fd=%d, errno=%d", operation, fd, errno);
         Util::crash();
     }
 #endif
@@ -281,6 +421,10 @@ void  Epoll::unRegisterWriteEvent(SOCKET fd, EventDispatcher* dispatcher)
 void  Epoll::unRegisterAllEvent(SOCKET fd, EventDispatcher* dispatcher)
 {
 #ifdef _WIN32
+    // 清理所有资源
+    cleanupSocketResources(fd);
+
+    // 从事件映射中移除
     m_EventMap.erase(fd);
 #else
     int32_t eventFlag = 0;
@@ -299,9 +443,52 @@ void  Epoll::unRegisterAllEvent(SOCKET fd, EventDispatcher* dispatcher)
     iEvent.data.ptr = dispatcher;
     if (::epoll_ctl(m_epollfd, EPOLL_CTL_DEL, fd, &iEvent) < 0)
     {
-        //TODO:: ��ӡ������־
+        //TODO:: 打印错误日志
         Util::crash();
     }
 
 #endif
 }
+
+#ifdef _WIN32
+void Epoll::cleanupSocketResources(SOCKET fd)
+{
+    // 取消可能正在进行的异步操作
+    auto readIt = m_readContexts.find(fd);
+    if (readIt != m_readContexts.end())
+    {
+        // 取消读操作
+        if (HasOverlappedIoCompleted(&readIt->second->overlapped) == FALSE)
+        {
+            CancelIoEx((HANDLE)fd, &readIt->second->overlapped);
+        }
+        // 等待操作完成或超时
+        DWORD bytesTransferred;
+        if (GetOverlappedResult((HANDLE)fd, &readIt->second->overlapped, &bytesTransferred, FALSE) == FALSE)
+        {
+            // 操作已取消或完成
+        }
+        readIt->second->cleanup();
+        m_readContexts.erase(readIt);
+    }
+
+    auto writeIt = m_writeContexts.find(fd);
+    if (writeIt != m_writeContexts.end())
+    {
+        // 取消写操作
+        if (HasOverlappedIoCompleted(&writeIt->second->overlapped) == FALSE)
+        {
+            CancelIoEx((HANDLE)fd, &writeIt->second->overlapped);
+        }
+        // 等待操作完成或超时
+        DWORD bytesTransferred;
+        if (GetOverlappedResult((HANDLE)fd, &writeIt->second->overlapped, &bytesTransferred, FALSE) == FALSE)
+        {
+            // 操作已取消或完成
+        }
+        writeIt->second->cleanup();
+        m_writeContexts.erase(writeIt);
+    }
+}
+
+#endif

@@ -51,6 +51,7 @@ public:
         m_closeCallBack = std::move(closeCallBack);
     }
 
+    
 private:
 
     bool sendInterval(const char* buf, size_t bufLen);

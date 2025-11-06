@@ -25,7 +25,7 @@ target_include_directories(GateServer PRIVATE
 
 # ==================== 依赖库链接 ====================
 # 链接动态库（会自动链接导入库）
-target_link_libraries(GateServer PRIVATE net util Log)
+target_link_libraries(GateServer PRIVATE net util Log nlohmann::json)
 
 # ==================== 平台特定设置 ====================
 if(WIN32)

@@ -8,14 +8,14 @@
 #include <stdexcept>
 #include <Windows.h>
 #include <iostream>
-#endif
+
 
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
 #define new new(_NORMAL_BLOCK, __FILE__, __LINE__)
-#endif
-
+#endif //_DEBUG
+#endif //_WIN32
 
 using namespace ZhKeyesIM::Net::Http;
 using namespace testing;
@@ -25,7 +25,7 @@ protected:
     void SetUp() override 
     {  // 修正：Setup -> SetUp
 
-#ifdef _DEBUG
+#if defined(_DEBUG) && defined(_WIN32)
         _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
         m_spServer = std::make_unique<HttpServer>();
@@ -35,7 +35,7 @@ protected:
     {   
          if (m_spServer)
             m_spServer->shutdown();   
-#ifdef _DEBUG
+#if defined(_DEBUG) && defined(_WIN32)
             _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif  
     }

@@ -13,6 +13,8 @@
 #include <system_error>
 #include <unordered_map>
 
+#include "net_export.h"
+
 namespace ZhKeyesIM {
     namespace Net {
         namespace Http {
@@ -274,37 +276,37 @@ namespace ZhKeyesIM {
 
             namespace HttpUtils {
          
-                std::string trimString(const std::string& str);
-                std::string toLower(const std::string& str);
-                std::string toUpper(const std::string& str);
+              NET_API  std::string trimString(const std::string& str);
+              NET_API  std::string toLower(const std::string& str);
+              NET_API  std::string toUpper(const std::string& str);
 
        
-                HttpMethod stringToMethod(const std::string& method);
-                std::string methodToString(HttpMethod method);
+              NET_API  HttpMethod stringToMethod(const std::string& method);
+              NET_API  std::string methodToString(HttpMethod method);
 
            
-                HttpVersion stringToVersion(const std::string& version);
-                std::string versionToString(HttpVersion version);
+              NET_API  HttpVersion stringToVersion(const std::string& version);
+              NET_API  std::string versionToString(HttpVersion version);
 
 
-                std::string getReasonPhrase(HttpStatusCode statusCode);
-                bool isSuccessStatusCode(HttpStatusCode statusCode);
-                bool isClientErrorStatusCode(HttpStatusCode statusCode);
-                bool isServerErrorStatusCode(HttpStatusCode statusCode);
+              NET_API  std::string getReasonPhrase(HttpStatusCode statusCode);
+              NET_API  bool isSuccessStatusCode(HttpStatusCode statusCode);
+              NET_API  bool isClientErrorStatusCode(HttpStatusCode statusCode);
+              NET_API  bool isServerErrorStatusCode(HttpStatusCode statusCode);
 
 
-                std::string getMimeType(const std::string& extension);
+              NET_API  std::string getMimeType(const std::string& extension);
 
 
-                std::string urlEncode(const std::string& str);
-                std::string urlDecode(const std::string& str);
+              NET_API  std::string urlEncode(const std::string& str);
+              NET_API  std::string urlDecode(const std::string& str);
 
 
-                std::string formatHttpDate(time_t timestamp = 0); 
-                time_t parseHttpDate(const std::string& dateStr);
+              NET_API  std::string formatHttpDate(time_t timestamp = 0); 
+              NET_API  time_t parseHttpDate(const std::string& dateStr);
 
      
-                std::string normalizeHeaderName(const std::string& name);
+              NET_API  std::string normalizeHeaderName(const std::string& name);
             };
 
         }

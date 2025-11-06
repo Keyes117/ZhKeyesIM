@@ -146,6 +146,7 @@ void EventLoop::registerCustomTask(CustomTask&& task)
         m_customTasks.push_back(std::move(task));
     }
 
+    
     m_spWakeUpEventDispatcher->WakeUp();
 }
 
@@ -216,7 +217,7 @@ bool EventLoop::createWakeUpSocket()
         LOG_ERROR("Failed to create eventfd, errno: %d", errno);
         return false;
     }
-
+    m_spWakeUpEventDispatcher = std::make_unique<WakeUpEventDispatcher>(m_wakeUpSocket);
 #endif
 
     LOG_INFO("create wakeupSocket(fd) successfully, socket(fd): %d", m_wakeUpSocket);

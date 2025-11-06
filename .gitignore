@@ -43,5 +43,5 @@
 
 build/
 out/
-
+*.bak
 third_party/

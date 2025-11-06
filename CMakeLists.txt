@@ -13,27 +13,18 @@ enable_testing()
 # 设置GoogleTest路径
 set(GTEST_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/third_party/googletest")
 
-# 根据构建类型选择正确的库文件路径
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(GTEST_LIB_DIR "${GTEST_ROOT}/lib/Debug")
-else()
-    set(GTEST_LIB_DIR "${GTEST_ROOT}/lib/Release")
-endif()
-
-# 手动创建GoogleTest目标
-message(STATUS "Setting up GoogleTest from: ${GTEST_LIB_DIR}")
 
 # 创建GoogleTest库目标
 add_library(GTest::gtest STATIC IMPORTED)
 set_target_properties(GTest::gtest PROPERTIES
-    IMPORTED_LOCATION "${GTEST_LIB_DIR}/gtest.lib"
+    IMPORTED_LOCATION "${GTEST_ROOT}/lib/gtest.lib"
     INTERFACE_INCLUDE_DIRECTORIES "${GTEST_ROOT}/include"
 )
 
 # 创建GoogleTest主程序库目标
 add_library(GTest::gtest_main STATIC IMPORTED)
 set_target_properties(GTest::gtest_main PROPERTIES
-    IMPORTED_LOCATION "${GTEST_LIB_DIR}/gtest_main.lib"
+    IMPORTED_LOCATION "${GTEST_ROOT}/lib/gtest_main.lib"
     INTERFACE_INCLUDE_DIRECTORIES "${GTEST_ROOT}/include"
     INTERFACE_LINK_LIBRARIES GTest::gtest
 )
@@ -41,7 +32,7 @@ set_target_properties(GTest::gtest_main PROPERTIES
 # 创建GoogleMock库目标
 add_library(GTest::gmock STATIC IMPORTED)
 set_target_properties(GTest::gmock PROPERTIES
-    IMPORTED_LOCATION "${GTEST_LIB_DIR}/gmock.lib"
+    IMPORTED_LOCATION "${GTEST_ROOT}/lib/gmock.lib"
     INTERFACE_INCLUDE_DIRECTORIES "${GTEST_ROOT}/include"
     INTERFACE_LINK_LIBRARIES GTest::gtest
 )
@@ -49,7 +40,7 @@ set_target_properties(GTest::gmock PROPERTIES
 # 创建GoogleMock主程序库目标
 add_library(GTest::gmock_main STATIC IMPORTED)
 set_target_properties(GTest::gmock_main PROPERTIES
-    IMPORTED_LOCATION "${GTEST_LIB_DIR}/gmock_main.lib"
+    IMPORTED_LOCATION "${GTEST_ROOT}/lib/gmock_main.lib"
     INTERFACE_INCLUDE_DIRECTORIES "${GTEST_ROOT}/include"
     INTERFACE_LINK_LIBRARIES GTest::gmock
 )
@@ -59,16 +50,11 @@ set_target_properties(GTest::gmock_main PROPERTIES
 set(fmt_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/fmt")
 
 # 根据构建类型选择正确的库文件路径
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(FMT_LIB_DIR "${fmt_DIR}/lib/Debug")
-else()
-    set(FMT_LIB_DIR "${fmt_DIR}/lib/Release")
-endif()
+
 
 add_library(fmt::fmt STATIC IMPORTED)
 set_target_properties(fmt::fmt PROPERTIES
-    IMPORTED_LOCATION_DEBUG "${fmt_DIR}/lib/Debug/fmt.lib"
-    IMPORTED_LOCATION_RELEASE "${fmt_DIR}/lib/Release/fmt.lib"
+    IMPORTED_LOCATION "${fmt_DIR}/lib/fmt.lib"
     INTERFACE_INCLUDE_DIRECTORIES "${fmt_DIR}/include"
 )
 
@@ -77,22 +63,22 @@ set(GRPC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/grpc")
 set(GRPC_LIB_DIR "${GRPC_DIR}/lib")
 
 # 设置protobuf的路径
-set(protobuf_DIR "${GRPC_LIB_DIR}/cmake/protobuf")
+set(protobuf_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/protobuf")
 list(APPEND CMAKE_PREFIX_PATH "${GRPC_LIB_DIR}/cmake")
 
 find_package(Protobuf CONFIG REQUIRED)
 
 # 手动设置protobuf目标的库文件位置（因为预编译包的CMake配置不完整）
 set_target_properties(protobuf::libprotobuf PROPERTIES
-    IMPORTED_LOCATION "${GRPC_LIB_DIR}/libprotobuf.lib"
-    IMPORTED_LOCATION_DEBUG "${GRPC_LIB_DIR}/libprotobuf.lib"
-    IMPORTED_LOCATION_RELEASE "${GRPC_LIB_DIR}/libprotobuf.lib"
+    IMPORTED_LOCATION "${protobuf_DIR}/libprotobuf.lib"
+    IMPORTED_LOCATION_DEBUG "${protobuf_DIR}/libprotobuf.lib"
+    IMPORTED_LOCATION_RELEASE "${protobuf_DIR}/libprotobuf.lib"
 )
 
 set_target_properties(protobuf::libprotoc PROPERTIES
-    IMPORTED_LOCATION "${GRPC_LIB_DIR}/libprotoc.lib"
-    IMPORTED_LOCATION_DEBUG "${GRPC_LIB_DIR}/libprotoc.lib"
-    IMPORTED_LOCATION_RELEASE "${GRPC_LIB_DIR}/libprotoc.lib"
+    IMPORTED_LOCATION "${protobuf_DIR}/libprotoc.lib"
+    IMPORTED_LOCATION_DEBUG "${protobuf_DIR}/libprotoc.lib"
+    IMPORTED_LOCATION_RELEASE "${protobuf_DIR}/libprotoc.lib"
 )
 find_package(gRPC CONFIG REQUIRED)
 

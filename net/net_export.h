@@ -6,7 +6,7 @@
 #elif defined(_WIN32)
 #  define NET_API __declspec(dllimport)
 #else
-#  define NET_API
+#  define NET_API __attribute__((visibility("default")))
 #endif
 
 #endif

@@ -61,13 +61,12 @@ void WakeUpEventDispatcher::onRead()
         }
     }
 #else
-    int64_t dummyData;
-    int n = ::read(m_wakeUpfd, static_cast<void*>(&dummyData), sizeof(dummyData));
+    int n = ::read(m_wakeUpSocket, static_cast<void*>(&dummyData), sizeof(dummyData));
 
     if (n != sizeof(dummyData))
         LOG_INFO("WakeupEventDispatcher::onRead failed, errno = %d", errno);
     else
-        LOG_INFO("WakeupEventDispatcher::onRead successfully, wakefd: %d", m_wakeUpfd);
+        LOG_INFO("WakeupEventDispatcher::onRead successfully, wakefd: %d", m_wakeUpSocket);
 #endif
 }
 
@@ -94,8 +93,9 @@ void WakeUpEventDispatcher::WakeUp()
     if (m_wakeUpSocket == INVALID_SOCKET)
         return;
 
-    uint64_t one = 1;
+
 #ifdef _WIN32
+    uint64_t one = 1;
     int n = ::sendto(m_wakeUpSocket, reinterpret_cast<const char*>(&one),
                 static_cast<int>(sizeof(one)), 0, (sockaddr*)&m_wakeUpAddr,sizeof(m_wakeUpAddr));
 
@@ -109,19 +109,21 @@ void WakeUpEventDispatcher::WakeUp()
     }
 #else
     int64_t dummyData = 0;
-    int n = ::write(m_wakeUpfd, static_cast<const void*>(&dummyData), sizeof(dummyData));
+    int n = ::write(m_wakeUpSocket, static_cast<const void*>(&dummyData), sizeof(dummyData));
 
 
     if (n != sizeof(dummyData))
         LOG_INFO("WakeupEventDispatcher::wakeup failed, errno = %d", errno);
     else
-        LOG_INFO("WakeupEventDispatcher::wakeup successfully, wakefd: %d", m_wakeUpfd);
+        LOG_INFO("WakeupEventDispatcher::wakeup successfully, wakefd: %d", m_wakeUpSocket);
 
 
 #endif
 }
 
+#ifdef _WIN32
 void WakeUpEventDispatcher::setWakeUpSocketAddr(const sockaddr_in& addr)
 {
     m_wakeUpAddr = addr;
 }
+#endif

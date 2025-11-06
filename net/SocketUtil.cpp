@@ -6,6 +6,7 @@
 
 #else
 #include <sys/ioctl.h>
+#include <cstring>
 #endif
 
 namespace net {

@@ -1,12 +1,12 @@
 set(NET_SOURCES
-    ./Http/HttpMessage.cpp
-    ./Http/HttpSession.cpp
-    ./Http/HttpServer.cpp
-    ./Http/HttpClient.cpp
-    ./Http/HttpResponse.cpp
-    ./Http/HttpRequest.cpp
-    ./Http/HttpProtocol.cpp
-    ./Http/HttpParser.cpp
+    Http/HttpMessage.cpp
+    Http/HttpSession.cpp
+    Http/HttpServer.cpp
+    Http/HttpClient.cpp
+    Http/HttpResponse.cpp
+    Http/HttpRequest.cpp
+    Http/HttpProtocol.cpp
+    Http/HttpParser.cpp
     Acceptor.cpp
     Buffer.cpp
     Epoll.cpp
@@ -25,14 +25,14 @@ set(NET_SOURCES
 )
 
 set(NET_HEADERS
-    ./Http/HttpMessage.h
-    ./Http/HttpSession.h
-    ./Http/HttpServer.h
-    ./Http/HttpClient.h
-    ./Http/HttpResponse.h
-    ./Http/HttpRequest.h
-    ./Http/HttpProtocol.h 
-    ./Http/HttpParser.h
+    Http/HttpMessage.h
+    Http/HttpSession.h
+    Http/HttpServer.h
+    Http/HttpClient.h
+    Http/HttpResponse.h
+    Http/HttpRequest.h
+    Http/HttpProtocol.h
+    Http/HttpParser.h
     Acceptor.h
     Buffer.h
     common.h

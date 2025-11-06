@@ -1,4 +1,7 @@
 #include "EventLoop.h"
+
+#include "common.h"
+
 #include "Logger.h"
 
 EventLoop::EventLoop(bool isBaseLoop):
@@ -208,7 +211,7 @@ bool EventLoop::createWakeUpSocket()
     m_spWakeUpEventDispatcher->setWakeUpSocketAddr(m_wakeUpAddr);
 #else
 
-    m_wakeUpFd = ::eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
+    m_wakeUpSocket = ::eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
     if (m_wakeUpSocket == INVALID_SOCKET) {
         LOG_ERROR("Failed to create eventfd, errno: %d", errno);
         return false;

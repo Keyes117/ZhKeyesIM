@@ -8,7 +8,7 @@ GateServer::~GateServer()
 {
 }
 
-bool GateServer::init(uint32_t threadNum, const std::string& ip = "")
+bool GateServer::init(uint32_t threadNum, const std::string& ip)
 {
     m_spHttpServer = std::make_unique<ZhKeyesIMHttp::HttpServer>();
     if (!m_spHttpServer->init(threadNum, ip))

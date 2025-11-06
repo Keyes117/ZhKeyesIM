@@ -21,15 +21,14 @@ public:
     void WakeUp();
 #ifdef _WIN32
     void setWakeUpSocketAddr(const sockaddr_in& addr);
+
+    sockaddr_in   m_wakeUpAddr;
 #endif
 private:
     int     m_wakeUpSocket;
     bool    m_enabledRead{ false };
     bool    m_enabledWrite{ false };
 
-#ifdef _WIN32
-    sockaddr_in   m_wakeUpAddr;
-#endif
 };
 
-#endif
+#endif // NET_WAKEUPEVENTDISPATCHER_H_!

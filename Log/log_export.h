@@ -7,7 +7,7 @@
 #elif defined(_WIN32)
 #  define LOG_API __declspec(dllimport)
 #else
-#  define LOG_API
+#  define LOG_API __attribute__((visibility("default")))
 #endif
 
 

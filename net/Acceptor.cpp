@@ -150,11 +150,11 @@ void Acceptor::onClose()
     stopListen();
 }
 
-void Acceptor::enableRead(bool isEnabled)
+void Acceptor::enableRead([[maybe_unused]]bool isEnabled)
 {
 }
 
-void Acceptor::enableWrite(bool isEnabled)
+void Acceptor::enableWrite([[maybe_unused]]bool isEnabled)
 {
 }
 

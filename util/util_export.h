@@ -6,7 +6,7 @@
 #elif defined(_WIN32)
     #define Util_API __declspec(dllimport)
 #else
-#  define Util_API
+#  define Util_API __attribute__((visibility("default")))
 #endif
 
 #endif

@@ -12,7 +12,6 @@ add_library(util SHARED ${UTIL_SOURCES} ${UTIL_HEADERS})
 
 set_target_properties(util PROPERTIES
     OUTPUT_NAME "util"
-    DEBUG_POSTFIX "d"
     VERSION ${PROJECT_VERSION}
     SOVERSION ${PROJECT_VERSION_MAJOR}
 )

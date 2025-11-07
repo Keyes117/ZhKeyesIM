@@ -25,7 +25,6 @@ if(WIN32)
     target_compile_definitions(Log PRIVATE _WIN32)
     set_target_properties(Log PROPERTIES
         IMPORT_PREFIX "lib"
-        PREFIX ""
     )
 elseif(UNIX AND NOT APPLE)
     set_target_properties(Log PROPERTIES

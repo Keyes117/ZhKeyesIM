@@ -4,7 +4,6 @@
 #include "Http/HttpClient.h"
 #include "TCPClient.h"
 
-
 class IMClient
 {
 public:
@@ -24,7 +23,7 @@ private:
     std::shared_ptr<EventLoop>              m_spMainEventLoop;
     std::unique_ptr<std::thread>            m_networkThread;
     std::unique_ptr<TCPClient>              m_spClient;
-    std::unique_ptr<HttpClient>
+    std::unique_ptr<ZhKeyesIM::Net::Http::HttpClient>   m_spHttpClient;
 };
 
 

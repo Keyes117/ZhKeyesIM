@@ -3,9 +3,8 @@
  * @author: ZhKeyes
  * @date:   2025/8/4
  */
-
- #ifndef ZHKEYESIMCLIENT_TASK_TASKHANDLER_H_
- #define ZHKEYESIMCLIENT_TASK_TASKHANDLER_H_
+#ifndef ZHKEYESIMCLIENT_TASK_TASKHANDLER_H_
+#define ZHKEYESIMCLIENT_TASK_TASKHANDLER_H_
 
 #include <atomic>
 #include <condition_variable>
@@ -23,7 +22,7 @@ class TaskHandler final : public QObject
 {
     Q_OBJECT
 public:
-    static TaskHandler& getInstance();              
+    static TaskHandler& getInstance();
 
     bool init();
     void close();
@@ -34,7 +33,7 @@ public:
     void registerRecvTask(std::shared_ptr<Task>&& task);
 
 private:
-    TaskHandler();
+    TaskHandler() = default;
     ~TaskHandler() = default;
 
     void sendThreadProc();
@@ -44,8 +43,8 @@ private:
 private:
     std::mutex                          m_sendMutex;
     std::mutex                          m_recvMutex;
-    
-    std::condition_variable             m_sendCV;   
+
+    std::condition_variable             m_sendCV;
     std::condition_variable             m_recvCV;
 
     std::list<std::shared_ptr<Task>>    m_sendTasks;
@@ -59,4 +58,4 @@ private:
 };
 
 
- #endif
+#endif

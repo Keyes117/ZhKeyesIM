@@ -73,20 +73,6 @@ if(MSVC)
         MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
     )
     
-    # 确保测试目标使用与主项目相同的运行时库设置
-    target_compile_options(unit_tests PRIVATE 
-        $<$<CONFIG:Debug>:/MDd>
-        $<$<CONFIG:Release>:/MD>
-        $<$<CONFIG:RelWithDebInfo>:/MD>
-        $<$<CONFIG:MinSizeRel>:/MD>
-    )
-    
-    target_compile_options(integration_tests PRIVATE 
-        $<$<CONFIG:Debug>:/MDd>
-        $<$<CONFIG:Release>:/MD>
-        $<$<CONFIG:RelWithDebInfo>:/MD>
-        $<$<CONFIG:MinSizeRel>:/MD>
-    )
 
       # 为测试目标设置调试级别
       target_compile_definitions(unit_tests PRIVATE 

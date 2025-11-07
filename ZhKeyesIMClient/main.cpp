@@ -14,9 +14,12 @@ int main(int argc, char* argv[])
     QApplication::setStyle("fusion");
     QApplication::setFont(QFont("Microsoft YaHei", 9));
 
+#ifdef _DEBUG
+    Logger::instance().setLogLevel(LogLevel::DEBUG);
+#else
     Logger::instance().setLogLevel(LogLevel::INFO);
-
-    Logger::instance().setLogFile("client.log");
+#endif
+    //Logger::instance().setLogFile("GateServer.log");
 
     LoginDlg loginDlg;
     if (loginDlg.exec() == QDialog::Accepted)

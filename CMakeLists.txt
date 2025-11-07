@@ -7,6 +7,22 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+# 设置可执行文件的输出目录
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+if(WIN32)
+    # Windows: DLL 和 .exe 都放在 bin 目录
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+    # Windows: 导入库（.lib）放在 lib 目录
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+elseif(UNIX AND NOT APPLE)
+    # Linux: 共享库（.so）放在 lib 目录
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+    # Linux: 静态库（.a）也放在 lib 目录
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+endif()
+
+set(CMAKE_BUILD_RPATH "${CMAKE_BINARY_DIR}/lib")
 # 启用测试支持
 enable_testing()
 
@@ -35,13 +51,7 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /MD")
     set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} /MD")
     
-    
 
-    
-    # 为GoogleTest目标设置运行时库
-    set_target_properties(GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main PROPERTIES
-        MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
-    )
         
     # 设置调试级别
     add_compile_definitions(
@@ -135,6 +145,11 @@ if(GTEST_LIB AND GTEST_MAIN_LIB AND GMOCK_LIB AND GMOCK_MAIN_LIB)
         INTERFACE_LINK_LIBRARIES GTest::gmock
     )
     
+    # 为GoogleTest目标设置运行时库
+    set_target_properties(GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main PROPERTIES
+        MSVC_RUNTIME_LIBRARY "MultiThreadedDLL"
+    )
+
     message(STATUS "Found GoogleTest libraries")
 else()
     message(WARNING "Could not find all GoogleTest libraries")
@@ -171,6 +186,7 @@ find_library(PROTOBUF_LIB
     NAMES 
         protobuf
         protobuf.lib
+    	libprotobuf.lib
         libprotobuf.a
         libprotobuf.so
     PATHS "${PROTOBUF_DIR}/lib"
@@ -181,7 +197,7 @@ find_library(PROTOBUF_LIB
 find_library(PROTOC_LIB
     NAMES 
         protoc
-        protoc.lib
+        libprotoc.lib
         libprotoc.a
         libprotoc.so
     PATHS "${PROTOBUF_DIR}/lib"

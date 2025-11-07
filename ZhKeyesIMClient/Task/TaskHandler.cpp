@@ -1,4 +1,4 @@
-#include "GateServer.h"
+//#include "GateServer.h"
 #include "TaskHandler.h"
 
 #include <functional>
@@ -50,23 +50,23 @@ void TaskHandler::registerRecvTask(std::shared_ptr<Task>&& task)
 
 void TaskHandler::sendThreadProc()
 {
-    while(m_running)
+    while (m_running)
     {
         std::unique_lock<std::mutex> guard(m_sendMutex);
 
-        while(m_sendTasks.empty())
+        while (m_sendTasks.empty())
         {
-            if(!m_running)
+            if (!m_running)
                 return;
-            
-             //如果获得了互斥锁， 但是条件不合适的话， pthread_cond_wait会释放锁不往下执行
-            //当发生变化后，条件合适，pthread_cond_wait将直接获得锁
+
+            //如果获得了互斥锁， 但是条件不合适的话， pthread_cond_wait会释放锁不往下执行
+           //当发生变化后，条件合适，pthread_cond_wait将直接获得锁
             m_sendCV.wait(guard);
         }
 
         auto pTask = m_sendTasks.front();
 
-        if(pTask == nullptr)
+        if (pTask == nullptr)
             continue;
 
         pTask->doTask();
@@ -77,22 +77,22 @@ void TaskHandler::sendThreadProc()
 
 void TaskHandler::recvThreadProc()
 {
-    while(m_running)
+    while (m_running)
     {
         std::unique_lock<std::mutex> guard(m_recvMutex);
 
-        while(m_recvTasks.empty())
+        while (m_recvTasks.empty())
         {
-            if(!m_running)
+            if (!m_running)
                 return;
-            
-        
+
+
             m_recvCV.wait(guard);
         }
 
         auto pTask = m_recvTasks.front();
 
-        if(pTask == nullptr)
+        if (pTask == nullptr)
             continue;
 
         pTask->doTask();

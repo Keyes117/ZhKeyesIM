@@ -191,12 +191,46 @@ void  Epoll::registerReadEvent(SOCKET fd, EventDispatcher* dispatcher)
 
 
     // 如果操作不是立即完成且没有错误，保存上下文
-    if (result == SOCKET_ERROR) {
+    if (result == SOCKET_ERROR)
+    {
         int error = WSAGetLastError();
-        if (error != WSA_IO_PENDING) {
+        if (error != WSA_IO_PENDING)
+        {
             // 真正的错误，清理资源
             context->cleanup();
-            LOG_ERROR("WSARecv failed, error: %d", error);
+
+            // 对于 UDP 套接字，某些错误可以忽略或特殊处理
+            if (socketType == SOCK_DGRAM)
+            {
+                // UDP 套接字在未连接状态下，某些错误可能是正常的
+                // 但 WSAENOTCONN 对于 UDP 来说不应该出现，可能是套接字状态问题
+                if (error == WSAENOTCONN)
+                {
+                    LOG_WARN("UDP socket WSARecvFrom returned WSAENOTCONN, fd: %d. This may be normal for unconnected UDP socket.", fd);
+                    // 对于 wakeUpSocket，可以忽略这个错误，继续注册
+                    // 但需要确保套接字状态正确
+                }
+                else
+                {
+                    LOG_ERROR("UDP socket WSARecvFrom failed, error: %d, fd: %d", error, fd);
+                }
+            }
+            else
+            {
+                // TCP 套接字的错误处理
+                if (error == WSAENOTCONN || error == WSAECONNRESET || error == WSAECONNABORTED)
+                {
+                    LOG_INFO("TCP socket disconnected, error: %d, fd: %d", error, fd);
+                    if (dispatcher)
+                    {
+                        dispatcher->onClose();
+                    }
+                }
+                else
+                {
+                    LOG_ERROR("TCP socket WSARecv failed, error: %d, fd: %d", error, fd);
+                }
+            }
             return;
         }
     }
@@ -237,7 +271,7 @@ void  Epoll::registerReadEvent(SOCKET fd, EventDispatcher* dispatcher)
     if (::epoll_ctl(m_epollfd, operation, fd, &iEvent) < 0)
     {
         //TODO:: 打印错误日志
-        
+
         Util::crash();
     }
 #endif

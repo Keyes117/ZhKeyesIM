@@ -1,14 +1,14 @@
 #pragma once
 
 #include <QtWidgets/QDialog>
+
 #include "ui_LoginDlg.h"
 
 class LoginDlg : public QDialog
 {
     Q_OBJECT
-
 public:
-    LoginDlg(QWidget *parent = nullptr);
+    LoginDlg(QWidget* parent = nullptr);
     ~LoginDlg();
 
 private:
@@ -21,6 +21,6 @@ private slots:
 private:
 
     void setUpSignals();
-    Ui::LoginDlgClass* m_ui;
+    Ui::LoginDlgClass m_ui;
 };
 

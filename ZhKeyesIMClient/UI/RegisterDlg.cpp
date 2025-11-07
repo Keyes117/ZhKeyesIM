@@ -1,11 +1,12 @@
 #include "RegisterDlg.h"
 
-RegisterDlg::RegisterDlg(QWidget *parent)
+RegisterDlg::RegisterDlg(QWidget* parent)
     : QDialog(parent)
 {
-    ui.setupUi(this);
+    m_ui.setupUi(this);
 }
 
 RegisterDlg::~RegisterDlg()
-{}
+{
+}
 

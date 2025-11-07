@@ -2,21 +2,22 @@
 
 #include <QMessageBox>
 
-LoginDlg::LoginDlg(QWidget *parent)
+LoginDlg::LoginDlg(QWidget* parent)
     : QDialog(parent)
 {
-    m_ui->setupUi(this);
+    m_ui.setupUi(this);
 
     this->adjustSize();
     this->setFixedSize(this->sizeHint());
 }
 
 LoginDlg::~LoginDlg()
-{}
+{
+}
 
 bool LoginDlg::isLineEditEmpty()
 {
-    return m_ui->lineEdit_accout->text().isEmpty() || m_ui->lineEdit_password->text().isEmpty();
+    return m_ui.lineEdit_accout->text().isEmpty() || m_ui.lineEdit_password->text().isEmpty();
 }
 
 bool LoginDlg::isAccountAndPassWordRight()
@@ -28,10 +29,13 @@ void LoginDlg::onLoginButtonClicked()
 {
     if (isLineEditEmpty())
     {
-        QMessageBox::warning(this, "错误", "用户名或密码不能为空", "确定");
+        QMessageBox::warning(this, "閿欒", "鐢ㄦ埛鍚嶆垨瀵嗙爜涓嶈兘涓虹┖", "纭畾");
     }
 
-    if(!isAccountAndPassWordRight())
+    if (!isAccountAndPassWordRight())
+    {
+
+    }
 }
 
 
@@ -42,7 +46,7 @@ void LoginDlg::onRegisterButtonClicked()
 
 void LoginDlg::setUpSignals()
 {
-    connect(m_ui->button_logon, QPushButton::click, this, LoginDlg::onLoginButtonClicked);
-    connect(m_ui->button_register, QPushButton::click, this, LoginDlg::onRegisterButtonClicked);
+    connect(m_ui.button_logon, &QPushButton::click, this, &LoginDlg::onLoginButtonClicked);
+    connect(m_ui.button_register, &QPushButton::click, this, &LoginDlg::onRegisterButtonClicked);
 }
 

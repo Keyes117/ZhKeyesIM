@@ -63,7 +63,6 @@ source_group(
 
 set_target_properties(net  PROPERTIES
     OUTPUT_NAME "net"
-    DEBUG_POSTFIX "d"
     VERSION ${PROJECT_VERSION}
     SOVERSION ${PROJECT_VERSION_MAJOR}
 )

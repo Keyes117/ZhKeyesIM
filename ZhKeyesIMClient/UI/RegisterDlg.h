@@ -8,10 +8,10 @@ class RegisterDlg : public QDialog
     Q_OBJECT
 
 public:
-    RegisterDlg(QWidget *parent = nullptr);
+    RegisterDlg(QWidget* parent = nullptr);
     ~RegisterDlg();
 
 private:
-    Ui::RegisterDlgClass ui;
+    Ui::RegisterDlgClass m_ui;
 };
 

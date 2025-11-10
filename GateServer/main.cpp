@@ -9,7 +9,7 @@ int main()
     //Logger::instance().setLogFile("server.log");
 
     GateServer server;
-    server.init(4, "127.0.0.1");
+    server.init(4, "127.0.0.1", 8080);
     server.start();
     return 0;
 }

@@ -28,7 +28,7 @@ public:
     HttpServer() = default;
     ~HttpServer();
 
-    bool init(uint32_t threadNum, const std::string& ip = "");
+    bool init(uint32_t threadNum, const std::string& ip = "",uint16_t port = 80);
     void start();
     void shutdown();
 

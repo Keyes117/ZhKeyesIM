@@ -7,6 +7,7 @@ set(NET_SOURCES
     Http/HttpRequest.cpp
     Http/HttpProtocol.cpp
     Http/HttpParser.cpp
+    Http/Router.cpp
     Acceptor.cpp
     Buffer.cpp
     Epoll.cpp
@@ -33,6 +34,7 @@ set(NET_HEADERS
     Http/HttpRequest.h
     Http/HttpProtocol.h
     Http/HttpParser.h
+    Http/Router.h
     Acceptor.h
     Buffer.h
     common.h

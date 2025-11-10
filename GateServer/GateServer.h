@@ -5,6 +5,7 @@
 #include "Http/HttpServer.h"
 #include "Http/HttpRequest.h"
 #include "Http/HttpResponse.h"
+#include "Http/Router.h"
 
 #include "nlohmann/json.hpp"
 
@@ -17,14 +18,21 @@ public:
     ~GateServer();
 
 
-    bool init(uint32_t threadNum, const std::string& ip = "");
+    bool init(uint32_t threadNum, const std::string& ip = "", uint16_t port = 8080);
     void start();
     void shutdown();
 
 protected:
     virtual void onHttpRequest(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response);
 
+    virtual void handleGetRoot(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response,
+        const std::map<std::string, std::string>& params);
 
+    virtual void handleUserLogin(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response,
+        const std::map<std::string, std::string>& params);
+
+    virtual void handleUserRegister(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response,
+        const std::map<std::string, std::string>& params);
 private:
     void sendJsonResponse(ZhKeyesIMHttp::HttpResponse& response,
         const nlohmann::json& json,
@@ -38,8 +46,10 @@ private:
         ZhKeyesIMHttp::HttpStatusCode code,
         const std::string& message);
 
+    void registerRoutes();
 private:
     std::unique_ptr<ZhKeyesIMHttp::HttpServer> m_spHttpServer;
+    std::unique_ptr<ZhKeyesIMHttp::Router> m_spRouter;
 private:
     GateServer(const GateServer&) = delete;
     GateServer(GateServer&&) noexcept = delete;

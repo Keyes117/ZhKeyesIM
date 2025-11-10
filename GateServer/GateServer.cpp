@@ -8,14 +8,15 @@ GateServer::~GateServer()
 {
 }
 
-bool GateServer::init(uint32_t threadNum, const std::string& ip)
+bool GateServer::init(uint32_t threadNum, const std::string& ip, uint16_t port)
 {
     m_spHttpServer = std::make_unique<ZhKeyesIMHttp::HttpServer>();
-    if (!m_spHttpServer->init(threadNum, ip))
+    if (!m_spHttpServer->init(threadNum, ip,port))
         return false;
 
     m_spHttpServer->setRequestCallBack(std::bind(&GateServer::onHttpRequest, this, std::placeholders::_1, std::placeholders::_2));
-
+    m_spRouter = std::make_unique<ZhKeyesIMHttp::Router>();
+    registerRoutes();
     return true;
 }
 
@@ -55,6 +56,71 @@ void GateServer::onHttpRequest(const ZhKeyesIMHttp::HttpRequest& request, ZhKeye
 
     // 2. 身份验证（对于需要鉴权的接口）
     // 3. 路由分发
+
+    if (!m_spRouter->dispatch(request, response))
+    {
+        sendErrorRequest(response,
+            ZhKeyesIMHttp::HttpStatusCode::NotFound,
+            "Route not found");
+    }
+}
+
+void GateServer::handleGetRoot(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response, const std::map<std::string, std::string>& params)
+{
+    response.setStatusCode(ZhKeyesIMHttp::HttpStatusCode::OK);
+    response.setBody("Welcome to ZhKeyesIM Gateway");
+}
+
+void GateServer::handleUserLogin(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response, const std::map<std::string, std::string>& params)
+{
+    try {
+        auto json = nlohmann::json::parse(request.getBody());
+
+        std::string username = json["username"];
+        std::string password = json["password"];
+
+        // TODO: 实际的登录逻辑
+
+        nlohmann::json responseData = {
+            {"code", 200},
+            {"message", "Login successful"},
+            {"data", {
+                {"token", "your_token_here"},
+                {"userId", 12345}
+            }}
+        };
+
+        sendJsonResponse(response, responseData,
+            ZhKeyesIMHttp::HttpStatusCode::OK);
+    }
+    catch (const std::exception& e) {
+        sendErrorRequest(response,
+            ZhKeyesIMHttp::HttpStatusCode::BadRequest,
+            e.what());
+    }
+    
+}
+
+void GateServer::handleUserRegister(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response, const std::map<std::string, std::string>& params)
+{
+    try {
+        // 解析JSON请求体
+        auto json = nlohmann::json::parse(request.getBody());
+
+        std::string username = json["username"];
+        std::string password = json["password"];
+
+        // TODO: 实际的注册逻辑
+
+        sendSuccessReqeust(response,
+            ZhKeyesIMHttp::HttpStatusCode::OK,
+            "User registered successfully");
+    }
+    catch (const std::exception& e) {
+        sendErrorRequest(response,
+            ZhKeyesIMHttp::HttpStatusCode::BadRequest,
+            e.what());
+    }
 }
 
 void GateServer::sendJsonResponse(ZhKeyesIMHttp::HttpResponse& response, 
@@ -87,4 +153,16 @@ void GateServer::sendSuccessReqeust(ZhKeyesIMHttp::HttpResponse& response, ZhKey
 
     response.setStatusCode(code);
     response.setJsonResponse(successData);
+}
+
+void GateServer::registerRoutes()
+{
+    m_spRouter->addRoute(ZhKeyesIMHttp::HttpMethod::GET, "/",
+        std::bind(&GateServer::handleGetRoot, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+
+    m_spRouter->addRoute(ZhKeyesIMHttp::HttpMethod::POST, "api/user/register",
+        std::bind(&GateServer::handleUserRegister, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+
+    m_spRouter->addRoute(ZhKeyesIMHttp::HttpMethod::POST, "api/user/login",
+        std::bind(&GateServer::handleUserLogin, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 }

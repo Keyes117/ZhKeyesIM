@@ -395,3 +395,4 @@ install(FILES
     "${CMAKE_CURRENT_BINARY_DIR}/ZhKeyesIMConfigVersion.cmake"
     DESTINATION lib/cmake/ZhKeyesIM
 )
+

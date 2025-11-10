@@ -10,10 +10,10 @@ ZhKeyesIM::Net::Http::HttpServer::~HttpServer()
     shutdown();
 }
 
-bool HttpServer::init(uint32_t threadNum, const std::string& ip/*=""*/)
+bool HttpServer::init(uint32_t threadNum, const std::string& ip/*=""*/, uint16_t port /*= 80*/)
 {
     m_spTcpServer = std::make_unique<TCPServer>();
-    if (!m_spTcpServer->init(threadNum, ip, 80))
+    if (!m_spTcpServer->init(threadNum, ip, port))
         return false;
 
     m_spTcpServer->setConnectionCallback(std::bind(&HttpServer::onConnected, this, std::placeholders::_1));

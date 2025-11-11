@@ -16,19 +16,13 @@ TCPConnection::~TCPConnection()
     if (m_enableWrite)
         unregisterWriteEvent();
 
-    closesocket(m_socket);
+
 }
 
 void TCPConnection::startRead()
 {
-    if (m_spEventLoop) {
-        m_spEventLoop->registerCustomTask([this] {
-            if (!m_enableRead) {
-                enableRead(true);
-                registerReadEvent(); // 此时已在所属 EventLoop 线程
-            }
-            });
-    }
+    enableRead(true);
+    registerReadEvent(); // 此时已在所属 EventLoop 线程
 }
 
 bool TCPConnection::send(const char* buf, size_t bufLen)
@@ -46,6 +40,27 @@ bool TCPConnection::send(const std::string& buf)
     {
         m_spEventLoop->registerCustomTask(std::bind(static_cast<bool(TCPConnection::*)(const std::string&)>(&TCPConnection::send), this, buf));
         return true;
+    }
+}
+
+void TCPConnection::shutdownAfterWrite()
+{
+    if (isCallableInOwnerThread())
+    {
+        if (m_sendBuf.readableBytes() == 0 && !m_enableWrite)
+        {
+            onClose();
+        }
+        else
+        {
+            m_shutdownAfterWrite = true;
+        }
+    }
+    else
+    {
+        m_spEventLoop->registerCustomTask(
+            std::bind(&TCPConnection::shutdownAfterWrite, this));
+
     }
 }
 
@@ -68,12 +83,12 @@ void TCPConnection::onRead()
             return;
         }
 
-        //����������ǳ���
+
         onClose();
     }
     else
     {
-        //n>0 ˵��������
+
         m_recvBuf.append(buf, n);
         if (m_enableRead)
         {
@@ -108,18 +123,20 @@ void TCPConnection::onWrite()
 
             if (m_sendBuf.readableBytes() == 0)
             {
-                // ���ͻ������ѿ�
+
                 enableWrite(false);
                 unregisterWriteEvent();
 
                 if (m_writeCallBack)
                     m_writeCallBack();
+
+                if (m_shutdownAfterWrite)
+                    onClose();
             }
         }
     }
     else
     {
-        //���ͻ�����Ϊ�գ���Ӧ�ô���д�¼�
         enableWrite(false);
         unregisterWriteEvent();
     }
@@ -142,6 +159,11 @@ void TCPConnection::onClose()
     if (m_closeCallBack)
         m_closeCallBack();
 
+    if (m_socket != INVALID_SOCKET)
+    {
+        closesocket(m_socket);
+        m_socket = INVALID_SOCKET;
+    }
 }
 
 bool TCPConnection::sendInterval(const char* buf, size_t bufLen)
@@ -154,9 +176,12 @@ bool TCPConnection::sendInterval(const char* buf, size_t bufLen)
 
     m_sendBuf.append(buf, bufLen);
 
-    if (!m_enableRead)
+    if (!m_enableWrite)
     {
-        int n = ::send(m_socket, m_sendBuf.peek(), static_cast<int>(m_sendBuf.readableBytes()), 0);
+        int n = ::send(m_socket, m_sendBuf.peek(),
+            static_cast<int>(m_sendBuf.readableBytes()), 0);
+
+
         if (n > 0)
         {
             m_sendBuf.retrieve(n);
@@ -167,6 +192,19 @@ bool TCPConnection::sendInterval(const char* buf, size_t bufLen)
                 enableWrite(true);
                 registerWriteEvent();
                 return true;
+            }
+            else
+            {
+                // 先调用写完成回调
+                if (m_writeCallBack)
+                    m_writeCallBack();
+
+                //检查是否需要关闭
+                if (m_shutdownAfterWrite)
+                {
+                    onClose();
+                    return true;
+                }
             }
         }
         else if (n < 0)

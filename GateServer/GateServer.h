@@ -34,15 +34,15 @@ protected:
     virtual void handleUserRegister(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response,
         const std::map<std::string, std::string>& params);
 private:
-    void sendJsonResponse(ZhKeyesIMHttp::HttpResponse& response,
+    void setJsonResponse(ZhKeyesIMHttp::HttpResponse& response,
         const nlohmann::json& json,
         ZhKeyesIMHttp::HttpStatusCode code);
 
-    void sendErrorRequest(ZhKeyesIMHttp::HttpResponse& response,
+    void setErrorRequest(ZhKeyesIMHttp::HttpResponse& response,
         ZhKeyesIMHttp::HttpStatusCode code,
         const std::string& message);
 
-    void sendSuccessReqeust(ZhKeyesIMHttp::HttpResponse& response,
+    void setSuccessReqeust(ZhKeyesIMHttp::HttpResponse& response,
         ZhKeyesIMHttp::HttpStatusCode code,
         const std::string& message);
 

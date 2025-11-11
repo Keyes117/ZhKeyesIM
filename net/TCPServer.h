@@ -19,7 +19,7 @@
 #include "net_export.h"
 
 using ConnectionCallback = std::function<void(std::shared_ptr<TCPConnection>& spConn)>;
-using DisConnectioncallback = std::function<void(const std::shared_ptr<TCPConnection>& spConn)>;
+using DisConnectioncallback = std::function<void(SOCKET clientSocket)>;
 
 class NET_API TCPServer
 {
@@ -27,7 +27,7 @@ public:
     TCPServer();
     ~TCPServer();
 
-    bool init(int32_t threadNum, const std::string& ip, uint16_t port);
+    bool init(int32_t threadNum, const std::string& ip, uint16_t port, IOMultiplexType type = IOMultiplexType::Epoll);
     void start();
     void shutdown();
 

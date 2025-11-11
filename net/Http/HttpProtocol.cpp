@@ -126,7 +126,7 @@ std::string HttpUtils::getMimeType(const std::string& extension) {
     if (it != MIME_TYPE_MAP.end()) {
         return it->second;
     }
-    return "application/octet-stream"; 
+    return "application/octet-stream";
 }
 
 
@@ -156,9 +156,9 @@ std::string HttpUtils::urlDecode(const std::string& str) {
     std::string decoded;
     decoded.reserve(str.length());
 
-    for (size_t i = 0; i < str.length(); ++i) 
+    for (size_t i = 0; i < str.length(); ++i)
     {
-        if (str[i] == '%' && i + 2 < str.length()) 
+        if (str[i] == '%' && i + 2 < str.length())
         {
             std::string hex = str.substr(i + 1, 2);
             char* end;
@@ -186,16 +186,27 @@ std::string HttpUtils::urlDecode(const std::string& str) {
 
 std::string HttpUtils::formatHttpDate(time_t timestamp)
 {
+    // 使用 chrono 获取时间点
+    std::chrono::system_clock::time_point tp;
+
     if (timestamp == 0) {
-        timestamp = std::time(nullptr);
+        tp = std::chrono::system_clock::now();
+    }
+    else {
+        tp = std::chrono::system_clock::from_time_t(timestamp);
     }
 
-    std::tm* gmt = std::gmtime(&timestamp);
+    // 转换为 time_t
+    auto time = std::chrono::system_clock::to_time_t(tp);
+    std::tm* gmt = std::gmtime(&time);
     if (!gmt) {
         return "";
     }
 
-    return fmt::format("{:%a, %d %b %Y %H:%M:%S} GMT", *gmt);
+    // 使用 put_time 格式化
+    std::ostringstream oss;
+    oss << std::put_time(gmt, "%a, %d %b %Y %H:%M:%S GMT");
+    return oss.str();
 }
 
 time_t HttpUtils::parseHttpDate(const std::string& dateStr)

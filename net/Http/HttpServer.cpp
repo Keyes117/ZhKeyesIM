@@ -10,14 +10,15 @@ ZhKeyesIM::Net::Http::HttpServer::~HttpServer()
     shutdown();
 }
 
-bool HttpServer::init(uint32_t threadNum, const std::string& ip/*=""*/, uint16_t port /*= 80*/)
+bool HttpServer::init(uint32_t threadNum, const std::string& ip/*=""*/, uint16_t port /*= 80*/,
+    IOMultiplexType type)
 {
     m_spTcpServer = std::make_unique<TCPServer>();
-    if (!m_spTcpServer->init(threadNum, ip, port))
+    if (!m_spTcpServer->init(threadNum, ip, port, type))
         return false;
 
     m_spTcpServer->setConnectionCallback(std::bind(&HttpServer::onConnected, this, std::placeholders::_1));
-
+    m_spTcpServer->setDisConnectionCallback(std::bind(&HttpServer::onDisConnected, this, std::placeholders::_1));
 
     return true;
 }
@@ -36,23 +37,41 @@ void HttpServer::shutdown()
 
 void HttpServer::onConnected(std::shared_ptr<TCPConnection>& spConn)
 {
-    auto spHttpSession = std::make_shared<HttpSession>(this,std::move(spConn));
-    m_sessions.insert(std::make_pair(spHttpSession->getID(), spHttpSession));
+    auto spHttpSession = std::make_shared<HttpSession>(this, spConn);
+    HttpSession::SessionID sessionId = spHttpSession->getID();
+    {
+        std::lock_guard<std::mutex> lock(m_sessionMutex);
+        m_sessions.insert(std::make_pair(sessionId, spHttpSession));
+        m_socketToSession.insert(std::make_pair(spConn->getSocket(), sessionId));
+    }
+
+
 
 }
 
-void HttpServer::onDisConnected(HttpSession::SessionID sessionID)
+void HttpServer::onDisConnected(SOCKET clientSocket)
 {
-    auto iter = m_sessions.find(sessionID);
-    if (iter != m_sessions.end())
+
+    std::lock_guard<std::mutex> lock(m_sessionMutex);
+    auto socketIter = m_socketToSession.find(clientSocket);
+
+    if (socketIter != m_socketToSession.end())
     {
-        //这里不能直接删除
-        std::shared_ptr<HttpSession> spHttpSession = iter->second;
-        m_pendingToDeleteSessions.emplace_back(spHttpSession);
-        m_sessions.erase(iter);
+        HttpSession::SessionID sessionID = socketIter->second;
 
+        auto iter = m_sessions.find(sessionID);
+        if (iter != m_sessions.end())
+        {
+            //这里不能直接删除
+            std::shared_ptr<HttpSession> spHttpSession = iter->second;
+            m_pendingToDeleteSessions.emplace_back(spHttpSession);
+            m_sessions.erase(iter);
+        }
 
+        m_socketToSession.erase(socketIter);
     }
+
+
 }
 
 void HttpServer::handleRequest(const HttpRequest& request, HttpResponse& response)

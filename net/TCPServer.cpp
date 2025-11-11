@@ -11,7 +11,7 @@ TCPServer::~TCPServer()
     shutdown();
 }
 
-bool TCPServer::init(int32_t threadNum, const std::string& ip, uint16_t port)
+bool TCPServer::init(int32_t threadNum, const std::string& ip, uint16_t port, IOMultiplexType type)
 {
     LOG_INFO("server initializing...");
 #ifdef _WIN32
@@ -23,20 +23,24 @@ bool TCPServer::init(int32_t threadNum, const std::string& ip, uint16_t port)
         return false;
     }
 #endif
-    m_threadPool.start(threadNum);
+    m_threadPool.start(threadNum, type);
     m_ip = ip;
     m_port = port;
 
-    m_baseEventLoop.init(IOMultiplexType::Epoll);
+    std::cout << "base EventLoop ThreadId" << std::this_thread::get_id() << std::endl;
+    m_baseEventLoop.setThreadID(std::this_thread::get_id());
+
+    m_baseEventLoop.init(type);
+
     m_acceptor.setAcceptCallback(std::bind(&TCPServer::onAccept, this, std::placeholders::_1));
 
     if (!m_acceptor.startListen(m_ip, m_port))
     {
-        LOG_ERROR("server is listening Ip:%s,port%" PRIu16 "!");
+
         return false;
     }
 
-
+    LOG_INFO("server is listening Ip:%s, port %d ", m_ip.c_str(), static_cast<int>(m_port));
     LOG_INFO("server initialized");
     return true;
 
@@ -46,9 +50,6 @@ bool TCPServer::init(int32_t threadNum, const std::string& ip, uint16_t port)
 
 void TCPServer::start()
 {
-    std::cout << "base EventLoop ThreadId" << std::this_thread::get_id() << std::endl;
-    m_baseEventLoop.setThreadID(std::this_thread::get_id());
-
     m_baseEventLoop.run();
     LOG_INFO("set server Ip:%s, port:%" PRId16 "...", m_ip, m_port);
 }
@@ -76,12 +77,13 @@ void TCPServer::onAccept(SOCKET clientSocket)
     }
 
     spConnection->setCloseCallback(std::bind(&TCPServer::onDisConnected, this, clientSocket));
-    spConnection->startRead();
+
     if (m_connectionCallback)
     {
         m_connectionCallback(spConnection);
     }
 
+    spConnection->startRead();
 }
 
 void TCPServer::onConnected(std::shared_ptr<TCPConnection>& spConn)
@@ -91,6 +93,9 @@ void TCPServer::onConnected(std::shared_ptr<TCPConnection>& spConn)
 
 void TCPServer::onDisConnected(SOCKET clientSocket)
 {
+    if (m_disConnectionCallback)
+        m_disConnectionCallback(clientSocket);
+
     std::lock_guard<std::mutex> lock(m_connectionMutex);
     m_connections.erase(clientSocket);
 }

@@ -17,7 +17,7 @@ public:
     ThreadPool() = default;
     ~ThreadPool() = default;
 
-    void start(int32_t threadNum = 1);
+    void start(int32_t threadNum = 1, IOMultiplexType type = IOMultiplexType::Epoll);
     void stop();
 
     std::shared_ptr<EventLoop> getNextEventLoop();

@@ -47,7 +47,7 @@ void EventLoop::run()
         std::vector<EventDispatcher*> activeDispatchers;
         m_spIOMultiplex->poll(1000000, activeDispatchers);
 
-        for (auto dispatcher : activeDispatchers)
+        for (auto dispatcher : activeDispatchers) 
         {
             if (dispatcher)
             {

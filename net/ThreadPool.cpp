@@ -5,7 +5,7 @@
 static constexpr int32_t MAX_THREAD_NUM = 20;
 static constexpr int32_t DEFAULT_THREAD_NUM = 1;
 
-void ThreadPool::start(int32_t threadNum)
+void ThreadPool::start(int32_t threadNum, IOMultiplexType type)
 {
     if (threadNum <= 0 || threadNum > MAX_THREAD_NUM)
         threadNum = DEFAULT_THREAD_NUM;
@@ -13,7 +13,7 @@ void ThreadPool::start(int32_t threadNum)
     for (int32_t i = 0; i < threadNum; i++)
     {
         auto spEventLoop = std::make_shared<EventLoop>();
-        spEventLoop->init();
+        spEventLoop->init(type);
         m_eventLoops.push_back(std::move(spEventLoop));
     }
     for (int32_t i = 0; i < threadNum; i++)

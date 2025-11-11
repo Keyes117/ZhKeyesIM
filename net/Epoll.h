@@ -50,7 +50,7 @@ struct OverlappedContext
         }
     }
 
-    // ╫Шж╧©╫╠╢
+    // О©╫О©╫ж╧О©╫О©╫О©╫О©╫
     OverlappedContext(const OverlappedContext&) = delete;
     OverlappedContext& operator=(const OverlappedContext&) = delete;
 };
@@ -82,9 +82,9 @@ private:
     std::unordered_map<SOCKET, EventDispatcher*> m_EventMap;
     std::vector<OVERLAPPED_ENTRY> m_completionEntries;
 
-    // ╧эюМц©╦Ж socket ╣д╤аиообнд
+    // О©╫О©╫О©╫О©╫ц©О©╫О©╫ socket О©╫д╤О©╫О©╫О©╫О©╫О©╫О©╫О©╫
     std::unordered_map<SOCKET, std::unique_ptr<OverlappedContext>> m_readContexts;
-    // ╧эюМц©╦Ж socket ╣дп╢иообнд
+    // О©╫О©╫О©╫О©╫ц©О©╫О©╫ socket О©╫О©╫п╢О©╫О©╫О©╫О©╫О©╫О©╫
     std::unordered_map<SOCKET, std::unique_ptr<OverlappedContext>> m_writeContexts;
 #else
     int m_epollfd;

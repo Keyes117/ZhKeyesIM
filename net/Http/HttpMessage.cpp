@@ -17,7 +17,7 @@
 
 using namespace ZhKeyesIM::Net::Http;
 
-void HttpMessage::setHeader(const std::string& name, const std::string value)
+void HttpMessage::setHeader(const std::string& name, const std::string& value)
 {
     std::string nomalizedName = normalizeHeaderName(name);
     m_headers[nomalizedName] = value;
@@ -106,7 +106,7 @@ std::string HttpMessage::headersToString() const {
     fmt::memory_buffer buf;
     for (const auto& header : m_headers)
     {
-        fmt::format_to(std::back_inserter(buf),"{}: {}\r\n",header.first, header.second);
+        fmt::format_to(std::back_inserter(buf), "{}: {}\r\n", header.first, header.second);
     }
     return fmt::to_string(buf);
 }
@@ -115,7 +115,7 @@ bool HttpMessage::parseHeaders(const std::string& headerData) {
     std::string_view sv(headerData);
 
 
-    while (!sv.empty()) 
+    while (!sv.empty())
     {
         size_t posCRLF = sv.find("\r\n");
         if (posCRLF == std::string_view::npos)

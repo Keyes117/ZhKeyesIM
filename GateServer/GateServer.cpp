@@ -11,7 +11,7 @@ GateServer::~GateServer()
 bool GateServer::init(uint32_t threadNum, const std::string& ip, uint16_t port)
 {
     m_spHttpServer = std::make_unique<ZhKeyesIMHttp::HttpServer>();
-    if (!m_spHttpServer->init(threadNum, ip,port))
+    if (!m_spHttpServer->init(threadNum, ip, port, IOMultiplexType::Select))
         return false;
 
     m_spHttpServer->setRequestCallBack(std::bind(&GateServer::onHttpRequest, this, std::placeholders::_1, std::placeholders::_2));
@@ -32,25 +32,18 @@ void GateServer::shutdown()
 
 void GateServer::onHttpRequest(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response)
 {
-    LOG_INFO("Received: %s request: %s ", request.toString(), request.getPath());
+    LOG_INFO("Received: %s request: %s ", request.toString().c_str(), request.getPath().c_str());
 
     // 1. CORS 处理 （如果需要）
-    response.setHeader("Access-Control-Allow-Origin", "*");
-    response.setHeader("Access-Control-Allow-Methods","GET,POST,PUT,DELETE,OPTIONS");
-    response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    //response.setHeader("Access-Control-Allow-Origin", "*");
+    //response.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+    //response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
 
-    if (request.getMethod() == ZhKeyesIMHttp::HttpMethod::GET && request.getPath() == "/")
-    {
-        response.setStatusCode(ZhKeyesIMHttp::HttpStatusCode::NoContent);
-        return;
-    }
-
-    LOG_INFO("Request info: Method = %s, Path = %s, ContentType = %s",
-        request.getMethodString(),
-        request.getPath(),
-        request.getContentType()
-    );
-
+    //LOG_INFO("Request info: Method = %s, Path = %s, ContentType = %s",
+    //    request.getMethodString(),
+    //    request.getPath(),
+    //    request.getContentType()
+    //);
 
     const std::string& path = request.getPath();
 
@@ -59,7 +52,7 @@ void GateServer::onHttpRequest(const ZhKeyesIMHttp::HttpRequest& request, ZhKeye
 
     if (!m_spRouter->dispatch(request, response))
     {
-        sendErrorRequest(response,
+        setErrorRequest(response,
             ZhKeyesIMHttp::HttpStatusCode::NotFound,
             "Route not found");
     }
@@ -90,15 +83,15 @@ void GateServer::handleUserLogin(const ZhKeyesIMHttp::HttpRequest& request, ZhKe
             }}
         };
 
-        sendJsonResponse(response, responseData,
+        setJsonResponse(response, responseData,
             ZhKeyesIMHttp::HttpStatusCode::OK);
     }
     catch (const std::exception& e) {
-        sendErrorRequest(response,
+        setErrorRequest(response,
             ZhKeyesIMHttp::HttpStatusCode::BadRequest,
             e.what());
     }
-    
+
 }
 
 void GateServer::handleUserRegister(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response, const std::map<std::string, std::string>& params)
@@ -112,26 +105,26 @@ void GateServer::handleUserRegister(const ZhKeyesIMHttp::HttpRequest& request, Z
 
         // TODO: 实际的注册逻辑
 
-        sendSuccessReqeust(response,
+        setSuccessReqeust(response,
             ZhKeyesIMHttp::HttpStatusCode::OK,
             "User registered successfully");
     }
     catch (const std::exception& e) {
-        sendErrorRequest(response,
+        setErrorRequest(response,
             ZhKeyesIMHttp::HttpStatusCode::BadRequest,
             e.what());
     }
 }
 
-void GateServer::sendJsonResponse(ZhKeyesIMHttp::HttpResponse& response, 
-        const nlohmann::json& json,
-        ZhKeyesIMHttp::HttpStatusCode code)
+void GateServer::setJsonResponse(ZhKeyesIMHttp::HttpResponse& response,
+    const nlohmann::json& json,
+    ZhKeyesIMHttp::HttpStatusCode code)
 {
     response.setStatusCode(code);
     response.setJsonResponse(json.dump());
 }
 
-void GateServer::sendErrorRequest(ZhKeyesIMHttp::HttpResponse& response, ZhKeyesIMHttp::HttpStatusCode code, const std::string& message)
+void GateServer::setErrorRequest(ZhKeyesIMHttp::HttpResponse& response, ZhKeyesIMHttp::HttpStatusCode code, const std::string& message)
 {
     nlohmann::json errorData = {
         {"code", static_cast<int>(code)},
@@ -143,7 +136,7 @@ void GateServer::sendErrorRequest(ZhKeyesIMHttp::HttpResponse& response, ZhKeyes
     response.setJsonResponse(errorData);
 }
 
-void GateServer::sendSuccessReqeust(ZhKeyesIMHttp::HttpResponse& response, ZhKeyesIMHttp::HttpStatusCode code, const std::string& message)
+void GateServer::setSuccessReqeust(ZhKeyesIMHttp::HttpResponse& response, ZhKeyesIMHttp::HttpStatusCode code, const std::string& message)
 {
     nlohmann::json successData = {
     {"code", static_cast<int>(code)},

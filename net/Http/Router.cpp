@@ -5,14 +5,14 @@
 
 using namespace ZhKeyesIM::Net::Http;
 
-void Router::addRoute(Http::HttpMethod method, 
-                    const std::string& pattern,
-                    HandlerFunc handler)
+void Router::addRoute(Http::HttpMethod method,
+    const std::string& pattern,
+    HandlerFunc handler)
 {
     RouteEntry  entry;
     entry.method = method;
     entry.pattern = pattern;
-    
+
     auto [regex, paramNames] = compilePattern(pattern);
     entry.regex = regex;
     entry.paramNames = paramNames;
@@ -33,9 +33,10 @@ bool Router::dispatch(const HttpRequest& request, HttpResponse& response)
             matchRoute(route, request.getPath(), params))
         {
             //TODO: 执行路由特定的中间件
+
+            route.handler(request, response, params);
         }
 
-        route.handler(request, response, params);
         return true;
     }
 }

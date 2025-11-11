@@ -9,7 +9,11 @@ int main()
     //Logger::instance().setLogFile("server.log");
 
     GateServer server;
-    server.init(4, "127.0.0.1", 8080);
+    if (!server.init(0, "127.0.0.1", 8080))
+    {
+        LOG_ERROR("failed to initialize GateSerevr ");
+        return 1;
+    }
     server.start();
     return 0;
 }

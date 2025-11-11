@@ -155,8 +155,19 @@ void  Epoll::registerReadEvent(SOCKET fd, EventDispatcher* dispatcher)
         return;
     }
 
+    // 检查是否是监听套接字（通过检查 SO_ACCEPTCONN 选项）
+    BOOL isListening = FALSE;
+    int optLen = sizeof(isListening);
+    if (::getsockopt(fd, SOL_SOCKET, SO_ACCEPTCONN, (char*)&isListening, &optLen) == 0 && isListening)
+    {
+        // 这是监听套接字，不需要启动 WSARecv，只需要关联到 IOCP 即可
+        // 监听套接字会通过 AcceptEx 或 accept 来接受连接
+        LOG_DEBUG("Registering listening socket, fd: %d", fd);
+        return;
+    }
+
     int socketType = SOCK_STREAM;
-    int optLen = sizeof(socketType);
+    optLen = sizeof(socketType);
     if (::getsockopt(fd, SOL_SOCKET, SO_TYPE, (char*)&socketType, &optLen) != 0)
     {
         LOG_ERROR("Failed to get socket type, error: %d", GetSocketError());

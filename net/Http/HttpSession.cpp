@@ -8,29 +8,28 @@
 
 using namespace ZhKeyesIM::Net::Http;
 
-HttpSession::HttpSession(HttpServer* pServer, std::shared_ptr<TCPConnection>&& spConn) :
+HttpSession::HttpSession(HttpServer* pServer, std::shared_ptr<TCPConnection>& spConn) :
     m_pHttpServer(pServer),
     m_HttpParser(SessionMode::SESSION_MODE_SERVER),
-    m_spConnection(std::move(spConn))
+    m_spConnection(spConn)
 {
     m_sessionID = HttpSession::generateID();
 
-
     m_spConnection->setReadCallback(std::bind(&HttpSession::onRead, this, std::placeholders::_1));
     m_spConnection->setWriteCallback(std::bind(&HttpSession::onWrite, this));
-    m_spConnection->setCloseCallback(std::bind(&HttpSession::onClose, this));
+
 }
 
-HttpSession::HttpSession(HttpClient* pClient, std::shared_ptr<TCPConnection>&& spConn) :
+HttpSession::HttpSession(HttpClient* pClient, std::shared_ptr<TCPConnection>& spConn) :
     m_pHttpClient(pClient),
     m_HttpParser(SessionMode::SESSION_MODE_CLIENT),
-    m_spConnection(std::move(spConn))
+    m_spConnection(spConn)
 {
     m_sessionID = HttpSession::generateID();
 
     m_spConnection->setReadCallback(std::bind(&HttpSession::onRead, this, std::placeholders::_1));
     m_spConnection->setWriteCallback(std::bind(&HttpSession::onWrite, this));
-    m_spConnection->setCloseCallback(std::bind(&HttpSession::onClose, this));
+
 }
 
 ZhKeyesIM::Net::Http::HttpSession::~HttpSession()
@@ -67,11 +66,11 @@ void HttpSession::onRead(Buffer& buffer)
         // 重置解析器，准备处理下一个消息
         if (shouldKeepAlive()) {
             m_HttpParser.reset();
-      
+
         }
         else
         {
-            m_spConnection->onClose();
+            m_spConnection->shutdownAfterWrite();
         }
     }
     else if (result == ParseResult::PARSE_RESULT_ERROR)
@@ -85,14 +84,7 @@ void HttpSession::onWrite()
 }
 void HttpSession::onClose()
 {
-    if (m_pHttpServer)
-    {
-        m_pHttpServer->onDisConnected(m_sessionID);
-    }
-    else if (m_pHttpClient)
-    {
-        m_pHttpClient->onDisconnected();
-    }
+
 }
 
 bool HttpSession::sendRequest(const HttpRequest& request)
@@ -113,15 +105,10 @@ void HttpSession::handleRequest(std::shared_ptr<HttpRequest>& spRequest)
         m_pHttpServer->handleRequest(*spRequest, response);
 
         sendResponse(response);
-
-        if (!shouldKeepAlive())
-        {
-            
-        }
     }
     else
     {
-        onClose();
+        m_spConnection->onClose();
     }
 }
 
@@ -133,7 +120,7 @@ void HttpSession::handleResponse(std::shared_ptr<HttpResponse>& spResponse)
     }
     else
     {
-        onClose();
+        m_spConnection->onClose();
     }
 }
 

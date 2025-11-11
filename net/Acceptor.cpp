@@ -1,6 +1,8 @@
 #include "Acceptor.h"
 #include "TCPConnector.h"
 
+#include "Logger.h"
+
 Acceptor::Acceptor(EventLoop* pEventLoop)
     :m_listenSocket(INVALID_SOCKET),
     m_listening(false),
@@ -150,11 +152,11 @@ void Acceptor::onClose()
     stopListen();
 }
 
-void Acceptor::enableRead([[maybe_unused]]bool isEnabled)
+void Acceptor::enableRead([[maybe_unused]] bool isEnabled)
 {
 }
 
-void Acceptor::enableWrite([[maybe_unused]]bool isEnabled)
+void Acceptor::enableWrite([[maybe_unused]] bool isEnabled)
 {
 }
 
@@ -174,7 +176,7 @@ bool Acceptor::createListenSocket()
         return false;
     }
 #endif
-
+    LOG_INFO("create listen socket: %d", m_listenSocket);
     return true;
 }
 

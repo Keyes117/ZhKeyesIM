@@ -20,9 +20,13 @@ public:
     TCPConnection(SOCKET fd, const std::shared_ptr<EventLoop>& spEventLoop);
     virtual ~TCPConnection();
 
+    SOCKET getSocket() const { return m_socket; }
+
     void startRead();
     bool send(const char* buf, size_t bufLen);
     bool send(const std::string& buf);
+
+    void shutdownAfterWrite();
 
 public:
     virtual void onRead() override;
@@ -51,7 +55,7 @@ public:
         m_closeCallBack = std::move(closeCallBack);
     }
 
-    
+
 private:
 
     bool sendInterval(const char* buf, size_t bufLen);
@@ -66,8 +70,10 @@ private:
 private:
     SOCKET m_socket;
 
-    bool    m_registerReadEvent;
-    bool    m_registerWriteEvent;
+    bool    m_shutdownAfterWrite {false};
+
+    bool    m_registerReadEvent{ false };
+    bool    m_registerWriteEvent{ false };
 
     bool    m_enableRead{ false };
     bool    m_enableWrite{ false };

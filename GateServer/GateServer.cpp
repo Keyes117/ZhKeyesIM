@@ -1,5 +1,11 @@
 #include "GateServer.h"
 
+#include "VerifyGrpcClient.h"
+
+using namespace ZhKeyesIMHttp;
+using namespace nlohmann;
+using namespace message;
+
 GateServer::GateServer()
 {
 }
@@ -10,12 +16,12 @@ GateServer::~GateServer()
 
 bool GateServer::init(uint32_t threadNum, const std::string& ip, uint16_t port)
 {
-    m_spHttpServer = std::make_unique<ZhKeyesIMHttp::HttpServer>();
+    m_spHttpServer = std::make_unique<HttpServer>();
     if (!m_spHttpServer->init(threadNum, ip, port, IOMultiplexType::Select))
         return false;
 
     m_spHttpServer->setRequestCallBack(std::bind(&GateServer::onHttpRequest, this, std::placeholders::_1, std::placeholders::_2));
-    m_spRouter = std::make_unique<ZhKeyesIMHttp::Router>();
+    m_spRouter = std::make_unique<Router>();
     registerRoutes();
     return true;
 }
@@ -30,7 +36,7 @@ void GateServer::shutdown()
 
 }
 
-void GateServer::onHttpRequest(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response)
+void GateServer::onHttpRequest(const HttpRequest& request, HttpResponse& response)
 {
     LOG_INFO("Received: %s request: %s ", request.toString().c_str(), request.getPath().c_str());
 
@@ -53,21 +59,46 @@ void GateServer::onHttpRequest(const ZhKeyesIMHttp::HttpRequest& request, ZhKeye
     if (!m_spRouter->dispatch(request, response))
     {
         setErrorRequest(response,
-            ZhKeyesIMHttp::HttpStatusCode::NotFound,
+            HttpStatusCode::NotFound,
             "Route not found");
     }
 }
 
-void GateServer::handleGetRoot(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response, const std::map<std::string, std::string>& params)
+void GateServer::handleGetRoot(const HttpRequest& request, HttpResponse& response, const std::map<std::string, std::string>& params)
 {
-    response.setStatusCode(ZhKeyesIMHttp::HttpStatusCode::OK);
+    response.setStatusCode(HttpStatusCode::OK);
     response.setBody("Welcome to ZhKeyesIM Gateway");
 }
 
-void GateServer::handleUserLogin(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response, const std::map<std::string, std::string>& params)
+void GateServer::handleGetVerifyCode(const HttpRequest& request, HttpResponse& response, const std::map<std::string, std::string>& params)
+{
+    try
+    {
+        json requestJson = json::parse(request.getBody());
+        std::string email = requestJson["email"];
+
+        GetVerifyResponse grpcResponse = VerifyGrpcClient::getInstance().GetVerifyCode(email);
+        LOG_DEBUG("email is %s", email.c_str());
+
+        json responseJson;
+        responseJson["error"] = grpcResponse.error();
+        responseJson["email"] = grpcResponse.email();
+        responseJson["code"] = grpcResponse.code();
+
+        setJsonResponse(response, responseJson, HttpStatusCode::OK);
+
+    }
+    catch (const std::exception& e) {
+        setErrorRequest(response,
+            ZhKeyesIMHttp::HttpStatusCode::BadRequest,
+            e.what());
+    }
+}
+
+void GateServer::handleUserLogin(const HttpRequest& request, HttpResponse& response, const std::map<std::string, std::string>& params)
 {
     try {
-        auto json = nlohmann::json::parse(request.getBody());
+        auto json = json::parse(request.getBody());
 
         std::string username = json["username"];
         std::string password = json["password"];
@@ -84,21 +115,21 @@ void GateServer::handleUserLogin(const ZhKeyesIMHttp::HttpRequest& request, ZhKe
         };
 
         setJsonResponse(response, responseData,
-            ZhKeyesIMHttp::HttpStatusCode::OK);
+            HttpStatusCode::OK);
     }
     catch (const std::exception& e) {
         setErrorRequest(response,
-            ZhKeyesIMHttp::HttpStatusCode::BadRequest,
+            HttpStatusCode::BadRequest,
             e.what());
     }
 
 }
 
-void GateServer::handleUserRegister(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response, const std::map<std::string, std::string>& params)
+void GateServer::handleUserRegister(const HttpRequest& request, HttpResponse& response, const std::map<std::string, std::string>& params)
 {
     try {
         // 解析JSON请求体
-        auto json = nlohmann::json::parse(request.getBody());
+        auto json = json::parse(request.getBody());
 
         std::string username = json["username"];
         std::string password = json["password"];
@@ -106,27 +137,27 @@ void GateServer::handleUserRegister(const ZhKeyesIMHttp::HttpRequest& request, Z
         // TODO: 实际的注册逻辑
 
         setSuccessReqeust(response,
-            ZhKeyesIMHttp::HttpStatusCode::OK,
+            HttpStatusCode::OK,
             "User registered successfully");
     }
     catch (const std::exception& e) {
         setErrorRequest(response,
-            ZhKeyesIMHttp::HttpStatusCode::BadRequest,
+            HttpStatusCode::BadRequest,
             e.what());
     }
 }
 
-void GateServer::setJsonResponse(ZhKeyesIMHttp::HttpResponse& response,
-    const nlohmann::json& json,
-    ZhKeyesIMHttp::HttpStatusCode code)
+void GateServer::setJsonResponse(HttpResponse& response,
+    const json& json,
+    HttpStatusCode code)
 {
     response.setStatusCode(code);
     response.setJsonResponse(json.dump());
 }
 
-void GateServer::setErrorRequest(ZhKeyesIMHttp::HttpResponse& response, ZhKeyesIMHttp::HttpStatusCode code, const std::string& message)
+void GateServer::setErrorRequest(HttpResponse& response, HttpStatusCode code, const std::string& message)
 {
-    nlohmann::json errorData = {
+    json errorData = {
         {"code", static_cast<int>(code)},
         {"error", message},
         {"timestamp", std::time(nullptr)}
@@ -136,12 +167,12 @@ void GateServer::setErrorRequest(ZhKeyesIMHttp::HttpResponse& response, ZhKeyesI
     response.setJsonResponse(errorData);
 }
 
-void GateServer::setSuccessReqeust(ZhKeyesIMHttp::HttpResponse& response, ZhKeyesIMHttp::HttpStatusCode code, const std::string& message)
+void GateServer::setSuccessReqeust(HttpResponse& response, HttpStatusCode code, const std::string& message)
 {
-    nlohmann::json successData = {
-    {"code", static_cast<int>(code)},
-    {"success", message},
-    {"timestamp", std::time(nullptr)}
+    json successData = {
+        {"code", static_cast<int>(code)},
+        {"success", message},
+        {"timestamp", std::time(nullptr)}
     };
 
     response.setStatusCode(code);
@@ -150,12 +181,15 @@ void GateServer::setSuccessReqeust(ZhKeyesIMHttp::HttpResponse& response, ZhKeye
 
 void GateServer::registerRoutes()
 {
-    m_spRouter->addRoute(ZhKeyesIMHttp::HttpMethod::GET, "/",
+    m_spRouter->addRoute(HttpMethod::GET, "/",
         std::bind(&GateServer::handleGetRoot, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
-    m_spRouter->addRoute(ZhKeyesIMHttp::HttpMethod::POST, "api/user/register",
+    m_spRouter->addRoute(HttpMethod::POST, "api/user/register",
         std::bind(&GateServer::handleUserRegister, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
-    m_spRouter->addRoute(ZhKeyesIMHttp::HttpMethod::POST, "api/user/login",
+    m_spRouter->addRoute(HttpMethod::POST, "api/user/login",
         std::bind(&GateServer::handleUserLogin, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    
+    m_spRouter->addRoute(HttpMethod::POST, "api/verify/getCode",
+        std::bind(&GateServer::handleGetVerifyCode, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3))
 }

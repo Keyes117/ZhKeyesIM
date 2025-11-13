@@ -28,6 +28,9 @@ protected:
     virtual void handleGetRoot(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response,
         const std::map<std::string, std::string>& params);
 
+    virtual void handleGetVerifyCode(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response,
+        const std::map<std::string, std::string>& params);
+
     virtual void handleUserLogin(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response,
         const std::map<std::string, std::string>& params);
 

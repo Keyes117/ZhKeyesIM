@@ -1,6 +1,9 @@
 #include "GateServer.h"
 
+#include <future>
+
 #include "VerifyGrpcClient.h"
+
 
 using namespace ZhKeyesIMHttp;
 using namespace nlohmann;
@@ -40,7 +43,7 @@ void GateServer::onHttpRequest(const HttpRequest& request, HttpResponse& respons
 {
     LOG_INFO("Received: %s request: %s ", request.toString().c_str(), request.getPath().c_str());
 
-    // 1. CORS ���� �������Ҫ��
+    // 1. CORS 处理 （如果需要）
     //response.setHeader("Access-Control-Allow-Origin", "*");
     //response.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
     //response.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
@@ -53,8 +56,8 @@ void GateServer::onHttpRequest(const HttpRequest& request, HttpResponse& respons
 
     const std::string& path = request.getPath();
 
-    // 2. ������֤��������Ҫ��Ȩ�Ľӿڣ�
-    // 3. ·�ɷַ�
+    // 2. 身份验证（对于需要鉴权的接口）
+    // 3. 路由分发
 
     if (!m_spRouter->dispatch(request, response))
     {
@@ -77,20 +80,67 @@ void GateServer::handleGetVerifyCode(const HttpRequest& request, HttpResponse& r
         json requestJson = json::parse(request.getBody());
         std::string email = requestJson["email"];
 
-        GetVerifyResponse grpcResponse = VerifyGrpcClient::getInstance().GetVerifyCode(email);
-        LOG_DEBUG("email is %s", email.c_str());
+        auto promise = std::make_shared<std::promise<GetVerifyResponse>>();
+        auto future = promise->get_future();
 
+        VerifyGrpcClient::getInstance().GetVerifyCodeAsync(email,
+            [promise](const GetVerifyResponse& grpcResponse) {
+                // 这个回调在 gRPC CompletionQueue 线程中执行
+                // 将结果传递给 future
+                try {
+                    promise->set_value(grpcResponse);
+                }
+                catch (const std::exception& e) {
+                    // 防止重复 set_value 导致异常
+                    LOG_ERROR("Failed to set promise value: %s", e.what());
+                }
+            });
+
+        // 4. 等待结果（带超时保护）
+         //    虽然这里会阻塞当前线程，但 GRPC 调用是在独立线程中执行的
+         //    EventLoop 可以继续处理其他事件（定时器、其他连接等）
+        GetVerifyResponse grpcResponse;
+        auto status = future.wait_for(std::chrono::seconds(5));  // 5秒超时
+
+        if (status == std::future_status::ready) {
+            // 成功获取结果
+            grpcResponse = future.get();
+        }
+        else if (status == std::future_status::timeout) {
+            // 超时处理
+            LOG_ERROR("GRPC call timeout for email: %s", email.c_str());
+            grpcResponse.set_error(ErrorCodes::RPCFailed);
+        }
+        else {
+            // 其他错误
+            LOG_ERROR("GRPC call deferred for email: %s", email.c_str());
+            grpcResponse.set_error(ErrorCodes::RPCFailed);
+        }
+
+        // 5. 记录日志
+        LOG_DEBUG("Email: %s, Error code: %d", email.c_str(), grpcResponse.error());
+
+        // 6. 构建 JSON 响应
         json responseJson;
         responseJson["error"] = grpcResponse.error();
         responseJson["email"] = grpcResponse.email();
         responseJson["code"] = grpcResponse.code();
 
+        // 7. 设置 HTTP 响应
         setJsonResponse(response, responseJson, HttpStatusCode::OK);
-
     }
-    catch (const std::exception& e) {
+    catch (const json::exception& e) {
+        // JSON 解析错误
+        LOG_ERROR("JSON parse error: %s", e.what());
         setErrorRequest(response,
             ZhKeyesIMHttp::HttpStatusCode::BadRequest,
+            "Invalid JSON format");
+    }
+    catch (const std::exception& e) {
+        // 其他异常
+        LOG_ERROR("Exception in handleGetVerifyCode: %s", e.what());
+        setErrorRequest(response,
+            ZhKeyesIMHttp::HttpStatusCode::InternalServerError,
             e.what());
     }
 }
@@ -103,7 +153,7 @@ void GateServer::handleUserLogin(const HttpRequest& request, HttpResponse& respo
         std::string username = json["username"];
         std::string password = json["password"];
 
-        // TODO: ʵ�ʵĵ�¼�߼�
+        // TODO: 实际的登录逻辑
 
         nlohmann::json responseData = {
             {"code", 200},
@@ -128,13 +178,13 @@ void GateServer::handleUserLogin(const HttpRequest& request, HttpResponse& respo
 void GateServer::handleUserRegister(const HttpRequest& request, HttpResponse& response, const std::map<std::string, std::string>& params)
 {
     try {
-        // ����JSON������
+        // 解析JSON请求体
         auto json = json::parse(request.getBody());
 
         std::string username = json["username"];
         std::string password = json["password"];
 
-        // TODO: ʵ�ʵ�ע���߼�
+        // TODO: 实际的注册逻辑
 
         setSuccessReqeust(response,
             HttpStatusCode::OK,
@@ -191,5 +241,5 @@ void GateServer::registerRoutes()
         std::bind(&GateServer::handleUserLogin, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     
     m_spRouter->addRoute(HttpMethod::POST, "api/verify/getCode",
-        std::bind(&GateServer::handleGetVerifyCode, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3))
+        std::bind(&GateServer::handleGetVerifyCode, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 }

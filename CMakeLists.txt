@@ -217,6 +217,7 @@ if(PROTOBUF_LIB AND PROTOC_LIB)
             IMPORTED_LOCATION "${PROTOBUF_LIB}"
             IMPORTED_LOCATION_DEBUG "${PROTOBUF_LIB}"
             IMPORTED_LOCATION_RELEASE "${PROTOBUF_LIB}"
+            INTERFACE_INCLUDE_DIRECTORIES "${PROTOBUF_DIR}/include"
         )
     else()
         # 手动创建目标
@@ -232,6 +233,7 @@ if(PROTOBUF_LIB AND PROTOC_LIB)
             IMPORTED_LOCATION "${PROTOC_LIB}"
             IMPORTED_LOCATION_DEBUG "${PROTOC_LIB}"
             IMPORTED_LOCATION_RELEASE "${PROTOC_LIB}"
+            INTERFACE_INCLUDE_DIRECTORIES "${PROTOBUF_DIR}/include"
         )
     else()
         add_library(protobuf::libprotoc STATIC IMPORTED)

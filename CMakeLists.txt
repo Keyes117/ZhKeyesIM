@@ -33,6 +33,7 @@ set(FMT_DIR "${THIRD_PARTY_DIR}/fmt")
 set(GRPC_DIR "${THIRD_PARTY_DIR}/grpc")
 set(PROTOBUF_DIR "${THIRD_PARTY_DIR}/protobuf")
 set(JSON_DIR "${THIRD_PARTY_DIR}/json")
+set(REDIS_DIR "${THIRD_PARTY_DIR}/redis")
 
 # 编译器特定设置 - 修复运行时库不匹配问题
 if(MSVC)
@@ -216,6 +217,7 @@ if(PROTOBUF_LIB AND PROTOC_LIB)
             IMPORTED_LOCATION "${PROTOBUF_LIB}"
             IMPORTED_LOCATION_DEBUG "${PROTOBUF_LIB}"
             IMPORTED_LOCATION_RELEASE "${PROTOBUF_LIB}"
+            INTERFACE_INCLUDE_DIRECTORIES "${PROTOBUF_DIR}/include"
         )
     else()
         # 手动创建目标
@@ -231,6 +233,7 @@ if(PROTOBUF_LIB AND PROTOC_LIB)
             IMPORTED_LOCATION "${PROTOC_LIB}"
             IMPORTED_LOCATION_DEBUG "${PROTOC_LIB}"
             IMPORTED_LOCATION_RELEASE "${PROTOC_LIB}"
+            INTERFACE_INCLUDE_DIRECTORIES "${PROTOBUF_DIR}/include"
         )
     else()
         add_library(protobuf::libprotoc STATIC IMPORTED)
@@ -312,6 +315,62 @@ add_library(nlohmann::json INTERFACE IMPORTED)
 set_target_properties(nlohmann::json PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES "${JSON_DIR}/include"
 )
+
+# ==================== redis/hiredis 配置 ====================
+
+find_library(HIREDIS_LIB
+    NAMES
+        hiredis
+        hiredis.lib
+        libhiredis.a
+        libhiredis.so
+    PATHS "${REDIS_DIR}/lib"
+    NO_DEFAULT_PATH
+    NO_CMAKE_FIND_ROOT_PATH
+)
+
+# 查找 Win32_Interop 库（Windows 需要）
+if(WIN32)
+    find_library(WIN32_INTEROP_LIB
+        NAMES
+            Win32_Interop
+            Win32_Interop.lib
+        PATHS "${REDIS_DIR}/lib"
+        NO_DEFAULT_PATH
+        NO_CMAKE_FIND_ROOT_PATH
+    )
+endif()
+
+if(HIREDIS_LIB)
+    # 创建 hiredis 目标
+    add_library(hiredis::hiredis STATIC IMPORTED)
+    
+    # 设置库路径和头文件路径
+    set_target_properties(hiredis::hiredis PROPERTIES
+        IMPORTED_LOCATION "${HIREDIS_LIB}"
+        INTERFACE_INCLUDE_DIRECTORIES "${REDIS_DIR}/deps/hiredis"
+    )
+    
+    # Windows 平台需要链接 Win32_Interop
+    if(WIN32 AND WIN32_INTEROP_LIB)
+        set_target_properties(hiredis::hiredis PROPERTIES
+            INTERFACE_LINK_LIBRARIES "${WIN32_INTEROP_LIB}"
+        )
+    endif()
+    
+    # 设置运行时库（Windows）
+    if(MSVC)
+        set_target_properties(hiredis::hiredis PROPERTIES
+            MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
+        )
+    endif()
+    
+    message(STATUS "Found hiredis library: ${HIREDIS_LIB}")
+else()
+    message(WARNING "Could not find hiredis library")
+endif()
+
+
 
 # ==================== 添加子目录 ====================
 add_subdirectory(Log)

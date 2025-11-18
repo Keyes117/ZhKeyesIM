@@ -1,38 +1,73 @@
-#ifndef GATESERVRE_VerifyGRPCCLIENT_H_
-#define GATESERVRE_VerifyGRPCCLIENT_H_
+#ifndef GATESERVRE_VERIFYGRPCCLIENT_H_
+#define GATESERVRE_VERIFYGRPCCLIENT_H_
 
 #include <memory>
+#include <functional>
+#include <thread>
+#include <atomic>
+
+
+#include "Logger.h"
 
 #include <grpcpp/grpcpp.h>
-
 #include "message.grpc.pb.h"
+
+
 
 enum ErrorCodes {
 	Success = 0,
-	Error_Json = 1001,  //Json½âÎö´íÎó
-	RPCFailed = 1002,  //RPCÇëÇó´íÎó
-	VarifyExpired = 1003, //ÑéÖ¤Âë¹ıÆÚ
-	VarifyCodeErr = 1004, //ÑéÖ¤Âë´íÎó
-	UserExist = 1005,       //ÓÃ»§ÒÑ¾­´æÔÚ
-	PasswdErr = 1006,    //ÃÜÂë´íÎó
-	EmailNotMatch = 1007,  //ÓÊÏä²»Æ¥Åä
-	PasswdUpFailed = 1008,  //¸üĞÂÃÜÂëÊ§°Ü
-	PasswdInvalid = 1009,   //ÃÜÂë¸üĞÂÊ§°Ü
-	TokenInvalid = 1010,   //TokenÊ§Ğ§
-	UidInvalid = 1011,  //uidÎŞĞ§
+	Error_Json = 1001,  //Jsonè§£æé”™è¯¯
+	RPCFailed = 1002,  //RPCè¯·æ±‚é”™è¯¯
+	VarifyExpired = 1003, //éªŒè¯ç è¿‡æœŸ
+	VarifyCodeErr = 1004, //éªŒè¯ç é”™è¯¯
+	UserExist = 1005,       //ç”¨æˆ·å·²ç»å­˜åœ¨
+	PasswdErr = 1006,    //å¯†ç é”™è¯¯
+	EmailNotMatch = 1007,  //é‚®ç®±ä¸åŒ¹é…
+	PasswdUpFailed = 1008,  //æ›´æ–°å¯†ç å¤±è´¥
+	PasswdInvalid = 1009,   //å¯†ç æ›´æ–°å¤±è´¥
+	TokenInvalid = 1010,   //Tokenå¤±æ•ˆ
+	UidInvalid = 1011,  //uidæ— æ•ˆ
 };
 
+using GetVerifyCodeCallback = std::function<void(const message::GetVerifyResponse&)>;
 
 class VerifyGrpcClient
 {
 public:
     static VerifyGrpcClient& getInstance();
 
+	~VerifyGrpcClient();
+
     message::GetVerifyResponse GetVerifyCode(std::string email);
+
+	void GetVerifyCodeAsync(const std::string& email, GetVerifyCodeCallback&& callback);
 
 private:
     VerifyGrpcClient();
+
+	void processCQ();
+
+	struct AsyncClientCall
+	{
+		grpc::ClientContext context;
+		message::GetVerifyRequest request;
+		message::GetVerifyResponse response;
+		grpc::Status status;
+		GetVerifyCodeCallback callback;
+		std::unique_ptr<grpc::ClientAsyncResponseReader<message::GetVerifyResponse>> rpc;
+	};
+
     std::unique_ptr<message::VerifyService::Stub> m_stub;
+	std::unique_ptr<grpc::CompletionQueue> m_cq;
+	std::thread m_cqThread;
+	std::atomic<bool>	m_running;
+
+
+private:
+	VerifyGrpcClient(const VerifyGrpcClient&) = delete;
+	VerifyGrpcClient& operator=(const VerifyGrpcClient&) = delete;
+	VerifyGrpcClient(VerifyGrpcClient&&) = delete;
+	VerifyGrpcClient& operator=(VerifyGrpcClient&&) = delete;
 };
 
 

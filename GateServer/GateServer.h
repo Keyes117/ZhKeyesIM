@@ -1,8 +1,7 @@
-#ifndef GATESERVER_GATESERVRE_H_
-#define GATESERVRE_GATESERVER_H_
+#ifndef GATESERVER_GATESERVER_H_
+#define GATESERVER_GATESERVER_H_
 
-#include <grpc/event_engine/memory_request.h>
-#include "absl/strings/string_view.h"
+#include <future>
 
 #include "Http/HttpServer.h"
 #include "Http/HttpRequest.h"
@@ -10,6 +9,8 @@
 #include "Http/Router.h"
 
 #include "nlohmann/json.hpp"
+
+//#include "VerifyGrpcClient.h"
 
 namespace ZhKeyesIMHttp = ZhKeyesIM::Net::Http;
 

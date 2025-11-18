@@ -31,9 +31,10 @@ set(THIRD_PARTY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party")
 set(GTEST_ROOT "${THIRD_PARTY_DIR}/googletest")
 set(FMT_DIR "${THIRD_PARTY_DIR}/fmt")
 set(GRPC_DIR "${THIRD_PARTY_DIR}/grpc")
-set(PROTOBUF_DIR "${THIRD_PARTY_DIR}/protobuf")
+set(PROTOBUF_DIR "${THIRD_PARTY_DIR}/grpc")
 set(JSON_DIR "${THIRD_PARTY_DIR}/json")
 set(REDIS_DIR "${THIRD_PARTY_DIR}/redis")
+set(MYSQL_CONNECTOR_DIR "${THIRD_PARTY_DIR}/mysql-connector/Debug")
 
 # 编译器特定设置 - 修复运行时库不匹配问题
 if(MSVC)
@@ -183,11 +184,15 @@ endif()
 
 # ======================== protobuf 配置 ===============================
 # 查找 protobuf 库
+
 find_library(PROTOBUF_LIB
     NAMES 
         protobuf
         protobuf.lib
     	libprotobuf.lib
+        protobufd
+        protobufd.lib
+    	libprotobufd.lib
         libprotobuf.a
         libprotobuf.so
     PATHS "${PROTOBUF_DIR}/lib"
@@ -199,6 +204,8 @@ find_library(PROTOC_LIB
     NAMES 
         protoc
         libprotoc.lib
+        protocd
+        libprotocd.lib
         libprotoc.a
         libprotoc.so
     PATHS "${PROTOBUF_DIR}/lib"
@@ -244,9 +251,9 @@ if(PROTOBUF_LIB AND PROTOC_LIB)
         )
     endif()
     
-    message(STATUS "Found protobuf libraries")
+    message(STATUS "Found protobuf libraries: ${PROTOBUF_LIB} ${PROTOC_LIB}")
 else()
-    message(WARNING "Could not find protobuf libraries")
+    message(WARNING "Could not find protobuf libraries: ${PROTOBUF_LIB} ${PROTOC_LIB}")
 endif()
 
 # ==================== gRPC 配置 ====================
@@ -303,9 +310,9 @@ if(GRPC_LIB AND GRPC_PP_LIB)
         endif()
     endif()
     
-    message(STATUS "Found gRPC libraries")
+    message(STATUS "Found gRPC libraries : ${GRPC_LIB} ${GRPC_PP_LIB}")
 else()
-    message(WARNING "Could not find gRPC libraries")
+    message(WARNING "Could not find gRPC libraries:${GRPC_LIB} ${GRPC_PP_LIB}")
 endif()
 
 
@@ -317,7 +324,6 @@ set_target_properties(nlohmann::json PROPERTIES
 )
 
 # ==================== redis/hiredis 配置 ====================
-
 find_library(HIREDIS_LIB
     NAMES
         hiredis
@@ -371,6 +377,92 @@ else()
 endif()
 
 
+# ==================== mysql/connector 配置 ====================
+find_library(MYSQL_CONNECTOR_LIB
+    NAMES
+        mysqlcppconn
+        mysqlcppconn.lib
+        mysqlcppconn.a
+        mysqlcppconn.so
+    PATHS "${MYSQL_CONNECTOR_DIR}/lib64/debug/vs14"
+    NO_DEFAULT_PATH
+    NO_CMAKE_FIND_ROOT_PATH
+)
+
+if(WIN32)
+    find_file(MYSQL_CONNECTOR_DLL
+        NAMES
+            mysqlcppconn-10-vs14.dll
+            mysqlcppconn.dll
+        PATHS "${MYSQL_CONNECTOR_DIR}/lib64/debug"
+        NO_DEFAULT_PATH
+        NO_CMAKE_FIND_ROOT_PATH
+    )
+endif()
+
+
+if(MYSQL_CONNECTOR_LIB)
+    # 创建 hiredis 目标
+    add_library(mysqlcppconn::mysqlcppconn SHARED IMPORTED)
+    
+    # 设置库路径和头文件路径
+    set_target_properties(hiredis::hiredis PROPERTIES
+        IMPORTED_LOCATION "${MYSQL_CONNECTOR_LIB}"
+        INTERFACE_INCLUDE_DIRECTORIES "${MYSQL_CONNECTOR_DIR}/include"
+    )
+    
+    if(WIN32)
+        if(MYSQL_CONNECTOR_DLL)
+            # 找到 DLL，说明是动态库，需要设置 IMPORTED_IMPLIB
+            set_target_properties(mysqlcppconn::mysqlcppconn PROPERTIES
+                IMPORTED_LOCATION "${MYSQL_CONNECTOR_DLL}"
+                IMPORTED_IMPLIB "${MYSQL_CONNECTOR_LIB}"  # .lib 导入库
+            )
+            message(STATUS "Found MySQL Connector DLL: ${MYSQL_CONNECTOR_DLL}")
+        else()
+            # 没找到 DLL，可能是静态库，只设置 IMPORTED_LOCATION
+            set_target_properties(mysqlcppconn::mysqlcppconn PROPERTIES
+                IMPORTED_LOCATION "${MYSQL_CONNECTOR_LIB}"
+            )
+        endif()
+    endif()
+
+    # 设置运行时库（Windows）
+    if(MSVC)
+        set_target_properties(hiredis::hiredis PROPERTIES
+            MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
+        )
+    endif()
+    
+    message(STATUS "Found MySQL Connector library: ${MYSQL_CONNECTOR_DIR}")
+else()
+    message(WARNING "Could not find MySQL Connector library")
+endif()
+
+function(copy_mysql_dlls_to_target target_name)
+    if(WIN32 AND TARGET mysqlcppconn::mysqlcppconn)
+        get_target_property(MYSQL_CONNECTOR_LOCATION mysqlcppconn::mysqlcppconn IMPORTED_LOCATION)
+        if(MYSQL_CONNECTOR_LOCATION)
+            get_filename_component(MYSQL_CONNECTOR_DIR "${MYSQL_CONNECTOR_LOCATION}" DIRECTORY)
+            
+            # 查找 DLL 文件
+            file(GLOB MYSQL_DLLS
+                "${MYSQL_CONNECTOR_DIR}/*.dll"
+                "${MYSQL_CONNECTOR_DIR}/../debug/*.dll"
+            )
+            
+            foreach(DLL_FILE ${MYSQL_DLLS})
+                get_filename_component(DLL_NAME ${DLL_FILE} NAME)
+                add_custom_command(TARGET ${target_name} POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                    "${DLL_FILE}"
+                    "$<TARGET_FILE_DIR:${target_name}>/${DLL_NAME}"
+                    COMMENT "Copying ${DLL_NAME} to ${target_name} output directory"
+                )
+            endforeach()
+        endif()
+    endif()
+endfunction()
 
 # ==================== 添加子目录 ====================
 add_subdirectory(Log)

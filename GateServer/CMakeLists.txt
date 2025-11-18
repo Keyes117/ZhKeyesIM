@@ -3,18 +3,24 @@
 set(SERVER_SOURCES
     main.cpp          # 主程序入口
     GateServer.cpp
-    # VerifyGrpcClient.cpp
-    # message.pb.cc
-    # message.grpc.pb.cc
+    VerifyGrpcClient.cpp
+    message.pb.cc
+    message.grpc.pb.cc
+    MySqlPool.cpp
+    MySqlDao.cpp
 )
 
 set(SERVER_HEADERS
     const.h
     GateServer.h
-    # VerifyGrpcClient.h
-    # message.pb.h
-    # message.grpc.pb.h
+    VerifyGrpcClient.h
+    message.pb.h
+    message.grpc.pb.h
+    MySqlPool.h
+    MySqlDao.h
 )
+
+
 
 # ==================== 创建可执行文件 ====================
 # 创建服务端可执行文件
@@ -39,10 +45,17 @@ target_link_libraries(GateServer PRIVATE
         protobuf::libprotobuf
         gRPC::grpc++
         hiredis::hiredis
+        mysqlcppconn::mysqlcppconn
 )
 
+
 # ==================== 平台特定设置 ====================
+
+
+
 if(WIN32)
+    copy_mysql_dlls_to_target(GateServer)
+
     target_compile_definitions(GateServer PRIVATE _WIN32)
     target_link_libraries(GateServer PRIVATE ws2_32)
 endif()

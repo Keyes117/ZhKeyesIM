@@ -2,11 +2,11 @@
 
 
 
-#include "VerifyGrpcClient.h"
+//#include "VerifyGrpcClient.h"
 
 using namespace ZhKeyesIMHttp;
 using namespace nlohmann;
-using namespace message;
+//using namespace message;
 
 GateServer::GateServer()
 {
@@ -162,7 +162,7 @@ void GateServer::handleUserLogin(const ZhKeyesIMHttp::HttpRequest& request, ZhKe
 void GateServer::handleUserRegister(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response, const std::map<std::string, std::string>& params)
 {
     try {
-        
+
 
         setSuccessReqeust(response,
             ZhKeyesIMHttp::HttpStatusCode::OK,

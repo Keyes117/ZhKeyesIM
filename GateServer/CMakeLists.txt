@@ -28,8 +28,7 @@ target_include_directories(GateServer PRIVATE
     ${CMAKE_SOURCE_DIR}/Log
     ${JSON_DIR}/include
     ${PROTOBUF_DIR}/include
-    ${GRPC_DIR}/include
-    
+    ${GRPC_DIR}/include    
 )
 
 # ==================== 依赖库链接 ====================
@@ -41,6 +40,7 @@ target_link_libraries(GateServer PRIVATE
         nlohmann::json
         protobuf::libprotobuf
         gRPC::grpc++
+
 )
 
 # ==================== 平台特定设置 ====================

@@ -3,6 +3,6 @@
 ```
 
 ```
-`..\third_party\protobuf\bin\protoc.exe --cpp_out=. "message.proto"`
+..\third_party\protobuf\bin\protoc.exe --cpp_out=. "message.proto"
 ```
 

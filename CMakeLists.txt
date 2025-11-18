@@ -280,22 +280,22 @@ if(GRPC_LIB AND GRPC_PP_LIB)
         message(STATUS "Using gRPC CMake package")
     else()
         # 手动创建目标
-        add_library(grpc::grpc UNKNOWN IMPORTED)
-        set_target_properties(grpc::grpc PROPERTIES
+        add_library(gRPC::grpc UNKNOWN IMPORTED)
+        set_target_properties(gRPC::grpc PROPERTIES
             IMPORTED_LOCATION "${GRPC_LIB}"
             INTERFACE_INCLUDE_DIRECTORIES "${GRPC_DIR}/include"
         )
         
-        add_library(grpc::grpc++ UNKNOWN IMPORTED)
-        set_target_properties(grpc::grpc++ PROPERTIES
+        add_library(gRPC::grpc++ UNKNOWN IMPORTED)
+        set_target_properties(gRPC::grpc++ PROPERTIES
             IMPORTED_LOCATION "${GRPC_PP_LIB}"
             INTERFACE_INCLUDE_DIRECTORIES "${GRPC_DIR}/include"
-            INTERFACE_LINK_LIBRARIES grpc::grpc
+            INTERFACE_LINK_LIBRARIES gRPC::grpc
         )
         
         if(TARGET protobuf::libprotobuf)
-            set_target_properties(grpc::grpc++ PROPERTIES
-                INTERFACE_LINK_LIBRARIES "grpc::grpc;protobuf::libprotobuf"
+            set_target_properties(gRPC::grpc++ PROPERTIES
+                INTERFACE_LINK_LIBRARIES "gRPC::grpc;protobuf::libprotobuf"
             )
         endif()
     endif()

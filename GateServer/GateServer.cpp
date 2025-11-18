@@ -1,5 +1,7 @@
 #include "GateServer.h"
 
+
+
 #include "VerifyGrpcClient.h"
 
 using namespace ZhKeyesIMHttp;
@@ -189,7 +191,7 @@ void GateServer::registerRoutes()
 
     m_spRouter->addRoute(HttpMethod::POST, "api/user/login",
         std::bind(&GateServer::handleUserLogin, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-    
+
     m_spRouter->addRoute(HttpMethod::POST, "api/verify/getCode",
-        std::bind(&GateServer::handleGetVerifyCode, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3))
+        std::bind(&GateServer::handleGetVerifyCode, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 }

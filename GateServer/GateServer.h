@@ -1,6 +1,8 @@
 #ifndef GATESERVER_GATESERVRE_H_
 #define GATESERVRE_GATESERVER_H_
 
+#include <grpc/event_engine/memory_request.h>
+#include "absl/strings/string_view.h"
 
 #include "Http/HttpServer.h"
 #include "Http/HttpRequest.h"

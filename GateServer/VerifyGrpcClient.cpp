@@ -12,7 +12,7 @@ using message::VerifyService;
 
 VerifyGrpcClient& VerifyGrpcClient::getInstance()
 {
-    VerifyGrpcClient verifyGrpcClient;
+    static VerifyGrpcClient verifyGrpcClient;
     return verifyGrpcClient;
 }
 
@@ -25,7 +25,7 @@ GetVerifyResponse VerifyGrpcClient::GetVerifyCode(std::string email)
 
     Status status = m_stub->GetVerifyCode(&context, request, &response);
 
-    if(status.ok())
+    if (status.ok())
     {
         return response;
     }

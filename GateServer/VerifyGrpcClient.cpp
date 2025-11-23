@@ -1,7 +1,7 @@
 #include "VerifyGrpcClient.h"
 
 #include "const.h"
-
+#include "fmt/format.h"
 
 using grpc::Channel;
 using grpc::Status;
@@ -11,11 +11,11 @@ using message::GetVerifyRequest;
 using message::GetVerifyResponse;
 using message::VerifyService;
 
-VerifyGrpcClient& VerifyGrpcClient::getInstance()
+VerifyGrpcClient::VerifyGrpcClient()    
 {
-    static VerifyGrpcClient verifyGrpcClient;
-    return verifyGrpcClient;
 }
+
+
 
 VerifyGrpcClient::~VerifyGrpcClient()
 {
@@ -30,6 +30,25 @@ VerifyGrpcClient::~VerifyGrpcClient()
         m_cqThread.join();
     }
 }
+
+bool VerifyGrpcClient::init(const ConfigManager& config)
+{
+    std::string grpcHost = config["rpcServer"]["host"];
+    std::string grpcPort = config["rpcServer"]["port"];
+
+    std::string rpcParam = fmt::format("{}:{}", grpcHost, grpcPort);
+
+    std::shared_ptr<Channel> channel = grpc::CreateChannel(rpcParam, grpc::InsecureChannelCredentials());
+    m_stub = VerifyService::NewStub(channel);
+
+
+    m_cq = std::make_unique<grpc::CompletionQueue>();
+    m_cqThread = std::thread(&VerifyGrpcClient::processCQ, this);
+    m_running = true;
+    LOG_INFO("VerifyGrpcClient Initialized with CompletionQueue");
+    return true;
+}
+
 
 GetVerifyResponse VerifyGrpcClient::GetVerifyCode(std::string email)
 {
@@ -75,18 +94,6 @@ void VerifyGrpcClient::GetVerifyCodeAsync(const std::string& email, GetVerifyCod
     );
 }
 
-VerifyGrpcClient::VerifyGrpcClient():
-    m_running(true)
-{
-    std::shared_ptr<Channel> channel = grpc::CreateChannel("127.0.0.1:50051", grpc::InsecureChannelCredentials());
-    m_stub = VerifyService::NewStub(channel);
-
-    
-    m_cq = std::make_unique<grpc::CompletionQueue>();
-    m_cqThread = std::thread(&VerifyGrpcClient::processCQ, this);
-    LOG_INFO("VerifyGrpcClient Initialized with CompletionQueue");
-    
-}
 
 void VerifyGrpcClient::processCQ()
 {

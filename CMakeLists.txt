@@ -36,10 +36,13 @@ set(JSON_DIR "${THIRD_PARTY_DIR}/json")
 set(REDIS_DIR "${THIRD_PARTY_DIR}/redis")
 set(MYSQL_CONNECTOR_DIR "${THIRD_PARTY_DIR}/mysql-connector/Debug")
 
+# list(APPEND CMAKE_PREFIX_PATH "${QT_ROOT}")
+
+
 # 编译器特定设置 - 修复运行时库不匹配问题
 if(MSVC)
     add_compile_options(/utf-8)
-
+    add_compile_definitions(NOMINMAX)
     # 统一设置运行时库
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
     set_property(GLOBAL PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
@@ -54,6 +57,12 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} /MD")
     
 
+       # 确保链接器生成 PDB 文件
+    set(CMAKE_EXE_LINKER_FLAGS_DEBUG "${CMAKE_EXE_LINKER_FLAGS_DEBUG} /DEBUG")
+    set(CMAKE_SHARED_LINKER_FLAGS_DEBUG "${CMAKE_SHARED_LINKER_FLAGS_DEBUG} /DEBUG")
+    
+    # 设置 PDB 输出目录
+    set(CMAKE_PDB_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
         
     # 设置调试级别
     add_compile_definitions(
@@ -182,137 +191,38 @@ else()
     message(WARNING "Could not find fmt library")
 endif()
 
-# ======================== protobuf 配置 ===============================
-# 查找 protobuf 库
-
-find_library(PROTOBUF_LIB
-    NAMES 
-        protobuf
-        protobuf.lib
-    	libprotobuf.lib
-        protobufd
-        protobufd.lib
-    	libprotobufd.lib
-        libprotobuf.a
-        libprotobuf.so
-    PATHS "${PROTOBUF_DIR}/lib"
-    NO_DEFAULT_PATH
-    NO_CMAKE_FIND_ROOT_PATH
+# ======================== Abseil, Protobuf, gRPC 配置 ===============================
+# 添加 CMake 模块搜索路径
+list(APPEND CMAKE_PREFIX_PATH 
+    "${GRPC_DIR}/lib/cmake/absl"
+    "${GRPC_DIR}/lib/cmake/protobuf"
+    "${GRPC_DIR}/lib/cmake/grpc"
+    "${GRPC_DIR}/lib/cmake/re2"
+    "${GRPC_DIR}/lib/cmake/utf8_range"
 )
 
-find_library(PROTOC_LIB
-    NAMES 
-        protoc
-        libprotoc.lib
-        protocd
-        libprotocd.lib
-        libprotoc.a
-        libprotoc.so
-    PATHS "${PROTOBUF_DIR}/lib"
-    NO_DEFAULT_PATH
-    NO_CMAKE_FIND_ROOT_PATH
-)
+set(ABSL_PROPAGATE_CXX_STD ON)
 
-if(PROTOBUF_LIB AND PROTOC_LIB)
-    # 使用 find_package 但覆盖库位置
-    list(APPEND CMAKE_PREFIX_PATH "${PROTOBUF_DIR}/lib/cmake")
-    find_package(Protobuf CONFIG)
-    
-    if(TARGET protobuf::libprotobuf)
-        # 覆盖预编译包的库路径
-        set_target_properties(protobuf::libprotobuf PROPERTIES
-            IMPORTED_LOCATION "${PROTOBUF_LIB}"
-            IMPORTED_LOCATION_DEBUG "${PROTOBUF_LIB}"
-            IMPORTED_LOCATION_RELEASE "${PROTOBUF_LIB}"
-            INTERFACE_INCLUDE_DIRECTORIES "${PROTOBUF_DIR}/include"
-        )
-    else()
-        # 手动创建目标
-        add_library(protobuf::libprotobuf STATIC IMPORTED)
-        set_target_properties(protobuf::libprotobuf PROPERTIES
-            IMPORTED_LOCATION "${PROTOBUF_LIB}"
-            INTERFACE_INCLUDE_DIRECTORIES "${PROTOBUF_DIR}/include"
-        )
-    endif()
-    
-    if(TARGET protobuf::libprotoc)
-        set_target_properties(protobuf::libprotoc PROPERTIES
-            IMPORTED_LOCATION "${PROTOC_LIB}"
-            IMPORTED_LOCATION_DEBUG "${PROTOC_LIB}"
-            IMPORTED_LOCATION_RELEASE "${PROTOC_LIB}"
-            INTERFACE_INCLUDE_DIRECTORIES "${PROTOBUF_DIR}/include"
-        )
-    else()
-        add_library(protobuf::libprotoc STATIC IMPORTED)
-        set_target_properties(protobuf::libprotoc PROPERTIES
-            IMPORTED_LOCATION "${PROTOC_LIB}"
-            INTERFACE_INCLUDE_DIRECTORIES "${PROTOBUF_DIR}/include"
-            INTERFACE_LINK_LIBRARIES protobuf::libprotobuf
-        )
-    endif()
-    
-    message(STATUS "Found protobuf libraries: ${PROTOBUF_LIB} ${PROTOC_LIB}")
-else()
-    message(WARNING "Could not find protobuf libraries: ${PROTOBUF_LIB} ${PROTOC_LIB}")
+# 查找 Abseil（Protobuf 依赖它）
+find_package(absl CONFIG REQUIRED)
+if(absl_FOUND)
+    message(STATUS "Found Abseil via CMake config")
 endif()
 
-# ==================== gRPC 配置 ====================
-# 查找 gRPC 相关库
-find_library(GRPC_LIB
-    NAMES 
-        grpc
-        grpc.lib
-        libgrpc.a
-        libgrpc.so
-    PATHS "${GRPC_DIR}/lib"
-    NO_DEFAULT_PATH
-    NO_CMAKE_FIND_ROOT_PATH
-)
+# 查找 utf8_range（Protobuf 可能依赖它）
+find_package(utf8_range CONFIG QUIET)
 
-find_library(GRPC_PP_LIB
-    NAMES 
-        grpc++
-        grpc++.lib
-        libgrpc++.a
-        libgrpc++.so
-    PATHS "${GRPC_DIR}/lib"
-    NO_DEFAULT_PATH
-    NO_CMAKE_FIND_ROOT_PATH
-)
+# 查找 Protobuf（会自动链接 Abseil）
+find_package(Protobuf CONFIG REQUIRED)
+if(Protobuf_FOUND)
+    message(STATUS "Found Protobuf via CMake config")
+    message(STATUS "Protobuf version: ${Protobuf_VERSION}")
+endif()
 
-if(GRPC_LIB AND GRPC_PP_LIB)
-    # 尝试使用 find_package
-    list(APPEND CMAKE_PREFIX_PATH "${GRPC_DIR}/lib/cmake")
-    find_package(gRPC CONFIG QUIET)
-    
-    if(TARGET gRPC::grpc++)
-        # 使用找到的包
-        message(STATUS "Using gRPC CMake package")
-    else()
-        # 手动创建目标
-        add_library(gRPC::grpc UNKNOWN IMPORTED)
-        set_target_properties(gRPC::grpc PROPERTIES
-            IMPORTED_LOCATION "${GRPC_LIB}"
-            INTERFACE_INCLUDE_DIRECTORIES "${GRPC_DIR}/include"
-        )
-        
-        add_library(gRPC::grpc++ UNKNOWN IMPORTED)
-        set_target_properties(gRPC::grpc++ PROPERTIES
-            IMPORTED_LOCATION "${GRPC_PP_LIB}"
-            INTERFACE_INCLUDE_DIRECTORIES "${GRPC_DIR}/include"
-            INTERFACE_LINK_LIBRARIES gRPC::grpc
-        )
-        
-        if(TARGET protobuf::libprotobuf)
-            set_target_properties(gRPC::grpc++ PROPERTIES
-                INTERFACE_LINK_LIBRARIES "gRPC::grpc;protobuf::libprotobuf"
-            )
-        endif()
-    endif()
-    
-    message(STATUS "Found gRPC libraries : ${GRPC_LIB} ${GRPC_PP_LIB}")
-else()
-    message(WARNING "Could not find gRPC libraries:${GRPC_LIB} ${GRPC_PP_LIB}")
+# 查找 gRPC（会自动链接 Protobuf 和 Abseil）
+find_package(gRPC CONFIG REQUIRED)
+if(gRPC_FOUND)
+    message(STATUS "Found gRPC via CMake config")
 endif()
 
 
@@ -402,11 +312,11 @@ endif()
 
 
 if(MYSQL_CONNECTOR_LIB)
-    # 创建 hiredis 目标
+
     add_library(mysqlcppconn::mysqlcppconn SHARED IMPORTED)
     
     # 设置库路径和头文件路径
-    set_target_properties(hiredis::hiredis PROPERTIES
+    set_target_properties(mysqlcppconn::mysqlcppconn PROPERTIES
         IMPORTED_LOCATION "${MYSQL_CONNECTOR_LIB}"
         INTERFACE_INCLUDE_DIRECTORIES "${MYSQL_CONNECTOR_DIR}/include"
     )
@@ -429,7 +339,7 @@ if(MYSQL_CONNECTOR_LIB)
 
     # 设置运行时库（Windows）
     if(MSVC)
-        set_target_properties(hiredis::hiredis PROPERTIES
+        set_target_properties(mysqlcppconn::mysqlcppconn PROPERTIES
             MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL"
         )
     endif()

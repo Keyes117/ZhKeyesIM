@@ -8,8 +8,12 @@ using namespace ZhKeyesIMHttp;
 using namespace nlohmann;
 //using namespace message;
 
-GateServer::GateServer()
+GateServer::GateServer():
+    m_spGrpcVerifyClient(std::make_unique<VerifyGrpcClient>()),
+    m_spRedisManager(std::make_unique<RedisManager>()),
+    m_spHttpServer( std::make_unique<ZhKeyesIMHttp::HttpServer>())
 {
+    m_config.load("config.json");
 }
 
 GateServer::~GateServer()
@@ -18,12 +22,16 @@ GateServer::~GateServer()
 
 bool GateServer::init(uint32_t threadNum, const std::string& ip, uint16_t port)
 {
-    m_spHttpServer = std::make_unique<ZhKeyesIMHttp::HttpServer>();
     if (!m_spHttpServer->init(threadNum, ip, port, IOMultiplexType::Select))
         return false;
 
+    if (!m_config.isLoaded())
+        return false;
+
+    m_spGrpcVerifyClient->init(m_config);   
+    m_spRedisManager->init(m_config);
+
     m_spHttpServer->setRequestCallBack(std::bind(&GateServer::onHttpRequest, this, std::placeholders::_1, std::placeholders::_2));
-    m_spRouter = std::make_unique<ZhKeyesIMHttp::Router>();
     registerRoutes();
     return true;
 }
@@ -58,7 +66,7 @@ void GateServer::onHttpRequest(const ZhKeyesIMHttp::HttpRequest& request, ZhKeye
     // 2. 身份验证（对于需要鉴权的接口）
     // 3. 路由分发
 
-    if (!m_spRouter->dispatch(request, response))
+    if (!m_router.dispatch(request, response))
     {
         setErrorRequest(response,
             ZhKeyesIMHttp::HttpStatusCode::NotFound,
@@ -79,54 +87,54 @@ void GateServer::handleGetVerifyCode(const ZhKeyesIMHttp::HttpRequest& request, 
         nlohmann::json requestJson = nlohmann::json::parse(request.getBody());
         std::string email = requestJson["email"];
 
-        //auto promise = std::make_shared<std::promise<message::GetVerifyResponse>>();
-        //auto future = promise->get_future();
+        auto promise = std::make_shared<std::promise<message::GetVerifyResponse>>();
+        auto future = promise->get_future();
 
-        //VerifyGrpcClient::getInstance().GetVerifyCodeAsync(email,
-        //    [promise](const message::GetVerifyResponse& grpcResponse) {
-        //        // 这个回调在 gRPC CompletionQueue 线程中执行
-        //        // 将结果传递给 future
-        //        try {
-        //            promise->set_value(grpcResponse);
-        //        }
-        //        catch (const std::exception& e) {
-        //            // 防止重复 set_value 导致异常
-        //            LOG_ERROR("Failed to set promise value: %s", e.what());
-        //        }
-        //    });
+        m_spGrpcVerifyClient->GetVerifyCodeAsync(email,
+            [promise](const message::GetVerifyResponse& grpcResponse) {
+                // 这个回调在 gRPC CompletionQueue 线程中执行
+                // 将结果传递给 future
+                try {
+                    promise->set_value(grpcResponse);
+                }
+                catch (const std::exception& e) {
+                    // 防止重复 set_value 导致异常
+                    LOG_ERROR("Failed to set promise value: %s", e.what());
+                }
+            });
 
         // 4. 等待结果（带超时保护）
          //    虽然这里会阻塞当前线程，但 GRPC 调用是在独立线程中执行的
          //    EventLoop 可以继续处理其他事件（定时器、其他连接等）
-        //message::GetVerifyResponse grpcResponse;
-        //auto status = future.wait_for(std::chrono::seconds(5));  // 5秒超时
+        message::GetVerifyResponse grpcResponse;
+        auto status = future.wait_for(std::chrono::seconds(5));  // 5秒超时
 
-        //if (status == std::future_status::ready) {
-        //    // 成功获取结果
-        //    grpcResponse = future.get();
-        //}
-        //else if (status == std::future_status::timeout) {
-        //    // 超时处理
-        //    LOG_ERROR("GRPC call timeout for email: %s", email.c_str());
-        //    grpcResponse.set_error(ErrorCodes::RPCFailed);
-        //}
-        //else {
-        //    // 其他错误
-        //    LOG_ERROR("GRPC call deferred for email: %s", email.c_str());
-        //    grpcResponse.set_error(ErrorCodes::RPCFailed);
-        //}
+        if (status == std::future_status::ready) {
+            // 成功获取结果
+            grpcResponse = future.get();
+        }
+        else if (status == std::future_status::timeout) {
+            // 超时处理
+            LOG_ERROR("GRPC call timeout for email: %s", email.c_str());
+            grpcResponse.set_error(ErrorCodes::RPCFailed);
+        }
+        else {
+            // 其他错误
+            LOG_ERROR("GRPC call deferred for email: %s", email.c_str());
+            grpcResponse.set_error(ErrorCodes::RPCFailed);
+        }
 
         //// 5. 记录日志
-        //LOG_DEBUG("Email: %s, Error code: %d", email.c_str(), grpcResponse.error());
+        LOG_DEBUG("Email: %s, Error code: %d", email.c_str(), grpcResponse.error());
 
         // 6. 构建 JSON 响应
-        //nlohmann::json responseJson;
-        //responseJson["error"] = grpcResponse.error();
-        //responseJson["email"] = grpcResponse.email();
-        //responseJson["code"] = grpcResponse.code();
+        nlohmann::json responseJson;
+        responseJson["error"] = grpcResponse.error();
+        responseJson["email"] = grpcResponse.email();
+        responseJson["code"] = grpcResponse.code();
 
         // 7. 设置 HTTP 响应
-        //setJsonResponse(response, responseJson, ZhKeyesIMHttp::HttpStatusCode::OK);
+        setJsonResponse(response, responseJson, ZhKeyesIMHttp::HttpStatusCode::OK);
     }
     catch (const nlohmann::json::exception& e) {
         // JSON 解析错误
@@ -209,15 +217,9 @@ void GateServer::setSuccessReqeust(ZhKeyesIMHttp::HttpResponse& response, ZhKeye
 
 void GateServer::registerRoutes()
 {
-    m_spRouter->addRoute(ZhKeyesIMHttp::HttpMethod::GET, "/",
+    m_router.addRoute(ZhKeyesIMHttp::HttpMethod::GET, "/",
         std::bind(&GateServer::handleGetRoot, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
-    m_spRouter->addRoute(ZhKeyesIMHttp::HttpMethod::POST, "api/user/register",
-        std::bind(&GateServer::handleUserRegister, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-
-    m_spRouter->addRoute(ZhKeyesIMHttp::HttpMethod::POST, "api/user/login",
-        std::bind(&GateServer::handleUserLogin, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-
-    m_spRouter->addRoute(HttpMethod::POST, "api/verify/getCode",
+    m_router.addRoute(HttpMethod::POST, "api/verify/getCode",
         std::bind(&GateServer::handleGetVerifyCode, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 }

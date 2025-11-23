@@ -2,5 +2,11 @@
     "email":{
         "user" : "1732302170@qq.com",
         "pass" : "ievjblmhxwlxejab"
+    },
+
+    "redis": {
+        "host":"172.25.224.240",
+        "port":"6379",
+        "password":"123456"
     }
 }

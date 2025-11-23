@@ -35,16 +35,25 @@ bool Router::dispatch(const HttpRequest& request, HttpResponse& response)
             //TODO: 执行路由特定的中间件
 
             route.handler(request, response, params);
+            return true;
         }
 
-        return true;
+        continue;
     }
+
+    return false;
 }
 
 std::pair<std::regex, std::vector<std::string>> Router::compilePattern(const std::string& pattern)
 {
     std::vector<std::string> paramNames;
     std::string regexPattern = "^";
+
+    // 规范化模式：去除前导斜杠（如果存在）
+    std::string normalizedPattern = pattern;
+    if (!normalizedPattern.empty() && normalizedPattern[0] == '/') {
+        normalizedPattern = normalizedPattern.substr(1);
+    }
 
     size_t pos = 0;
     while (pos < pattern.length())
@@ -90,8 +99,14 @@ std::pair<std::regex, std::vector<std::string>> Router::compilePattern(const std
 
 bool Router::matchRoute(const RouteEntry& entry, const std::string& path, std::map<std::string, std::string>& params)
 {
+    // 规范化路径：去除前导斜杠（如果存在）
+    std::string normalizedPath = path;
+    if (!normalizedPath.empty() && normalizedPath[0] == '/') {
+        normalizedPath = normalizedPath.substr(1);
+    }
+
     std::smatch matches;
-    if (std::regex_match(path, matches, entry.regex))
+    if (std::regex_match(normalizedPath, matches, entry.regex))
     {
         // 提取参数
         for (size_t i = 0; i < entry.paramNames.size() && i + 1 < matches.size(); ++i)

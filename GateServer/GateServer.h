@@ -3,14 +3,17 @@
 
 #include <future>
 
+#include "ConfigManager.h"
 #include "Http/HttpServer.h"
 #include "Http/HttpRequest.h"
 #include "Http/HttpResponse.h"
 #include "Http/Router.h"
+#include "RedisManager.h"
+#include "VerifyGrpcClient.h"
 
 #include "nlohmann/json.hpp"
 
-//#include "VerifyGrpcClient.h"
+
 
 namespace ZhKeyesIMHttp = ZhKeyesIM::Net::Http;
 
@@ -20,8 +23,8 @@ public:
     GateServer();
     ~GateServer();
 
-
-    bool init(uint32_t threadNum, const std::string& ip = "", uint16_t port = 8080);
+    bool init(uint32_t threadNum, const std::string& ip = "",
+        uint16_t port = 8080);
     void start();
     void shutdown();
 
@@ -54,8 +57,13 @@ private:
 
     void registerRoutes();
 private:
+    ZhKeyesIMHttp::Router m_router;
+    ConfigManager m_config;
+
+    std::unique_ptr<VerifyGrpcClient>  m_spGrpcVerifyClient;
+    std::unique_ptr<RedisManager>       m_spRedisManager;
     std::unique_ptr<ZhKeyesIMHttp::HttpServer> m_spHttpServer;
-    std::unique_ptr<ZhKeyesIMHttp::Router> m_spRouter;
+
 private:
     GateServer(const GateServer&) = delete;
     GateServer(GateServer&&) noexcept = delete;

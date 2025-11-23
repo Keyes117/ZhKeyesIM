@@ -10,6 +10,9 @@ set(CLIENT_UI_SOURCE
     UI/RegisterDlg.cpp
     UI/RegisterDlg.h
     UI/RegisterDlg.ui
+    UI/MainWindow.cpp
+    UI/MainWindow.h
+    UI/MainWindow.ui
 )
 
 set(CLIENT_TASK_SOURCE

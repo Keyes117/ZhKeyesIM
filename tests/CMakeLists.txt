@@ -5,6 +5,7 @@ set(UNIT_TEST_SOURCES
     unit/test_http_server.cpp
     unit/test_http_client.cpp
     unit/test_http_parser.cpp
+    unit/test_gate_server.cpp
 )
 
 set(INTEGRATION_TEST_SOURCES

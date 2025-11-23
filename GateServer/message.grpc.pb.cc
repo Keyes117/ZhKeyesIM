@@ -19,7 +19,6 @@
 #include <grpcpp/server_context.h>
 #include <grpcpp/impl/service_type.h>
 #include <grpcpp/support/sync_stream.h>
-#include <grpcpp/ports_def.inc>
 namespace message {
 
 static const char* VerifyService_method_names[] = {
@@ -84,5 +83,4 @@ VerifyService::Service::~Service() {
 
 
 }  // namespace message
-#include <grpcpp/ports_undef.inc>
 

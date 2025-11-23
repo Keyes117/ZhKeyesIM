@@ -9,6 +9,7 @@
 
 #include "Logger.h"
 
+#include "ConfigManager.h"
 #include "grpcpp/grpcpp.h"
 #include "message.grpc.pb.h"
 
@@ -34,16 +35,18 @@ using GetVerifyCodeCallback = std::function<void(const message::GetVerifyRespons
 class VerifyGrpcClient
 {
 public:
-    static VerifyGrpcClient& getInstance();
+    VerifyGrpcClient();
 
     ~VerifyGrpcClient();
+
+    bool init(const ConfigManager& config);
 
     message::GetVerifyResponse GetVerifyCode(std::string email);
 
     void GetVerifyCodeAsync(const std::string& email, GetVerifyCodeCallback&& callback);
 
 private:
-    VerifyGrpcClient();
+
 
     void processCQ();
 

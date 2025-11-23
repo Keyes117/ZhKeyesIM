@@ -6,3 +6,4 @@
 ..\third_party\protobuf\bin\protoc.exe --cpp_out=. "message.proto"
 ```
 
+1. `.\b2.exe install --toolset=msvc-17.2 --build-type=complete --prefix="D:\Resource\boost_1_81_0" link=static runtime-link=shared threading=multi debug release`

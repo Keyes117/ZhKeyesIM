@@ -6,7 +6,7 @@
 
 #include "IMClient.h"
 #include "Logger.h"
-#include "LoginDlg.h"
+#include "MainWindow.h"
 
 int main(int argc, char* argv[])
 {
@@ -21,11 +21,7 @@ int main(int argc, char* argv[])
 #endif
     //Logger::instance().setLogFile("GateServer.log");
 
-    LoginDlg loginDlg;
-    if (loginDlg.exec() == QDialog::Accepted)
-    {
-        LOG_INFO("LoginDlg Success");
-        return 1;
-    }
+    MainWindow mainWindow;
+    mainWindow.show();
     return 1;
 }

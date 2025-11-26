@@ -1,14 +1,15 @@
 #include "LoginDlg.h"
 
+#include <QPushButton>
 #include <QMessageBox>
+#include <QSizePolicy>
 
 LoginDlg::LoginDlg(QWidget* parent)
     : QDialog(parent)
 {
     m_ui.setupUi(this);
+    setUpSignals();
 
-    this->adjustSize();
-    this->setFixedSize(this->sizeHint());
 }
 
 LoginDlg::~LoginDlg()
@@ -41,12 +42,12 @@ void LoginDlg::onLoginButtonClicked()
 
 void LoginDlg::onRegisterButtonClicked()
 {
-
+    emit switchRegisterDlg();
 }
 
 void LoginDlg::setUpSignals()
 {
-    connect(m_ui.button_logon, &QPushButton::click, this, &LoginDlg::onLoginButtonClicked);
-    connect(m_ui.button_register, &QPushButton::click, this, &LoginDlg::onRegisterButtonClicked);
+    connect(m_ui.button_logon, &QPushButton::clicked, this, &LoginDlg::onLoginButtonClicked);
+    connect(m_ui.button_register, &QPushButton::clicked, this, &LoginDlg::onRegisterButtonClicked);
 }
 

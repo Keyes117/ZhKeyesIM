@@ -12,6 +12,17 @@ public:
     ~RegisterDlg();
 
 private:
+    void setUpSignals();
+
+signals:
+    void switchLoginDlg();
+
+private slots:
+    void onCancelButtonClicked();
+    void onRegisterButtonClicked();
+
+private:
+
     Ui::RegisterDlgClass m_ui;
 };
 

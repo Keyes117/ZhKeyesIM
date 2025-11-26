@@ -14,7 +14,9 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-
+private slots:
+    void switchToRegisterDlg();
+    void switchToLoginDlg();
     
 private:
     Ui::MainWindowClass m_ui;

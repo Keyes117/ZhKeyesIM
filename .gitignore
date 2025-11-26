@@ -40,6 +40,8 @@
 # debug information files
 *.dwo
 
+.vs/
+.vscode/
 
 build/
 out/

@@ -23,5 +23,5 @@ int main(int argc, char* argv[])
 
     MainWindow mainWindow;
     mainWindow.show();
-    return 1;
+    return app.exec();
 }

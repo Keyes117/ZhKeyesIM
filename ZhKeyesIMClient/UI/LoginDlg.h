@@ -15,6 +15,9 @@ private:
     bool isLineEditEmpty();
     bool isAccountAndPassWordRight();
 
+signals:
+    void switchRegisterDlg();
+
 private slots:
     void onLoginButtonClicked();
     void onRegisterButtonClicked();

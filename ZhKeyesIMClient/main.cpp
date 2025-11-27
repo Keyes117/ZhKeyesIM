@@ -22,6 +22,8 @@ int main(int argc, char* argv[])
     //Logger::instance().setLogFile("GateServer.log");
 
     MainWindow mainWindow;
+    mainWindow.setBaseSize(300, 500);
+    mainWindow.setMaximumSize(300, 500);
     mainWindow.show();
     return app.exec();
 }

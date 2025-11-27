@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/res">
+        <file>ice.png</file>
+    </qresource>
+</RCC>

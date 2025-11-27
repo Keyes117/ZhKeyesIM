@@ -13,6 +13,9 @@ set(CLIENT_UI_SOURCE
     UI/MainWindow.cpp
     UI/MainWindow.h
     UI/MainWindow.ui
+    UI/global.h
+    UI/global.cpp
+    UI/resource.qrc
 )
 
 set(CLIENT_TASK_SOURCE

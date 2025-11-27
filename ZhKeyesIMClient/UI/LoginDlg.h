@@ -1,4 +1,5 @@
-#pragma once
+#ifndef UI_LOGINDLG_H_
+#define UI_LOGINDLG_H_
 
 #include <QtWidgets/QDialog>
 
@@ -27,3 +28,4 @@ private:
     Ui::LoginDlgClass m_ui;
 };
 
+#endif

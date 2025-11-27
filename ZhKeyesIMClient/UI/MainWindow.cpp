@@ -2,14 +2,20 @@
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
-    m_loginDlg(new LoginDlg(this)),
-    m_registerDlg(new RegisterDlg(this))
+    m_stackedWidget(new QStackedWidget(this)),
+    m_loginDlg(new LoginDlg(m_stackedWidget)),
+    m_registerDlg(new RegisterDlg(m_stackedWidget))
 {
     m_ui.setupUi(this);
 
-    setCentralWidget(m_loginDlg);
+
 
     m_registerDlg->hide();
+
+    m_stackedWidget->addWidget(m_loginDlg);
+    m_stackedWidget->addWidget(m_registerDlg);
+    m_stackedWidget->setCurrentWidget(m_loginDlg);
+    setCentralWidget(m_stackedWidget);
 
     connect(m_loginDlg, &LoginDlg::switchRegisterDlg, this, &MainWindow::switchToRegisterDlg);
     connect(m_registerDlg, &RegisterDlg::switchLoginDlg, this, &MainWindow::switchToLoginDlg);
@@ -23,13 +29,13 @@ MainWindow::~MainWindow()
 
 void MainWindow::switchToRegisterDlg()
 {
-    setCentralWidget(m_registerDlg);
-    m_loginDlg->hide();
-
+    if (m_stackedWidget)
+        m_stackedWidget->setCurrentWidget(m_registerDlg);
 }
 
 void MainWindow::switchToLoginDlg()
 {
-    setCentralWidget(m_loginDlg);
-    m_registerDlg->hide();
+    if (m_stackedWidget)
+        m_stackedWidget->setCurrentWidget(m_loginDlg);
+
 }

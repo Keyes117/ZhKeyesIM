@@ -28,7 +28,10 @@
     </spacer>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="layout_main" stretch="2,2,2,2,2,3,2">
+    <layout class="QVBoxLayout" name="layout_main" stretch="0,2,2,2,2,2,3,2">
+     <property name="spacing">
+      <number>10</number>
+     </property>
      <property name="leftMargin">
       <number>20</number>
      </property>
@@ -41,6 +44,19 @@
      <property name="bottomMargin">
       <number>20</number>
      </property>
+     <item>
+      <widget class="QLabel" name="err_tip">
+       <property name="layoutDirection">
+        <enum>Qt::LayoutDirection::LeftToRight</enum>
+       </property>
+       <property name="text">
+        <string>错误提示</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
      <item>
       <layout class="QHBoxLayout" name="layout_user" stretch="2,8">
        <item>
@@ -98,19 +114,19 @@
       </layout>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="layout_varify" stretch="2,6,2">
+      <layout class="QHBoxLayout" name="layout_code" stretch="2,6,2">
        <item>
-        <widget class="QLabel" name="label_varify">
+        <widget class="QLabel" name="label_code">
          <property name="text">
           <string>验证码：</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="lineEdit_varify"/>
+        <widget class="QLineEdit" name="lineEdit_code"/>
        </item>
        <item>
-        <widget class="QPushButton" name="pushButton">
+        <widget class="QPushButton" name="button_code">
          <property name="text">
           <string>获取验证码</string>
          </property>

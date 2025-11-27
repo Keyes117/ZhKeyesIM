@@ -1,4 +1,5 @@
-#pragma once
+#ifndef UI_REGISTERDLG_H_
+#define UI_REGISTERDLG_H_
 
 #include <QDialog>
 #include "ui_RegisterDlg.h"
@@ -13,6 +14,7 @@ public:
 
 private:
     void setUpSignals();
+    void showTip(const QString& str, bool isError);
 
 signals:
     void switchLoginDlg();
@@ -20,9 +22,11 @@ signals:
 private slots:
     void onCancelButtonClicked();
     void onRegisterButtonClicked();
+    void onCodeButtonClicked();
 
 private:
 
     Ui::RegisterDlgClass m_ui;
 };
 
+#endif

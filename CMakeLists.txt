@@ -191,6 +191,36 @@ else()
     message(WARNING "Could not find fmt library")
 endif()
 
+function(copy_fmt_dlls_to_target target_name)
+    if(WIN32)
+        # 根据构建类型选择对应的 DLL
+        set(FMT_DLL_DEBUG "${FMT_DIR}/bin/Debug/fmtd.dll")
+        set(FMT_DLL_RELEASE "${FMT_DIR}/bin/Release/fmt.dll")
+        
+        # Debug 配置：拷贝 Debug DLL
+        if(EXISTS "${FMT_DLL_DEBUG}")
+            add_custom_command(TARGET ${target_name} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${FMT_DLL_DEBUG}"
+                "$<TARGET_FILE_DIR:${target_name}>/fmtd.dll"
+                COMMENT "Copying fmt Debug DLL to ${target_name} output directory"
+                CONFIGURATIONS Debug
+            )
+        endif()
+        
+        # Release 配置：拷贝 Release DLL
+        if(EXISTS "${FMT_DLL_RELEASE}")
+            add_custom_command(TARGET ${target_name} POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${FMT_DLL_RELEASE}"
+                "$<TARGET_FILE_DIR:${target_name}>/fmt.dll"
+                COMMENT "Copying fmt Release DLL to ${target_name} output directory"
+                CONFIGURATIONS Release RelWithDebInfo MinSizeRel
+            )
+        endif()
+    endif()
+endfunction()
+
 # ======================== Abseil, Protobuf, gRPC 配置 ===============================
 # 添加 CMake 模块搜索路径
 list(APPEND CMAKE_PREFIX_PATH 

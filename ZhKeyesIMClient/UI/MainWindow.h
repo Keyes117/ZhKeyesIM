@@ -1,6 +1,8 @@
-#pragma once
+#ifndef UI_MAINWINDOW_H_
+#define UI_MAINWINDOW_H_
 
 #include <QMainWindow>
+#include <QStackedWidget>
 #include "ui_MainWindow.h"
 
 #include "LoginDlg.h"
@@ -21,7 +23,9 @@ private slots:
 private:
     Ui::MainWindowClass m_ui;
 
+    QStackedWidget*     m_stackedWidget;
     LoginDlg*           m_loginDlg;
     RegisterDlg*        m_registerDlg;
 };
 
+#endif

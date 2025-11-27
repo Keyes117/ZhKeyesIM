@@ -103,6 +103,8 @@ elseif(UNIX AND NOT APPLE)
     # 链接pthread库（POSIX线程库）
     target_link_libraries(net PRIVATE pthread)
     
+    copy_fmt_dlls_to_target(net)
+
     # Linux下设置符号可见性
     set_target_properties(net PROPERTIES
         CXX_VISIBILITY_PRESET hidden
@@ -118,5 +120,7 @@ install(TARGETS net
     ARCHIVE DESTINATION lib
     INCLUDES DESTINATION include
 )
+
+
 
 install(FILES ${NET_HEADERS} DESTINATION include/net)

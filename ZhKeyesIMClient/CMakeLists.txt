@@ -16,6 +16,7 @@ set(CLIENT_UI_SOURCE
     UI/global.h
     UI/global.cpp
     UI/resource.qrc
+    UI/style/styleSheet.qss
 )
 
 set(CLIENT_TASK_SOURCE

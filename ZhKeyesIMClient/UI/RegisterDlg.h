@@ -2,14 +2,17 @@
 #define UI_REGISTERDLG_H_
 
 #include <QDialog>
+
 #include "ui_RegisterDlg.h"
+
+#include "IMClient.h"
 
 class RegisterDlg : public QDialog
 {
     Q_OBJECT
 
 public:
-    RegisterDlg(QWidget* parent = nullptr);
+    RegisterDlg(std::shared_ptr<IMClient> spClient, QWidget* parent = nullptr);
     ~RegisterDlg();
 
 private:
@@ -27,6 +30,8 @@ private slots:
 private:
 
     Ui::RegisterDlgClass m_ui;
+
+    std::shared_ptr<IMClient> m_spClient;
 };
 
 #endif

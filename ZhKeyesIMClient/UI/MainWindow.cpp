@@ -1,14 +1,13 @@
 #include "MainWindow.h"
 
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(std::shared_ptr<IMClient> spClient,QWidget *parent)
     : QMainWindow(parent),
+    m_spClient(spClient),
     m_stackedWidget(new QStackedWidget(this)),
-    m_loginDlg(new LoginDlg(m_stackedWidget)),
-    m_registerDlg(new RegisterDlg(m_stackedWidget))
+    m_loginDlg(new LoginDlg(m_spClient,m_stackedWidget)),
+    m_registerDlg(new RegisterDlg(m_spClient,m_stackedWidget))
 {
     m_ui.setupUi(this);
-
-
 
     m_registerDlg->hide();
 

@@ -9,8 +9,8 @@
 class Task
 {
 public:
-    Task();
-    virtual ~Task() = 0;
+    Task() = default;
+    virtual ~Task();
 
     virtual void doTask() = 0;
 };

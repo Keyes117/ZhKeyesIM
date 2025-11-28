@@ -1,9 +1,9 @@
-#ifndef GATESERVER_CONFIGMANAGER_H_
-#define GATESERVER_CONFIGMANAGER_H_
+#ifndef UTIL_CONFIGMANAGER_H_
+#define UTIL_CONFIGMANAGER_H_
 
 #include "nlohmann/json.hpp"
-
-class ConfigManager
+#include "util_export.h"
+class Util_API ConfigManager
 {
 public:
     ConfigManager();

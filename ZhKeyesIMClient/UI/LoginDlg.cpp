@@ -4,8 +4,9 @@
 #include <QMessageBox>
 #include <QSizePolicy>
 
-LoginDlg::LoginDlg(QWidget* parent)
-    : QDialog(parent)
+LoginDlg::LoginDlg(std::shared_ptr<IMClient> spClient,QWidget* parent)
+    :QDialog(parent),
+    m_spClient(spClient)
 {
     m_ui.setupUi(this);
     setUpSignals();

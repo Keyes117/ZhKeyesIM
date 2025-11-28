@@ -24,6 +24,10 @@ set(CLIENT_TASK_SOURCE
     Task/Task.h
     Task/TaskHandler.cpp
     Task/TaskHandler.h
+    Task/GetVerifyCodeTask.cpp
+    Task/GetVerifyCodeTask.h
+    Task/RecvVerifyCodeTask.cpp
+    Task/RecvVerifyCodeTask.h
 )
 
 # Qt配置

@@ -6,8 +6,9 @@
 #include "global.h"
 
 
-RegisterDlg::RegisterDlg(QWidget* parent)
-    : QDialog(parent)
+RegisterDlg::RegisterDlg(std::shared_ptr<IMClient> spClient, QWidget* parent)
+    : QDialog(parent),
+    m_spClient(spClient)
 {
     m_ui.setupUi(this);
     setUpSignals();

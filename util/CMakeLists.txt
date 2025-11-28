@@ -1,10 +1,12 @@
 
 set(UTIL_SOURCES
     Util.cpp
+    ConfigManager.cpp
 )
 
 set(UTIL_HEADERS
     Util.h
+    ConfigManager.h
     util_export.h
 )
 
@@ -19,6 +21,9 @@ set_target_properties(util PROPERTIES
 target_include_directories(util PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:include> 
+)
+target_link_libraries(util PUBLIC 
+        nlohmann::json
 )
 
 target_compile_definitions(util PRIVATE UTIL_EXPORTS)

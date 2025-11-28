@@ -5,11 +5,12 @@
 
 #include "ui_LoginDlg.h"
 
+#include "IMClient.h"
 class LoginDlg : public QDialog
 {
     Q_OBJECT
 public:
-    LoginDlg(QWidget* parent = nullptr);
+    LoginDlg(std::shared_ptr<IMClient> spClient, QWidget* parent = nullptr);
     ~LoginDlg();
 
 private:
@@ -25,6 +26,8 @@ private slots:
 private:
 
     void setUpSignals();
+    std::shared_ptr<IMClient> m_spClient;
+
     Ui::LoginDlgClass m_ui;
 };
 

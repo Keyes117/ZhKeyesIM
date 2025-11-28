@@ -10,8 +10,10 @@ public:
     IMClient();
     ~IMClient();
 
-    void init(const std::string& serverIp, uint16_t nPort);
+    bool init(const std::string& serverIp, uint16_t nPort, IOMultiplexType type = IOMultiplexType::Epoll);
     bool connect();
+
+    void requestVerificationCode(const std::string& email);
 
 private:
     void networkThreadFunc();

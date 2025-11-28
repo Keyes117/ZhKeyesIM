@@ -10,7 +10,7 @@ set(SERVER_SOURCES
     MySqlDao.cpp
     RedisManager.cpp
     RedisConnPool.cpp
-    ConfigManager.cpp
+
 )
 
 set(SERVER_HEADERS
@@ -23,7 +23,6 @@ set(SERVER_HEADERS
     MySqlDao.h
     RedisManager.h
     RedisConnPool.h
-    ConfigManager.h
 )
 
 

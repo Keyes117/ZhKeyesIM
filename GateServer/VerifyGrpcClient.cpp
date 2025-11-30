@@ -33,14 +33,22 @@ VerifyGrpcClient::~VerifyGrpcClient()
 
 bool VerifyGrpcClient::init(const ConfigManager& config)
 {
-    std::string grpcHost = config["rpcServer"]["host"];
-    std::string grpcPort = config["rpcServer"]["port"];
+
+    auto hostOpt = config.getSafe<std::string>({ "rpcServer","host" });
+    auto portOpt = config.getSafe<std::string>({ "rpcServer","port" });
+
+    if (!hostOpt || !portOpt)
+    {
+        return false;
+    }
+
+    std::string grpcHost = *hostOpt;
+    std::string grpcPort = *portOpt;
 
     std::string rpcParam = fmt::format("{}:{}", grpcHost, grpcPort);
 
     std::shared_ptr<Channel> channel = grpc::CreateChannel(rpcParam, grpc::InsecureChannelCredentials());
     m_stub = VerifyService::NewStub(channel);
-
 
     m_cq = std::make_unique<grpc::CompletionQueue>();
     m_cqThread = std::thread(&VerifyGrpcClient::processCQ, this);

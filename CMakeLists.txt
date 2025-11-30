@@ -192,30 +192,16 @@ else()
 endif()
 
 function(copy_fmt_dlls_to_target target_name)
-    if(WIN32)
-        # 根据构建类型选择对应的 DLL
-        set(FMT_DLL_DEBUG "${FMT_DIR}/bin/Debug/fmtd.dll")
+   if(WIN32)
+        set(FMT_DLL_DEBUG   "${FMT_DIR}/bin/Debug/fmtd.dll")
         set(FMT_DLL_RELEASE "${FMT_DIR}/bin/Release/fmt.dll")
-        
-        # Debug 配置：拷贝 Debug DLL
-        if(EXISTS "${FMT_DLL_DEBUG}")
+
+        if(EXISTS "${FMT_DLL_DEBUG}" AND EXISTS "${FMT_DLL_RELEASE}")
             add_custom_command(TARGET ${target_name} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${FMT_DLL_DEBUG}"
-                "$<TARGET_FILE_DIR:${target_name}>/fmtd.dll"
-                COMMENT "Copying fmt Debug DLL to ${target_name} output directory"
-                CONFIGURATIONS Debug
-            )
-        endif()
-        
-        # Release 配置：拷贝 Release DLL
-        if(EXISTS "${FMT_DLL_RELEASE}")
-            add_custom_command(TARGET ${target_name} POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "${FMT_DLL_RELEASE}"
-                "$<TARGET_FILE_DIR:${target_name}>/fmt.dll"
-                COMMENT "Copying fmt Release DLL to ${target_name} output directory"
-                CONFIGURATIONS Release RelWithDebInfo MinSizeRel
+                    "$<IF:$<CONFIG:Debug>,${FMT_DLL_DEBUG},${FMT_DLL_RELEASE}>"
+                    "$<TARGET_FILE_DIR:${target_name}>/$<IF:$<CONFIG:Debug>,fmtd.dll,fmt.dll>"
+                COMMENT "Copying fmt DLL to ${target_name} output directory"
             )
         endif()
     endif()
@@ -403,6 +389,62 @@ function(copy_mysql_dlls_to_target target_name)
         endif()
     endif()
 endfunction()
+
+# ==================== copy DLL函数 ====================
+function(configure_target_output target subdir)
+    # 路径包含配置类型：bin/Debug/项目名称 或 bin/Release/项目名称
+    set_target_properties(${target} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/$<CONFIG>/${subdir}"
+        RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/bin/Debug/${subdir}"
+        RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin/Release/${subdir}"
+        RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/bin/RelWithDebInfo/${subdir}"
+        RUNTIME_OUTPUT_DIRECTORY_MINSIZEREL "${CMAKE_BINARY_DIR}/bin/MinSizeRel/${subdir}"
+    )
+    
+    # Windows 下同时设置 PDB 文件输出目录
+    if(WIN32)
+        set_target_properties(${target} PROPERTIES
+            PDB_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/$<CONFIG>/${subdir}"
+            PDB_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/bin/Debug/${subdir}"
+            PDB_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin/Release/${subdir}"
+            PDB_OUTPUT_DIRECTORY_RELWITHDEBINFO "${CMAKE_BINARY_DIR}/bin/RelWithDebInfo/${subdir}"
+            PDB_OUTPUT_DIRECTORY_MINSIZEREL "${CMAKE_BINARY_DIR}/bin/MinSizeRel/${subdir}"
+            COMPILE_PDB_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/$<CONFIG>/${subdir}"
+            COMPILE_PDB_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/bin/Debug/${subdir}"
+            COMPILE_PDB_OUTPUT_DIRECTORY_RELEASE "${CMAKE_BINARY_DIR}/bin/Release/${subdir}"
+        )
+    endif()
+endfunction()
+
+# 复制项目内部 DLL 到目标目录的函数
+function(copy_project_dlls_to_target target_name)
+    if(WIN32)
+        # 复制 net.dll
+        add_custom_command(TARGET ${target_name} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "$<TARGET_FILE:net>"
+                "$<TARGET_FILE_DIR:${target_name}>/$<TARGET_FILE_NAME:net>"
+            COMMENT "Copying net DLL to ${target_name} output directory"
+        )
+        
+        # 复制 util.dll
+        add_custom_command(TARGET ${target_name} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "$<TARGET_FILE:util>"
+                "$<TARGET_FILE_DIR:${target_name}>/$<TARGET_FILE_NAME:util>"
+            COMMENT "Copying util DLL to ${target_name} output directory"
+        )
+        
+        # 复制 Log.dll (注意 Debug 版本有 'd' 后缀)
+        add_custom_command(TARGET ${target_name} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "$<TARGET_FILE:Log>"
+                "$<TARGET_FILE_DIR:${target_name}>/$<TARGET_FILE_NAME:Log>"
+            COMMENT "Copying Log DLL to ${target_name} output directory"
+        )
+    endif()
+endfunction()
+
 
 # ==================== 添加子目录 ====================
 add_subdirectory(Log)

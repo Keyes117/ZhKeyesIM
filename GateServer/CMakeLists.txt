@@ -31,6 +31,8 @@ set(SERVER_HEADERS
 # 创建服务端可执行文件
 add_executable(GateServer ${SERVER_SOURCES} ${SERVER_HEADERS})
 
+configure_target_output(GateServer "GateServer")
+
 # 设置 Visual Studio 调试工作目录为可执行文件所在目录
 set_target_properties(GateServer PROPERTIES
     VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:GateServer>"
@@ -47,9 +49,8 @@ target_include_directories(GateServer PRIVATE
 # 链接动态库（会自动链接导入库）
 target_link_libraries(GateServer PRIVATE 
         net
+        Log
         util
-        Log 
-        nlohmann::json
         gRPC::grpc++
         protobuf::libprotobuf  
         hiredis::hiredis
@@ -83,7 +84,8 @@ endif()
 
 if(WIN32)
     copy_mysql_dlls_to_target(GateServer)
-
+    copy_fmt_dlls_to_target(GateServer)
+    copy_project_dlls_to_target(GateServer)
     target_compile_definitions(GateServer PRIVATE _WIN32)
      # 1. 自动查找所有 Abseil 库 (避免手动列出导致遗漏)
      file(GLOB ABSL_LIBS "${GRPC_DIR}/lib/absl_*.lib")

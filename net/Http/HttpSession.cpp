@@ -20,18 +20,6 @@ HttpSession::HttpSession(HttpServer* pServer, std::shared_ptr<TCPConnection>& sp
 
 }
 
-HttpSession::HttpSession(HttpClient* pClient, std::shared_ptr<TCPConnection>& spConn) :
-    m_pHttpClient(pClient),
-    m_HttpParser(SessionMode::SESSION_MODE_CLIENT),
-    m_spConnection(spConn)
-{
-    m_sessionID = HttpSession::generateID();
-
-    m_spConnection->setReadCallback(std::bind(&HttpSession::onRead, this, std::placeholders::_1));
-    m_spConnection->setWriteCallback(std::bind(&HttpSession::onWrite, this));
-
-}
-
 ZhKeyesIM::Net::Http::HttpSession::~HttpSession()
 {
 }
@@ -48,14 +36,6 @@ void HttpSession::onRead(Buffer& buffer)
             if (request)
             {
                 handleRequest(request);
-            }
-        }
-        else if (m_pHttpClient)
-        {  // 客户端模式
-            auto response = m_HttpParser.getResponse();
-            if (response)
-            {
-                handleResponse(response);
             }
         }
         else
@@ -78,6 +58,7 @@ void HttpSession::onRead(Buffer& buffer)
         handleParseError();
     }
 }
+
 void HttpSession::onWrite()
 {
 
@@ -85,11 +66,6 @@ void HttpSession::onWrite()
 void HttpSession::onClose()
 {
 
-}
-
-bool HttpSession::sendRequest(const HttpRequest& request)
-{
-    return m_spConnection->send(request.toString());
 }
 
 bool HttpSession::sendResponse(const HttpResponse& response)
@@ -105,18 +81,6 @@ void HttpSession::handleRequest(std::shared_ptr<HttpRequest>& spRequest)
         m_pHttpServer->handleRequest(*spRequest, response);
 
         sendResponse(response);
-    }
-    else
-    {
-        m_spConnection->onClose();
-    }
-}
-
-void HttpSession::handleResponse(std::shared_ptr<HttpResponse>& spResponse)
-{
-    if (m_pHttpClient)
-    {
-        m_pHttpClient->handleResponse(*spResponse);
     }
     else
     {

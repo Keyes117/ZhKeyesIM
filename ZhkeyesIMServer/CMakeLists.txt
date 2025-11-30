@@ -9,6 +9,10 @@ set(SERVER_SOURCES
 # 创建服务端可执行文件
 add_executable(ZhkeyesIMServer ${SERVER_SOURCES})
 
+configure_target_output(ZhkeyesIMServer "ZhkeyesIMServer")
+copy_mysql_dlls_to_target(ZhkeyesIMServer)
+copy_fmt_dlls_to_target(ZhkeyesIMServer)
+
 # ==================== 包含目录设置 ====================
 # 设置包含目录
 target_include_directories(ZhkeyesIMServer PRIVATE

@@ -51,6 +51,13 @@ add_executable(ZhKeyesIMClient
     ${CLIENT_TASK_SOURCE}
 )
 
+configure_target_output(ZhKeyesIMClient "ZhKeyesIMClient")
+
+# 设置 Visual Studio 调试工作目录为可执行文件所在目录
+set_target_properties(ZhKeyesIMClient PROPERTIES
+    VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:ZhKeyesIMClient>"
+)
+
 source_group(
   TREE ${CMAKE_CURRENT_SOURCE_DIR}
   FILES ${CLIENT_NETWORK_SOURCE} ${CLIENT_UI_SOURCE} ${CLIENT_TASK_SOURCE} main.cpp
@@ -74,13 +81,15 @@ target_link_libraries(ZhKeyesIMClient PRIVATE
     Qt::Core
     Qt::Gui
     Qt::Widgets
-    Log
     net
     util
+    Log
 )
 
 # 平台特定设置
 if(WIN32)
+    copy_fmt_dlls_to_target(ZhKeyesIMClient)
+    copy_project_dlls_to_target(ZhKeyesIMClient)
     target_compile_definitions(ZhKeyesIMClient PRIVATE _WIN32)
     set_target_properties(ZhKeyesIMClient
         PROPERTIES

@@ -1,5 +1,5 @@
-#ifndef  UtilS_Util_H_
-#define UtilS_Util_H_
+#ifndef UTIL_UTIL_H_
+#define UTIL_UTIL_H_
 
 #include "util_export.h"
 

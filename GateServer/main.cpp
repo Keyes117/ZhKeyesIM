@@ -7,8 +7,15 @@ int main()
 
     //Logger::instance().setLogFile("server.log");
 
+    ConfigManager config;
+    if (!config.load("config.json"))
+    {
+        LOG_ERROR("≈‰÷√Œƒº˛∂¡»° ß∞‹...");
+        return 0;
+    }
+
     GateServer server;
-    if (!server.init(5, "127.0.0.1", 8080))
+    if (!server.init(config))
     {
         LOG_ERROR("failed to initialize GateSerevr ");
         return 1;

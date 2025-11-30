@@ -11,11 +11,10 @@
 #include "RedisManager.h"
 #include "VerifyGrpcClient.h"
 
-#include "nlohmann/json.hpp"
-
-
+#include "JsonUtil.h"
 
 namespace ZhKeyesIMHttp = ZhKeyesIM::Net::Http;
+
 
 class GateServer
 {
@@ -23,8 +22,7 @@ public:
     GateServer();
     ~GateServer();
 
-    bool init(uint32_t threadNum, const std::string& ip = "",
-        uint16_t port = 8080);
+    bool init(ConfigManager& config);
     void start();
     void shutdown();
 
@@ -58,7 +56,7 @@ private:
     void registerRoutes();
 private:
     ZhKeyesIMHttp::Router m_router;
-    ConfigManager m_config;
+
 
     std::unique_ptr<VerifyGrpcClient>  m_spGrpcVerifyClient;
     std::unique_ptr<RedisManager>       m_spRedisManager;

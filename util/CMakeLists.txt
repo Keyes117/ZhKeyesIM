@@ -1,11 +1,13 @@
 
 set(UTIL_SOURCES
     Util.cpp
+    JsonUtil.cpp
     ConfigManager.cpp
 )
 
 set(UTIL_HEADERS
     Util.h
+    JsonUtil.h
     ConfigManager.h
     util_export.h
 )
@@ -24,6 +26,7 @@ target_include_directories(util PUBLIC
 )
 target_link_libraries(util PUBLIC 
         nlohmann::json
+        Log
 )
 
 target_compile_definitions(util PRIVATE UTIL_EXPORTS)

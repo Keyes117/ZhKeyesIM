@@ -16,7 +16,7 @@ public:
 
     ~RedisManager();
 
-    void init(const ConfigManager& config);
+    bool init(const ConfigManager& config);
 
     bool get(const std::string& key, std::string& value);
     bool set(const std::string& key, const std::string& value);

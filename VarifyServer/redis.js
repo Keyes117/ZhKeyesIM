@@ -6,6 +6,39 @@ const RedisClient = new Redis({
     port: config_module.redis_port,
     password: config_module.redis_password,
 
+     retryStrategy: function(times) {
+        // 重试策略：最多重试 3 次
+        if (times > 3) {
+            console.error("Redis: Max retry times reached, giving up");
+            return null; // 停止重试
+        }
+        const delay = Math.min(times * 200, 2000);
+        console.log(`Redis: Retrying connection in ${delay}ms (attempt ${times})`);
+        return delay;
+    },
+    reconnectOnError: function(err) {
+        // 某些错误可以自动重连
+        const targetError = 'READONLY';
+        if (err.message.includes(targetError)) {
+            return true; // 自动重连
+        }
+        return false;
+    }
+
+});
+
+/**
+ * 监听连接成功事件
+ */
+RedisClient.on('connect', function() {
+    console.log("Redis: Connected successfully");
+});
+
+/**
+ * 监听就绪事件
+ */
+RedisClient.on('ready', function() {
+    console.log("Redis: Ready to accept commands");
 });
 
 /**
@@ -13,7 +46,14 @@ const RedisClient = new Redis({
  */
 RedisClient.on('error', function(err) {
     console.error("RedisClient connect error");
-    RedisClient.quit();
+    // RedisClient.quit();
+});
+
+/**
+ * 监听关闭事件
+ */
+RedisClient.on('close', function() {
+    console.log("Redis: Connection closed");
 });
 
 /**

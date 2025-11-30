@@ -12,14 +12,25 @@ RedisManager::~RedisManager()
     close();
 }
 
-void RedisManager::init(const ConfigManager& config)
+bool RedisManager::init(const ConfigManager& config)
 {
-    std::string host = config["redis"]["host"];
-    std::string port = config["redis"]["port"];
-    std::string password = config["redis"]["password"];
+    auto hostOpt = config.getSafe<std::string>({ "redis","host" });
+    auto portOpt = config.getSafe<std::string>({ "redis","port" });
+    auto passwordOpt = config.getSafe<std::string>({ "redis","password" });
+
+    if (!hostOpt || !portOpt || !passwordOpt)
+    {
+        return false;
+    }
+
+    std::string host = *hostOpt;
+    std::string port = *portOpt;
+    std::string password = *passwordOpt;
     m_spConnPool = std::make_unique<RedisConnPool>(10, host.c_str(),
         std::atoi(port.c_str()), password.c_str());
     m_inited = true;
+
+    return true;
 }
 
 bool RedisManager::get(const std::string& key, std::string& value)

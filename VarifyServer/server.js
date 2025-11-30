@@ -1,5 +1,6 @@
 const grpc = require('@grpc/grpc-js');
 const crypto = require('crypto');
+const { v4: uuidv4 } = require('uuid');
 const message_proto = require('./proto');
 const email_module = require('./email');
 const const_module = require('./const');
@@ -31,7 +32,6 @@ async function GetVerifyCode(call, callback)
 
         }
         
-        uniqueId = uuidv4();
         console.log("uniqueId is ", uniqueId);
         let text_str = '您的验证码是：' + uniqueId + '，请在10分钟内使用。';
 

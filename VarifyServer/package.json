@@ -16,6 +16,7 @@
     "@grpc/proto-loader": "^0.8.0",
     "ioredis": "^5.8.2",
     "nodemailer": "^7.0.10",
-    "redis": "^5.10.0"
+    "redis": "^5.10.0",
+    "uuid": "^13.0.0"
   }
 }

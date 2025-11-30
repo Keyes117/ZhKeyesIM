@@ -18,7 +18,7 @@ class GetVerifyCodeTask : public Task
 private:
 
     std::shared_ptr<IMClient> m_spClient;
-    std::string m_strEmail;
+    std::string m_email;
 
 };
 

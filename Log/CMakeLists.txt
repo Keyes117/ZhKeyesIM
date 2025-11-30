@@ -18,6 +18,10 @@ set_target_properties(Log PROPERTIES
     SOVERSION ${PROJECT_VERSION_MAJOR}
 )
 
+target_include_directories(Log PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:include>
+)
 
 target_compile_definitions(Log PRIVATE LOG_EXPORTS)
 

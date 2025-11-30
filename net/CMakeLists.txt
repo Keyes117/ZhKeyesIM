@@ -76,7 +76,10 @@ target_include_directories(net PUBLIC
 
 )
 
-target_link_libraries(net PUBLIC Log util fmt::fmt)
+target_link_libraries(net PUBLIC 
+        util 
+        fmt::fmt
+)
 
 target_compile_definitions(net PRIVATE NET_EXPORTS)
 

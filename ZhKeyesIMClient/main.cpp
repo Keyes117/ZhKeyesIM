@@ -44,8 +44,15 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    std::shared_ptr<IMClient> spIMClient = std::make_shared<IMClient>();
-    if (!spIMClient->init("127.0.0.1", 8080, IOMultiplexType::Select))
+    ConfigManager config;
+    if (!config.load("config.json"))
+    {
+        LOG_ERROR("配置文件读取失败....");
+        return 1;
+    }
+
+    IMClient client;
+    if (!client.init("127.0.0.1", 8080, IOMultiplexType::Select))
     {
         LOG_ERROR("网络客户端初始化失败....");
         return 1;

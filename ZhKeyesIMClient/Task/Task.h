@@ -10,7 +10,7 @@ class Task
 {
 public:
     Task() = default;
-    virtual ~Task();
+    virtual ~Task() = default;
 
     virtual void doTask() = 0;
 };

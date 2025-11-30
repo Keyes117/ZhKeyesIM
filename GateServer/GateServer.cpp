@@ -1,9 +1,5 @@
 #include "GateServer.h"
 
-
-
-//#include "VerifyGrpcClient.h"
-
 using namespace ZhKeyesIMHttp;
 using namespace nlohmann;
 //using namespace message;
@@ -13,27 +9,64 @@ GateServer::GateServer():
     m_spRedisManager(std::make_unique<RedisManager>()),
     m_spHttpServer( std::make_unique<ZhKeyesIMHttp::HttpServer>())
 {
-    m_config.load("config.json");
+
 }
 
 GateServer::~GateServer()
 {
 }
 
-bool GateServer::init(uint32_t threadNum, const std::string& ip, uint16_t port)
+bool GateServer::init(ConfigManager& config)
 {
-    if (!m_spHttpServer->init(threadNum, ip, port, IOMultiplexType::Select))
+    try
+    {
+        // 使用 getSafe + value_or 提供默认值
+        auto threadNumOpt = config.getSafe<std::string>({"GateServer", "threadNum"});
+        auto ipOpt = config.getSafe<std::string>({ "GateServer", "ip" });
+        auto portOpt = config.getSafe<std::string>({ "GateServer", "port" });
+        auto typeOpt = config.getSafe<std::string>({ "GateServer", "IOType" });
+
+        if (!threadNumOpt || !ipOpt || !portOpt || !typeOpt)
+        {
+            LOG_ERROR("GateServer: 获取GateServer 相关配置失败");
+            return false;
+        }
+
+        int threadNum = std::stoi(*threadNumOpt);
+        std::string ip = *ipOpt;
+        uint16_t port = static_cast<uint16_t>(std::stoi(*portOpt));
+
+        IOMultiplexType type = static_cast<IOMultiplexType>(std::stoi(*typeOpt));
+
+        if (!m_spHttpServer->init(threadNum, ip, port, type))
+        {
+            LOG_ERROR("GateServer: Http 服务 初始化失败");
+            return false;
+        }
+
+
+        if (!m_spGrpcVerifyClient->init(config))
+        {
+            LOG_ERROR("GateServer: gprc 客户端 初始化失败");
+            return false;
+        }
+        if (!m_spRedisManager->init(config))
+        {
+            LOG_ERROR("GateServer: redis 客户端 初始化失败");
+            return false;
+        }
+
+        m_spHttpServer->setRequestCallBack(std::bind(&GateServer::onHttpRequest, this, std::placeholders::_1, std::placeholders::_2));
+        registerRoutes();
+        return true;
+    }
+    catch (std::exception& e)
+    {
         return false;
+    }
 
-    if (!m_config.isLoaded())
-        return false;
 
-    m_spGrpcVerifyClient->init(m_config);   
-    m_spRedisManager->init(m_config);
-
-    m_spHttpServer->setRequestCallBack(std::bind(&GateServer::onHttpRequest, this, std::placeholders::_1, std::placeholders::_2));
-    registerRoutes();
-    return true;
+    
 }
 
 void GateServer::start()
@@ -84,8 +117,26 @@ void GateServer::handleGetVerifyCode(const ZhKeyesIMHttp::HttpRequest& request, 
 {
     try
     {
-        nlohmann::json requestJson = nlohmann::json::parse(request.getBody());
-        std::string email = requestJson["email"];
+        auto jsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(request.getBody());
+        if (!jsonOpt)
+        {
+            setErrorRequest(response,
+                ZhKeyesIMHttp::HttpStatusCode::BadRequest,
+                "Invalid JSON format"
+            );
+            return;
+        }
+
+        auto emailOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "email");
+        if (!emailOpt || emailOpt->empty())
+        {
+            setErrorRequest(response,
+                ZhKeyesIMHttp::HttpStatusCode::BadRequest,
+                "Email field is required and cannot be empty");
+            return;
+        }
+
+        std::string email = *emailOpt;
 
         auto promise = std::make_shared<std::promise<message::GetVerifyResponse>>();
         auto future = promise->get_future();
@@ -188,31 +239,80 @@ void GateServer::setJsonResponse(ZhKeyesIMHttp::HttpResponse& response,
     ZhKeyesIMHttp::HttpStatusCode code)
 {
     response.setStatusCode(code);
-    response.setJsonResponse(json.dump());
+    auto jsonStrOpt = ZhKeyes::Util::JsonUtil::dumpSafe(json);
+    if (jsonStrOpt)
+    {
+        response.setJsonResponse(*jsonStrOpt);
+    }
+    else
+    {
+        LOG_ERROR("Failed to dump JSON in setJsonResponse");
+        response.setStatusCode(ZhKeyesIMHttp::HttpStatusCode::InternalServerError);
+        response.setBody("{\"error\":\"Internal server error\"}");
+    }
 }
 
 void GateServer::setErrorRequest(ZhKeyesIMHttp::HttpResponse& response, ZhKeyesIMHttp::HttpStatusCode code, const std::string& message)
 {
-    nlohmann::json errorData = {
-        {"code", static_cast<int>(code)},
-        {"error", message},
-        {"timestamp", std::time(nullptr)}
-    };
+    try
+    {
+        nlohmann::json errorData = {
+            {"code", static_cast<int>(code)},
+            {"error", message},
+            {"timestamp", std::time(nullptr)}
+        };
 
-    response.setStatusCode(code);
-    response.setJsonResponse(errorData);
+        response.setStatusCode(code);
+        auto jsonStrOpt = ZhKeyes::Util::JsonUtil::dumpSafe(errorData);
+        if (jsonStrOpt)
+        {
+            response.setJsonResponse(*jsonStrOpt);
+        }
+        else
+        {
+            // 如果 JSON 序列化失败，使用简单的字符串响应
+            response.setBody("{\"code\":" + std::to_string(static_cast<int>(code)) +
+                ",\"error\":\"" + message + "\"}");
+        }
+    }
+    catch (const std::exception& e)
+    {
+        LOG_ERROR("Exception in setErrorRequest: %s", e.what());
+        response.setStatusCode(code);
+        response.setBody("{\"code\":" + std::to_string(static_cast<int>(code)) +
+            ",\"error\":\"Internal error\"}");
+    }
 }
 
 void GateServer::setSuccessReqeust(ZhKeyesIMHttp::HttpResponse& response, ZhKeyesIMHttp::HttpStatusCode code, const std::string& message)
 {
-    nlohmann::json successData = {
-        {"code", static_cast<int>(code)},
-        {"success", message},
-        {"timestamp", std::time(nullptr)}
-    };
+    try
+    {
+        nlohmann::json successData = {
+            {"code", static_cast<int>(code)},
+            {"success", message},
+            {"timestamp", std::time(nullptr)}
+        };
 
-    response.setStatusCode(code);
-    response.setJsonResponse(successData);
+        response.setStatusCode(code);
+        auto jsonStrOpt = ZhKeyes::Util::JsonUtil::dumpSafe(successData);
+        if (jsonStrOpt)
+        {
+            response.setJsonResponse(*jsonStrOpt);
+        }
+        else
+        {
+            response.setBody("{\"code\":" + std::to_string(static_cast<int>(code)) +
+                ",\"success\":\"" + message + "\"}");
+        }
+    }
+    catch (const std::exception& e)
+    {
+        LOG_ERROR("Exception in setSuccessReqeust: %s", e.what());
+        response.setStatusCode(code);
+        response.setBody("{\"code\":" + std::to_string(static_cast<int>(code)) +
+            ",\"success\":\"Internal error\"}");
+    }
 }
 
 void GateServer::registerRoutes()

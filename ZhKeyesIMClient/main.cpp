@@ -51,18 +51,12 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    IMClient client;
-    if (!client.init("127.0.0.1", 8080, IOMultiplexType::Select))
+    std::shared_ptr<IMClient> spIMClient = std::make_shared<IMClient>();
+    if (!spIMClient->init(config))
     {
         LOG_ERROR("ÍøÂç¿Í»§¶Ë³õÊ¼»¯Ê§°Ü....");
         return 1;
     }       
-
-    if (!spIMClient->connect())
-    {
-        LOG_ERROR("ÍøÂçÁ¬½ÓÊ§°Ü£¬Çë¼ì²éÍøÂç....");
-        return 1;
-    }
 
     MainWindow mainWindow(spIMClient);
     mainWindow.setBaseSize(300, 500);

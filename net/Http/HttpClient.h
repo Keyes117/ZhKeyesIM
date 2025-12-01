@@ -16,9 +16,9 @@
 
 
 #include "EventLoop.h"
-#include "HttpRequest.h"
 #include "HttpResponse.h"
-#include "HttpSession.h"
+#include "HttpClientSession.h"
+
 #include "net_export.h"
 #include "TCPClient.h"
 
@@ -32,55 +32,94 @@ public:
     using ResponseCallback = std::function<void(const HttpResponse&)>;
     using ErrorCallback = std::function<void(const std::string&)>;
 
-    HttpClient();
-    explicit HttpClient(std::shared_ptr<EventLoop> spEventLoop);
+
+    explicit HttpClient(std::shared_ptr<EventLoop> eventLoop);
+
     ~HttpClient();
 
-    bool connect(const std::string& url, uint32_t timeoutMs = 5000);
-    bool connect(const std::string& host, uint16_t port, uint32_t timeoutMs = 5000);
-    void disconnect();
-    bool isConnected() const;
+    void closeAll();
 
-    bool sendRequest(const HttpRequest& request, ResponseCallback callback, ErrorCallback errorCallback = nullptr);
+    // ============== HTTP 请求方法 ==============
 
+    bool get(const std::string& url,
+        ResponseCallback callback,
+        ErrorCallback errorCallback = nullptr);
 
-    bool get(const std::string& url, ResponseCallback callback, ErrorCallback errorCallback = nullptr);
-    bool post(const std::string& url, const std::string& body, ResponseCallback callback, ErrorCallback errorCallback = nullptr);
-    bool postJson(const std::string& url, const std::string& jsonData, ResponseCallback responseCallback, ErrorCallback errorCallback = nullptr);
-    bool postForm(const std::string& url, const std::unordered_map<std::string, std::string>& formData,
-        ResponseCallback responseCallback, ErrorCallback errorCallback = nullptr);
+    bool post(const std::string& url,
+        const std::string& body,
+        ResponseCallback callback,
+        ErrorCallback errorCallback = nullptr);
 
-    void handleResponse(const HttpResponse& response);
-    void onSessionClosed(HttpSession::SessionID sessionId);
+    bool postJson(const std::string& url,
+        const std::string& jsonData,
+        ResponseCallback callback,
+        ErrorCallback errorCallback = nullptr);
 
-    void onConnected(std::shared_ptr<TCPConnection>& spConn);
-    void onConnectFailed();
-    void onDisconnected();
+    bool postForm(const std::string& url,
+        const std::unordered_map<std::string, std::string>& formData,
+        ResponseCallback callback,
+        ErrorCallback errorCallback = nullptr);
+
+    // ============== 配置 ==============
+
+    /**
+     * 设置连接超时（毫秒）
+     */
+    void setConnectionTimeout(uint32_t timeoutMs) { m_connectTimeoutMs = timeoutMs; }
+
+    /**
+     * 设置请求超时（毫秒）
+     */
+    void setRequestTimeout(uint32_t timeoutMs) { m_requestTimeoutMs = timeoutMs; }
+
+    /**
+    * 设置最大会话数
+    */
+    void setMaxSessions(size_t maxSessions) { m_maxSessions = maxSessions; }
+
+    /**
+     * 设置每个会话的最大请求数
+     */
+    void setMaxRequestsPerConnection(size_t max) { m_maxRequestsPerConnection = max; }
+
+    /**
+     * 清理空闲会话
+     */
+    void cleanupIdleSessions(std::chrono::seconds idleTimeout);
+
 private:
-
-
     // URL 解析
     struct UrlInfo {
-        std::string scheme;     // http/https
-        std::string host;       // 主机名
-        uint16_t port;          // 端口
-        std::string path;       // 路径
-        std::string query;      // 查询字符串
+        std::string scheme;
+        std::string host;
+        uint16_t port;
+        std::string path;
+        std::string query;
+
+        std::string getKey() const {
+            return host + ":" + std::to_string(port);
+        }
     };
 
     UrlInfo parseUrl(const std::string& url);
     std::string buildRequestUrl(const UrlInfo& urlInfo);
 
+    // 会话管理
+    std::shared_ptr<HttpClientSession> getOrCreateSession(const std::string& host, uint16_t port);
+
 private:
-    std::shared_ptr<EventLoop>      m_eventLoop;
-    std::unique_ptr<TCPClient>      m_tcpClient;
-    std::shared_ptr<HttpSession>    m_session;
+    std::shared_ptr<EventLoop> m_eventLoop;
 
-    ResponseCallback                m_responseCallback;
-    ErrorCallback                   m_errorCallback;
+    // 会话池：key = "host:port", value = session
+    std::unordered_map<std::string, std::shared_ptr<HttpClientSession>> m_sessions;
+    std::mutex m_sessionsMutex;
 
-    UrlInfo                        m_currentUrlInfo;  // 当前连接的URL信息
-    bool                           m_isConnected = false;
+    uint32_t m_connectTimeoutMs = 5000;
+    uint32_t m_requestTimeoutMs = 30000;
+
+ 
+    size_t m_maxSessions = 100;
+    size_t m_maxRequestsPerConnection = 100;
 
 };
 

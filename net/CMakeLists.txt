@@ -3,6 +3,7 @@ set(NET_SOURCES
     Http/HttpSession.cpp
     Http/HttpServer.cpp
     Http/HttpClient.cpp
+    Http/HttpClientSession.cpp
     Http/HttpResponse.cpp
     Http/HttpRequest.cpp
     Http/HttpProtocol.cpp
@@ -30,6 +31,7 @@ set(NET_HEADERS
     Http/HttpSession.h
     Http/HttpServer.h
     Http/HttpClient.h
+    Http/HttpClientSession.h
     Http/HttpResponse.h
     Http/HttpRequest.h
     Http/HttpProtocol.h

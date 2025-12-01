@@ -19,6 +19,8 @@ public:
 private:
     void networkThreadFunc();
 
+    void onResponseVerificationCode(const ZhKeyesIM::Net::Http::HttpResponse& response);
+    void onErrorVerificationCode(const std::string& errorMsg);
 private:
 
     std::atomic<bool>                       m_eventLoopRunning = false;
@@ -27,6 +29,9 @@ private:
     std::unique_ptr<std::thread>            m_networkThread;
     std::unique_ptr<TCPClient>              m_spTcpClient;
     std::unique_ptr<ZhKeyesIM::Net::Http::HttpClient>   m_spHttpClient;
+
+    std::string m_httpIp;
+    uint16_t    m_httpPort;
 };
 
 

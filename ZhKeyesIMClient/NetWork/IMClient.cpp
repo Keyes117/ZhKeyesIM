@@ -1,6 +1,8 @@
  #include "IMClient.h"
 #include <iostream>
 
+#include "fmt/format.h"
+
 IMClient::IMClient()
 {
     m_spMainEventLoop = std::make_shared<EventLoop>();
@@ -14,37 +16,35 @@ IMClient::~IMClient()
     m_spMainEventLoop->stop();
     if (m_networkThread && m_networkThread->joinable())
         m_networkThread->join();
+    m_eventLoopRunning.store(false);
 
 }
 
 bool IMClient::init(const ConfigManager& config)
 {
-
-    //  π”√ getSafe + value_or Ã·π©ƒ¨»œ÷µ
-    auto tcpIpOpt = config.getSafe<std::string>({"TCPServer", "Ip"});
-    auto tcpPortOpt = config.getSafe<std::string>({ "TCPServer", "Port" });
+    //auto tcpIpOpt = config.getSafe<std::string>({"TCPServer", "Ip"});
+    //auto tcpPortOpt = config.getSafe<std::string>({ "TCPServer", "Port" });
     auto httpIpOpt = config.getSafe<std::string>({ "HttpServer", "Ip" });
     auto httpPortOpt = config.getSafe<std::string>({ "HttpServer", "port" });
 
     auto typeOpt = config.getSafe<std::string>({ "IOType", "type" });
 
-    if (!tcpIpOpt || !tcpPortOpt || !httpIpOpt || !httpPortOpt || !typeOpt)
+    if (/*!tcpIpOpt || !tcpPortOpt ||*/ !httpIpOpt || !httpPortOpt || !typeOpt)
     {
-        LOG_ERROR("IMClient: ªÒ»°IMClient œ‡πÿ≈‰÷√ ß∞‹");
+        LOG_ERROR("IMClient: Ëé∑ÂèñIMClient Áõ∏ÂÖ≥ÈÖçÁΩÆÂ§±Ë¥•");
         return false;
     }
 
-    std::string tcpIp = *tcpIpOpt;
-    uint16_t tcpPort = static_cast<uint16_t>(std::stoi(*tcpPortOpt));
-    std::string httpIp = *httpIpOpt;
-    uint16_t tcpPort = static_cast<uint16_t>(std::stoi(*httpPortOpt));
+    //std::string tcpIp = *tcpIpOpt;
+    //uint16_t tcpPort = static_cast<uint16_t>(std::stoi(*tcpPortOpt));
+    m_httpIp = *httpIpOpt;
+    m_httpPort = static_cast<uint16_t>(std::stoi(*httpPortOpt));
 
     IOMultiplexType type = static_cast<IOMultiplexType>(std::stoi(*typeOpt));
 
-    if (!m_spTcpClient->init(tcpIp, tcpPort))
-        return false;
+    //if (!m_spTcpClient->init(tcpIp, tcpPort))
+    //    return false;
 
-    if(!m_spHttpClient)
 
     m_spMainEventLoop->init(type);
     m_networkThread = std::make_unique<std::thread>(std::bind(&IMClient::networkThreadFunc, this));
@@ -52,7 +52,7 @@ bool IMClient::init(const ConfigManager& config)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    std::cout << "Õ¯¬Áœﬂ≥Ã“—∆Ù∂Ø: " << m_networkThread->get_id() << std::endl;
+    std::cout << "ÁΩëÁªúÁ∫øÁ®ãÂ∑≤ÂêØÂä®: " << m_networkThread->get_id() << std::endl;
 
     return true;
 }
@@ -64,12 +64,19 @@ bool IMClient::connect()
 
 void IMClient::requestVerificationCode(const std::string& email)
 {
-    m_spHttpClient->
+    nlohmann::json requestJson;
+    requestJson["email"] = email;
+
+
+    std::string url = fmt::format("{}:{}/api/code/getCode", m_httpIp, m_httpPort);
+    m_spHttpClient->postJson(url,
+        requestJson.dump(),
+        std::bind(&IMClient::onResponseVerificationCode, this, std::placeholders::_1),
+        std::bind(&IMClient::onErrorVerificationCode, this, std::placeholders::_1));
 }
 
 void IMClient::networkThreadFunc()
 {
-
     m_eventLoopRunning.store(true);
     m_spMainEventLoop->run();
     m_eventLoopRunning.store(false);

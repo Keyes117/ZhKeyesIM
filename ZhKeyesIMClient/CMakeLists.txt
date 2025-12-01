@@ -53,6 +53,28 @@ add_executable(ZhKeyesIMClient
 
 configure_target_output(ZhKeyesIMClient "ZhKeyesIMClient")
 
+# ==================== 复制配置文件到输出目录 ====================
+set(CONFIG_FILE "${CMAKE_CURRENT_SOURCE_DIR}/config.json")
+
+if(EXISTS "${CONFIG_FILE}")
+    # 复制配置文件到输出目录（构建后）
+    add_custom_command(TARGET ZhKeyesIMClient POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CONFIG_FILE}"
+        "$<TARGET_FILE_DIR:ZhKeyesIMClient>/config.json"
+        COMMENT "Copying config.json to ZhKeyesIMClient output directory"
+    )
+    
+    # 安装配置文件
+    install(FILES "${CONFIG_FILE}"
+        DESTINATION bin
+        OPTIONAL
+    )
+else()
+    message(WARNING "Config file not found: ${CONFIG_FILE}")
+    message(STATUS "You may need to create config.json manually in the output directory")
+endif()
+
 # 设置 Visual Studio 调试工作目录为可执行文件所在目录
 set_target_properties(ZhKeyesIMClient PROPERTIES
     VS_DEBUGGER_WORKING_DIRECTORY "$<TARGET_FILE_DIR:ZhKeyesIMClient>"

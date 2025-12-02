@@ -9,9 +9,11 @@
 #include <cstring>
 #endif
 
+#include "net_export.h"
+
 namespace net {
 
-bool SocketUtil::InitNetwork() {
+bool  SocketUtil::InitNetwork() {
 #ifdef _WIN32
     WSADATA wsaData;
     return ::WSAStartup(MAKEWORD(2, 2), &wsaData) == 0;
@@ -20,7 +22,7 @@ bool SocketUtil::InitNetwork() {
 #endif
 }
 
-void SocketUtil::CleanupNetwork() {
+void  SocketUtil::CleanupNetwork() {
 #ifdef _WIN32
     ::WSACleanup();
 #endif

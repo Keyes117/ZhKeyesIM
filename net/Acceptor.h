@@ -55,7 +55,6 @@ private:
 private:
     SOCKET          m_listenSocket;
     bool            m_listening{ false };
-    bool            m_enableRead{ false };
 
     EventLoop* m_EventLoop;
     AcceptCallback      m_acceptCallback;

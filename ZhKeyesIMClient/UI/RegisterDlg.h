@@ -2,6 +2,7 @@
 #define UI_REGISTERDLG_H_
 
 #include <QDialog>
+#include <QTimer>
 
 #include "ui_RegisterDlg.h"
 
@@ -18,6 +19,7 @@ public:
 private:
     void setUpSignals();
     void showTip(const QString& str, bool isError);
+    void startCountdown();
 
 signals:
     void switchLoginDlg();
@@ -27,11 +29,18 @@ private slots:
     void onRegisterButtonClicked();
     void onCodeButtonClicked();
 
+    void onVerifyCodeReceived(bool success, QString message, int errorCode);
+
 private:
 
     Ui::RegisterDlgClass m_ui;
-
+    // 验证码倒计时
+    int m_countdown{ 0 };
+    QTimer* m_countdownTimer;
     std::shared_ptr<IMClient> m_spClient;
+
+
+
 };
 
 #endif

@@ -71,7 +71,7 @@ bool HttpClient::post(const std::string& url,
     UrlInfo urlInfo = parseUrl(url);
     if (urlInfo.host.empty() || urlInfo.port == 0) {
         if (errorCallback) {
-            errorCallback("Invalid URL: " + url);
+            errorCallback("HttpClient: Invalid URL: " + url);
         }
         return false;
     }
@@ -106,7 +106,7 @@ bool HttpClient::postJson(const std::string& url,
     UrlInfo urlInfo = parseUrl(url);
     if (urlInfo.host.empty() || urlInfo.port == 0) {
         if (errorCallback) {
-            errorCallback("Invalid URL: " + url);
+            errorCallback("HttpClient: Invalid URL: " + url);
         }
         return false;
     }
@@ -140,7 +140,7 @@ bool HttpClient::postForm(const std::string& url,
     UrlInfo urlInfo = parseUrl(url);
     if (urlInfo.host.empty() || urlInfo.port == 0) {
         if (errorCallback) {
-            errorCallback("Invalid URL: " + url);
+            errorCallback("HttpClient: Invalid URL: " + url);
         }
         return false;
     }
@@ -179,7 +179,7 @@ void ZhKeyesIM::Net::Http::HttpClient::cleanupIdleSessions(std::chrono::seconds 
             now - lastActivity);
 
         if (idleTime > idleTimeout && !session->hasPendingRequests()) {
-            LOG_INFO("Closing idle session: %s (idle for %lld seconds)",
+            LOG_INFO("HttpClient: Closing idle session: %s (idle for %lld seconds)",
                 it->first.c_str(), idleTime.count());
             session->close();
             it = m_sessions.erase(it);
@@ -195,7 +195,7 @@ HttpClient::UrlInfo HttpClient::parseUrl(const std::string& url)
     UrlInfo info;
 
     // URL 解析正则表达式
-    std::regex urlRegex(R"(^(https?)://([^:/\?#]+)(?::(\d+))?([^?\#]*)(?:\?([^#]*))?(?:#.*)?$)");
+    std::regex urlRegex(R"(^(http?)://([^:/\?#]+)(?::(\d+))?([^?\#]*)(?:\?([^#]*))?(?:#.*)?$)");
     std::smatch match;
 
     if (std::regex_match(url, match, urlRegex))
@@ -225,7 +225,7 @@ HttpClient::UrlInfo HttpClient::parseUrl(const std::string& url)
     }
     else
     {
-        LOG_ERROR("HttpClient failed to parse URL: {}", url);
+        LOG_ERROR("HttpClient: failed to parse URL: {}", url);
     }
 
     return info;
@@ -255,12 +255,12 @@ std::shared_ptr<HttpClientSession> HttpClient::getOrCreateSession(const std::str
         }
 
         // Session 已失效，移除
-        LOG_DEBUG("Removing invalid session for %s", key.c_str());
+        LOG_DEBUG("HttpClient: Removing invalid session for %s", key.c_str());
         m_sessions.erase(it);
     }
 
     if (m_sessions.size() >= m_maxSessions) {
-        LOG_ERROR("Too many active sessions (%zu >= %zu)",
+        LOG_ERROR("HttpClient: Too many active sessions (%zu >= %zu)",
             m_sessions.size(), m_maxSessions);
         return nullptr;
     }
@@ -272,7 +272,7 @@ std::shared_ptr<HttpClientSession> HttpClient::getOrCreateSession(const std::str
     session->setMaxRequestsPerConnection(m_maxRequestsPerConnection);
     m_sessions[key] = session;
 
-    LOG_INFO("Created new session for %s:%u", host.c_str(), port);
+    LOG_INFO("HttpClient: Created new session for %s:%u", host.c_str(), port);
 
     return session;
 }

@@ -29,8 +29,11 @@ public:
 
     //SendTask : ClientUI -> ClientNetWork
     //RecvTask : ClientNetWork -> ClientUI
-    void registerSendTask(std::shared_ptr<Task>&& task);
-    void registerRecvTask(std::shared_ptr<Task>&& task);
+    void registerNetTask(std::shared_ptr<Task>&& task);
+    void registerUITask(std::shared_ptr<Task>&& task);
+
+signals:
+    void verifyCodeRecevied(bool isSuccess, QString message, int errorCode);
 
 private:
     TaskHandler() = default;
@@ -41,17 +44,17 @@ private:
 
 
 private:
-    std::mutex                          m_sendMutex;
-    std::mutex                          m_recvMutex;
+    std::mutex                          m_netMutex;
+    std::mutex                          m_UIMutex;
 
-    std::condition_variable             m_sendCV;
-    std::condition_variable             m_recvCV;
+    std::condition_variable             m_netCV;
+    std::condition_variable             m_UICV;
 
-    std::list<std::shared_ptr<Task>>    m_sendTasks;
-    std::list<std::shared_ptr<Task>>    m_recvTasks;
+    std::list<std::shared_ptr<Task>>    m_netTasks;
+    std::list<std::shared_ptr<Task>>    m_UITasks;
 
-    std::unique_ptr<std::thread>        m_spSendThread;
-    std::unique_ptr<std::thread>        m_spRecvThread;
+    std::unique_ptr<std::thread>        m_spNetTaskThread;
+    std::unique_ptr<std::thread>        m_spUITaskThread;
 
     std::atomic<bool>                   m_running;
 

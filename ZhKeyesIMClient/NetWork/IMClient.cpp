@@ -1,13 +1,13 @@
  #include "IMClient.h"
 #include <iostream>
 
+#include "ApiRoutes.h"
+#include "JsonUtil.h"
 #include "fmt/format.h"
+
 
 IMClient::IMClient()
 {
-    m_spMainEventLoop = std::make_shared<EventLoop>();
-    m_spTcpClient = std::make_unique<TCPClient>(m_spMainEventLoop);
-    m_spHttpClient = std::make_unique<ZhKeyesIM::Net::Http::HttpClient>(m_spMainEventLoop);
 
 }
 IMClient::~IMClient()
@@ -24,12 +24,10 @@ bool IMClient::init(const ConfigManager& config)
 {
     //auto tcpIpOpt = config.getSafe<std::string>({"TCPServer", "Ip"});
     //auto tcpPortOpt = config.getSafe<std::string>({ "TCPServer", "Port" });
-    auto httpIpOpt = config.getSafe<std::string>({ "HttpServer", "Ip" });
-    auto httpPortOpt = config.getSafe<std::string>({ "HttpServer", "port" });
-
+    auto baseUrlOpt = config.getSafe<std::string>({ "HttpServer", "baseUrl" });
     auto typeOpt = config.getSafe<std::string>({ "IOType", "type" });
 
-    if (/*!tcpIpOpt || !tcpPortOpt ||*/ !httpIpOpt || !httpPortOpt || !typeOpt)
+    if ( !baseUrlOpt ||  !typeOpt)
     {
         LOG_ERROR("IMClient: 获取IMClient 相关配置失败");
         return false;
@@ -37,8 +35,7 @@ bool IMClient::init(const ConfigManager& config)
 
     //std::string tcpIp = *tcpIpOpt;
     //uint16_t tcpPort = static_cast<uint16_t>(std::stoi(*tcpPortOpt));
-    m_httpIp = *httpIpOpt;
-    m_httpPort = static_cast<uint16_t>(std::stoi(*httpPortOpt));
+    m_httpBaseUrl = *baseUrlOpt;
 
     IOMultiplexType type = static_cast<IOMultiplexType>(std::stoi(*typeOpt));
 
@@ -46,7 +43,14 @@ bool IMClient::init(const ConfigManager& config)
     //    return false;
 
 
-    m_spMainEventLoop->init(type);
+    m_spMainEventLoop = std::make_shared<EventLoop>();
+    if (!m_spMainEventLoop->init(type))
+    {
+        LOG_ERROR("IMClient: 初始化 EventLoop 失败");
+        return false;
+    }
+    m_spTcpClient = std::make_unique<TCPClient>(m_spMainEventLoop);
+    m_spHttpClient = std::make_unique<ZhKeyesIM::Net::Http::HttpClient>(m_spMainEventLoop);
     m_networkThread = std::make_unique<std::thread>(std::bind(&IMClient::networkThreadFunc, this));
     while (!m_eventLoopRunning.load())
     {
@@ -68,7 +72,7 @@ void IMClient::requestVerificationCode(const std::string& email)
     requestJson["email"] = email;
 
 
-    std::string url = fmt::format("{}:{}/api/code/getCode", m_httpIp, m_httpPort);
+    std::string url = fmt::format("http://{}{}", m_httpBaseUrl.c_str(), ApiRoutes::Code::GET_VERIFICATION_CODE);
     m_spHttpClient->postJson(url,
         requestJson.dump(),
         std::bind(&IMClient::onResponseVerificationCode, this, std::placeholders::_1),
@@ -80,4 +84,22 @@ void IMClient::networkThreadFunc()
     m_eventLoopRunning.store(true);
     m_spMainEventLoop->run();
     m_eventLoopRunning.store(false);
+}
+
+void IMClient::onResponseVerificationCode(const ZhKeyesIM::Net::Http::HttpResponse& response)
+{
+    auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(response.getBody());
+    if (!requestJsonOpt)
+    {
+        onErrorVerificationCode("IMClient:onResponseVerificationCode:接收返回值格式错误：不是正常的Json格式");
+        return;
+    }
+
+    nlohmann::json requestJson = *requestJsonOpt;
+
+}
+
+void IMClient::onErrorVerificationCode(const std::string& errorMsg)
+{
+
 }

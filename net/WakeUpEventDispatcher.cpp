@@ -21,7 +21,7 @@ WakeUpEventDispatcher::~WakeUpEventDispatcher()
 
 void WakeUpEventDispatcher::onRead()
 {
-    if (!m_enabledRead || m_wakeUpSocket == INVALID_SOCKET)
+    if (m_wakeUpSocket == INVALID_SOCKET)
         return;
 
     uint64_t dummyData = 0;
@@ -76,16 +76,6 @@ void WakeUpEventDispatcher::onWrite()
 
 void WakeUpEventDispatcher::onClose()
 {
-}
-
-void WakeUpEventDispatcher::enableRead(bool isEnabled)
-{
-    m_enabledRead = isEnabled;
-}
-
-void WakeUpEventDispatcher::enableWrite(bool isEnabled)
-{
-    m_enabledWrite = isEnabled;
 }
 
 void WakeUpEventDispatcher::WakeUp()

@@ -28,6 +28,16 @@ void Select::poll(uint32_t timeOutUs, std::vector<EventDispatcher*>& triggerEven
     int numEvents = ::select(m_maxfd + 1, &readfds, &writefds, &exceptfds, &timeout);
 #endif
 
+    //先重置所有读写标志
+    for (const auto& pair : m_EventMap)
+    {
+        if (pair.second)
+        {
+            pair.second->enableRead(false);
+            pair.second->enableWrite(false);
+        }
+    }
+
     for (const auto& pair : m_EventMap)
     {
 #ifdef _WIN32
@@ -166,7 +176,7 @@ void Select::unRegisterAllEvent(SOCKET fd, EventDispatcher* dispatcher)
     FD_CLR(fd, &m_exceptfds);
     m_EventMap.erase(fd);
 
-    // ���¼���maxfd
+    // 重新计算maxfd
     if (fd == m_maxfd) {
         m_maxfd = -1;
         for (const auto& pair : m_EventMap) {

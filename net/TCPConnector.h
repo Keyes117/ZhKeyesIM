@@ -38,21 +38,9 @@ public:
         m_connectFailedCallback = std::move(callback);
     }
 
-    virtual void enableRead(bool isEnabled) override
-    {
-        m_enableRead = isEnabled;
-    }
-
-    virtual void enableWrite(bool isEnabled) override
-    {
-        m_enableWrite = isEnabled;
-    }
-
     virtual void onRead() override;
     virtual void onWrite() override;
     virtual void onClose() override;
-
-
 
 private:
     bool createSocket();
@@ -65,6 +53,8 @@ private:
 
     void cleanup();
 
+    void onConnectionTimeout();
+
 private:
     std::shared_ptr<EventLoop>  m_spEventLoop;
 
@@ -72,10 +62,9 @@ private:
     std::string                 m_serverIP;
     uint16_t                    m_serverPort;
     uint16_t                    m_connectTimeoutMs;
+    int64_t                     m_timeOutTimerId;
 
     std::atomic<bool>           m_isConnecting;
-    bool                        m_enableRead;
-    bool                        m_enableWrite;
 
     std::chrono::steady_clock::time_point   m_connectStartTime;
 

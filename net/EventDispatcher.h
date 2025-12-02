@@ -13,8 +13,27 @@ public:
     virtual void onWrite() = 0;
     virtual void onClose() = 0;
 
-    virtual void enableRead(bool isEnabled) = 0;
-    virtual void enableWrite(bool isEnabled) = 0;
+    virtual bool isReadEnabed()
+    {
+        return m_enableRead;
+    }
+    virtual bool isWriteEnabled()
+    {
+        return m_enableWrite;
+    }
+
+    virtual void enableRead(bool isEnabled)
+    {
+        m_enableRead = isEnabled;
+    }
+    virtual void enableWrite(bool isEnabled)
+    {
+        m_enableWrite = isEnabled;
+    }
+
+protected:
+    bool    m_enableRead{ false };
+    bool    m_enableWrite{ false };
 };
 
 #endif

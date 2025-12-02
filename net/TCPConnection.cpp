@@ -66,9 +66,6 @@ void TCPConnection::shutdownAfterWrite()
 
 void TCPConnection::onRead()
 {
-    if (!m_enableRead)
-        return;
-
     char buf[65536];
     int n = ::recv(m_socket, buf, sizeof(buf), 0);
     if (n == 0)
@@ -100,8 +97,6 @@ void TCPConnection::onRead()
 
 void TCPConnection::onWrite()
 {
-    if (!m_enableWrite)
-        return;
 
     if (m_sendBuf.readableBytes() > 0)
     {

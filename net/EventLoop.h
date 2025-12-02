@@ -29,7 +29,7 @@ public:
     EventLoop(bool isBaseLoop = false);
     ~EventLoop() = default;
 
-    void init(IOMultiplexType type = IOMultiplexType::Epoll);
+    bool init(IOMultiplexType type = IOMultiplexType::Epoll);
     void run();
     void stop();
 

@@ -9,10 +9,10 @@ EventLoop::EventLoop(bool isBaseLoop):
 {
 }
 
-void EventLoop::init(IOMultiplexType type)
+bool EventLoop::init(IOMultiplexType type)
 {
     if (m_running)
-        return;
+        return true;
 
     if (type == IOMultiplexType::Select)
         m_spIOMultiplex = std::make_unique<Select>();
@@ -24,11 +24,12 @@ void EventLoop::init(IOMultiplexType type)
 
 
     if (!createWakeUpSocket())
-        return;
+        return false;
 
     registerReadEvent(m_wakeUpSocket, m_spWakeUpEventDispatcher.get());
 
     m_running = true;
+    return true;
 }
 
 void EventLoop::run()
@@ -51,8 +52,10 @@ void EventLoop::run()
         {
             if (dispatcher)
             {
-                dispatcher->onRead();
-                dispatcher->onWrite();
+                if(dispatcher->isReadEnabed())
+                    dispatcher->onRead();
+                if(dispatcher->isWriteEnabled())
+                    dispatcher->onWrite();
             }
         }
 

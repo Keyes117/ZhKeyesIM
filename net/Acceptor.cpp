@@ -6,7 +6,6 @@
 Acceptor::Acceptor(EventLoop* pEventLoop)
     :m_listenSocket(INVALID_SOCKET),
     m_listening(false),
-    m_enableRead(false),
     m_EventLoop(pEventLoop)
 
 {

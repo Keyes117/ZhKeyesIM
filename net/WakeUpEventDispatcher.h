@@ -15,9 +15,6 @@ public:
     virtual void onWrite() override;
     virtual void onClose() override;
 
-    virtual void enableRead(bool isEnabled) override;
-    virtual void enableWrite(bool isEnabled) override;
-
     void WakeUp();
 #ifdef _WIN32
     void setWakeUpSocketAddr(const sockaddr_in& addr);
@@ -26,8 +23,6 @@ public:
 #endif
 private:
     int     m_wakeUpSocket;
-    bool    m_enabledRead{ false };
-    bool    m_enabledWrite{ false };
 
 };
 

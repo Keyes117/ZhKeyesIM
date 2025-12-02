@@ -14,15 +14,7 @@ TCPServer::~TCPServer()
 bool TCPServer::init(int32_t threadNum, const std::string& ip, uint16_t port, IOMultiplexType type)
 {
     LOG_INFO("server initializing...");
-#ifdef _WIN32
-    WSADATA wsaData;
-    int wsaRet = WSAStartup(MAKEWORD(2, 2), &wsaData);
-    if (wsaRet != 0)
-    {
-        std::cout << "WSAStartup failed: %d" << wsaRet << std::endl;
-        return false;
-    }
-#endif
+
     m_threadPool.start(threadNum, type);
     m_ip = ip;
     m_port = port;
@@ -56,9 +48,7 @@ void TCPServer::start()
 
 void TCPServer::shutdown()
 {
-#ifdef _WIN32
-    WSACleanup();
-#endif
+
     m_threadPool.stop();
     m_acceptor.stopListen();
     LOG_INFO("server shutdown");

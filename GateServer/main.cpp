@@ -1,11 +1,23 @@
 #include "GateServer.h"
 
+#include "common.h"
+
 int main()
 {
     
+
+
     Logger::instance().setLogLevel(LogLevel::INFO);
 
     //Logger::instance().setLogFile("server.log");
+
+#ifdef _WIN32
+    if (!net::SocketUtil::InitNetwork())
+    {
+        LOG_ERROR("³õÊ¼»¯ÍøÂç¿âÊ§°Ü");
+        return 1;
+    }
+#endif // _WIN32
 
     ConfigManager config;
     if (!config.load("config.json"))
@@ -21,5 +33,10 @@ int main()
         return 1;
     }
     server.start();
+
+#ifdef _WIN32
+    net::SocketUtil::CleanupNetwork();
+#endif // _WIN32
+
     return 0;
 }

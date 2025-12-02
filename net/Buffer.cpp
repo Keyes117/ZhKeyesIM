@@ -42,7 +42,7 @@ Buffer& Buffer::operator=(Buffer&& rhs) noexcept
         m_readIndex = rhs.m_readIndex;
         m_writeIndex = rhs.m_writeIndex;
 
-        // ½«Ô´¶ÔÏóÖØÖÃÎª³õÊ¼×´Ì¬
+        // å°†æºå¯¹è±¡é‡ç½®ä¸ºåˆå§‹çŠ¶æ€
         rhs.m_readIndex = rhs.m_writeIndex = kCheapPrepend;
     }
     return *this;
@@ -144,7 +144,7 @@ void Buffer::makeSpace(size_t len)
 {
     if (writableBytes() + prependableBytes() < len + kCheapPrepend)
     {
-        //ÕæÕıĞèÒªÀ©Èİ
+        //çœŸæ­£éœ€è¦æ‰©å®¹
         m_buffer.resize(m_writeIndex + len);
     }
     else

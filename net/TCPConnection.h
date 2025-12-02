@@ -33,15 +33,6 @@ public:
     virtual void onWrite() override;
     virtual void onClose() override;
 
-    virtual void enableRead(bool isEnabled) override
-    {
-        m_enableRead = isEnabled;
-    }
-    virtual void enableWrite(bool isEnabled) override
-    {
-        m_enableWrite = isEnabled;
-    }
-
     void setReadCallback(ReadCallBack&& readCallBack)
     {
         m_readCallBack = std::move(readCallBack);
@@ -75,8 +66,7 @@ private:
     bool    m_registerReadEvent{ false };
     bool    m_registerWriteEvent{ false };
 
-    bool    m_enableRead{ false };
-    bool    m_enableWrite{ false };
+
 
     std::shared_ptr<EventLoop>      m_spEventLoop;
 

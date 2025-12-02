@@ -18,16 +18,6 @@ bool TCPClient::init(const std::string& serverIP, uint16_t serverPort,
 {
     LOG_INFO("TCPClient Initializing...");
 
-#ifdef _WIN32
-    WSADATA wsaData;
-    int wsaRet = WSAStartup(MAKEWORD(2, 2), &wsaData);
-    if (wsaRet != 0)
-    {
-        std::cout << "WSAStartup failed: %d" << wsaRet << std::endl;
-        return false;
-    }
-#endif
-
     if (m_initialized.load())
     {
         LOG_INFO("TCPClient has been already initialized ");
@@ -188,10 +178,6 @@ void TCPClient::onDisconnected()
 void TCPClient::cleanup()
 {
     disconnect();
-
-#ifdef _WIN32
-    WSACleanup();
-#endif // _WIN32
 
     m_spConnection.reset();
     m_spConnector.reset();

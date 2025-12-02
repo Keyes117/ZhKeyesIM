@@ -1,6 +1,7 @@
 set(CLIENT_NETWORK_SOURCE
     NetWork/IMClient.cpp
     NetWork/IMClient.h
+    NetWork/ApiRoutes.h
 )
 
 set(CLIENT_UI_SOURCE
@@ -28,6 +29,8 @@ set(CLIENT_TASK_SOURCE
     Task/GetVerifyCodeTask.h
     Task/RecvVerifyCodeTask.cpp
     Task/RecvVerifyCodeTask.h
+    Task/ReportErrorTask.cpp
+    Task/ReportErrorTask.h
 )
 
 # Qt配置

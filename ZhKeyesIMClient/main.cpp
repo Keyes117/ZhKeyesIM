@@ -10,10 +10,19 @@
 #include "Logger.h"
 #include "TaskHandler.h"
 #include "MainWindow.h"
+#include "common.h"
 
 
 int main(int argc, char* argv[])
 {
+#ifdef _WIN32
+    if (!net::SocketUtil::InitNetwork())
+    {
+        std::cerr << "Failed to initialize network library!" << std::endl;
+        return 1;
+    }
+#endif
+
     QApplication app(argc, argv);
     QApplication::setStyle("fusion");
     QApplication::setFont(QFont("Microsoft YaHei", 9));
@@ -38,12 +47,6 @@ int main(int argc, char* argv[])
 #endif
     //Logger::instance().setLogFile("GateServer.log");
 
-    if (!TaskHandler::getInstance().init())
-    {
-        LOG_ERROR("基础组件初始化失败....");
-        return 1;
-    }
-
     ConfigManager config;
     if (!config.load("config.json"))
     {
@@ -58,6 +61,12 @@ int main(int argc, char* argv[])
         return 1;
     }       
 
+    if (!TaskHandler::getInstance().init())
+    {
+        LOG_ERROR("基础组件初始化失败....");
+        return 1;
+    }
+
     MainWindow mainWindow(spIMClient);
     mainWindow.setBaseSize(300, 500);
     mainWindow.setMaximumSize(300, 500);
@@ -65,6 +74,11 @@ int main(int argc, char* argv[])
     int ret =  app.exec();
 
     TaskHandler::getInstance().close();
+
+#ifdef _WIN32
+    net::SocketUtil::CleanupNetwork();
+#endif
+
 
     return ret;
 }

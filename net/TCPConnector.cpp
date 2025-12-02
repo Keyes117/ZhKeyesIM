@@ -23,9 +23,7 @@ TCPConnector::TCPConnector(const std::shared_ptr<EventLoop>& spEventLoop)
     m_socket(INVALID_SOCKET),
     m_serverPort(0),
     m_connectTimeoutMs(5000),
-    m_isConnecting(false),
-    m_enableRead(false),
-    m_enableWrite(false)
+    m_isConnecting(false)
 {
 }
 
@@ -83,8 +81,7 @@ void TCPConnector::onRead()
 void TCPConnector::onWrite()
 {
 
-
-    if (!m_isConnecting.load() || !m_enableWrite)
+    if (!m_isConnecting.load())
         return;
 
     checkConnectResult();
@@ -185,7 +182,12 @@ bool TCPConnector::connect()
             m_isConnecting.store(true);
             m_connectStartTime = std::chrono::steady_clock::now();
             m_spEventLoop->registerWriteEvent(m_socket, this);
-            m_enableWrite = true;
+
+            m_timeOutTimerId = m_spEventLoop->addTimer(
+                m_connectTimeoutMs,
+                1,
+                std::bind(&TCPConnector::onConnectionTimeout, this)
+            );
 
             return true;
         }
@@ -204,7 +206,7 @@ bool TCPConnector::connect()
             m_isConnecting.store(true);
             m_connectStartTime = std::chrono::steady_clock::now();
             m_spEventLoop->registerWriteEvent(m_socket, this);
-            m_enableWrite = true;
+
 
             return true;
         }
@@ -266,7 +268,6 @@ void TCPConnector::checkConnectResult()
         if (m_enableWrite)
         {
             m_spEventLoop->unregisterWriteEvent(m_socket, this);
-            m_enableWrite = false;
         }
 
         if (m_connectCallback)
@@ -294,12 +295,24 @@ void TCPConnector::cleanup()
     if (m_socket != INVALID_SOCKET && m_spEventLoop && m_enableWrite)
     {
         m_spEventLoop->unregisterWriteEvent(m_socket, this);
-        m_enableWrite = false;
     }
 
     closesocket(m_socket);
     m_socket = INVALID_SOCKET;
 
+}
+
+void TCPConnector::onConnectionTimeout()
+{
+    if (m_isConnecting.load())
+    {
+        if (m_connectFailedCallback)
+            m_connectFailedCallback();
+    }
+
+    m_isConnecting.store(false);
+    m_spEventLoop->removeTimer(m_timeOutTimerId);
+    m_timeOutTimerId = -1;
 }
 
 

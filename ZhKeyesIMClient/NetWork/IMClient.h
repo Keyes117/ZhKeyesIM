@@ -30,8 +30,7 @@ private:
     std::unique_ptr<TCPClient>              m_spTcpClient;
     std::unique_ptr<ZhKeyesIM::Net::Http::HttpClient>   m_spHttpClient;
 
-    std::string m_httpIp;
-    uint16_t    m_httpPort;
+    std::string m_httpBaseUrl;
 };
 
 

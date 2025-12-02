@@ -8,8 +8,10 @@
 #include "IMClient.h"
 
 
+
 class GetVerifyCodeTask : public Task
 {
+public:
     GetVerifyCodeTask(std::shared_ptr<IMClient> spClient, const std::string& email);
 
     virtual ~GetVerifyCodeTask() = default;

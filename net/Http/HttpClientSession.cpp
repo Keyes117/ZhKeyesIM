@@ -143,7 +143,7 @@ void HttpClientSession::startConnect()
     if (!m_connector->startConnect(m_host, m_port, m_connectTimeoutMs)) {
         m_isConnecting = false;
         m_connector.reset();
-        onConnectFailed();
+        m_eventLoop->registerCustomTask(std::bind(&HttpClientSession::onConnectFailed, this));
     }
 }
 
@@ -182,7 +182,7 @@ void HttpClientSession::onConnectFailed()
 {
     std::lock_guard<std::mutex> lock(m_queueMutex);
 
-    m_isConnecting = false;
+    m_isConnecting.store(false);
     m_connector.reset();
 
     LOG_ERROR("Failed to connect to %s:%u", m_host.c_str(), m_port);

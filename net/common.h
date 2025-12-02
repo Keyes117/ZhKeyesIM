@@ -60,11 +60,12 @@ typedef int SOCKET;
 
 
 #include <string>
+#include "net_export.h"
 
 namespace net {
 
     // 跨平台的socket工具函数
-    class SocketUtil {
+    class NET_API SocketUtil {
     public:
         // 初始化网络库（Windows需要WSAStartup）
         static bool InitNetwork();

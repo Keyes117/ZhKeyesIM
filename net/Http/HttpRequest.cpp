@@ -189,14 +189,15 @@ void HttpRequest::setJsonBody(const std::string& json) {
 std::string HttpRequest::toString() const {
     fmt::memory_buffer buf;
 
+
     fmt::format_to(std::back_inserter(buf), "{} {}", getMethodString(), m_path);
-    // 请求行
+    // 请求行 METHOD PATH?QUERY HTTP/VERSION\r\n
 
     if (!m_query.empty()) {
         fmt::format_to(std::back_inserter(buf), "?{}",m_query);
     }
 
-    fmt::format_to(std::back_inserter(buf), "{}{}{}", HttpConstants::SPACE, getMethodString(), HttpConstants::CRLF);
+    fmt::format_to(std::back_inserter(buf), "{}{}{}", HttpConstants::SPACE, getVersionString(), HttpConstants::CRLF);
     // 头部
     fmt::format_to(std::back_inserter(buf), "{}", headersToString());
 

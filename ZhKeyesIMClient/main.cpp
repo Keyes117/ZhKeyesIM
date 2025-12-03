@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
 #else
     Logger::instance().setLogLevel(LogLevel::INFO);
 #endif
-    //Logger::instance().setLogFile("GateServer.log");
+    Logger::instance().setLogFile("IMClient.log");
 
     ConfigManager config;
     if (!config.load("config.json"))

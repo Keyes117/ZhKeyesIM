@@ -14,7 +14,7 @@ int main()
 #ifdef _WIN32
     if (!net::SocketUtil::InitNetwork())
     {
-        LOG_ERROR("³õÊ¼»¯ÍøÂç¿âÊ§°Ü");
+        LOG_ERROR("åˆå§‹åŒ–ç½‘ç»œåº“å¤±è´¥");
         return 1;
     }
 #endif // _WIN32
@@ -22,7 +22,7 @@ int main()
     ConfigManager config;
     if (!config.load("config.json"))
     {
-        LOG_ERROR("ÅäÖÃÎÄ¼ş¶ÁÈ¡Ê§°Ü...");
+        LOG_ERROR("é…ç½®æ–‡ä»¶è¯»å–å¤±è´¥...");
         return 0;
     }
 

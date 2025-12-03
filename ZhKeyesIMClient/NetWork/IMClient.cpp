@@ -1,9 +1,14 @@
  #include "IMClient.h"
 #include <iostream>
 
+
+#include <QMessageBox>
+
 #include "ApiRoutes.h"
 #include "JsonUtil.h"
 #include "fmt/format.h"
+
+#include "ReportErrorTask.h"
 
 
 IMClient::IMClient()
@@ -51,6 +56,8 @@ bool IMClient::init(const ConfigManager& config)
     }
     m_spTcpClient = std::make_unique<TCPClient>(m_spMainEventLoop);
     m_spHttpClient = std::make_unique<ZhKeyesIM::Net::Http::HttpClient>(m_spMainEventLoop);
+    m_spHttpClient->setConnectionTimeout(120000);
+    m_spHttpClient->setRequestTimeout(120000);
     m_networkThread = std::make_unique<std::thread>(std::bind(&IMClient::networkThreadFunc, this));
     while (!m_eventLoopRunning.load())
     {
@@ -86,6 +93,7 @@ void IMClient::networkThreadFunc()
     m_eventLoopRunning.store(false);
 }
 
+
 void IMClient::onResponseVerificationCode(const ZhKeyesIM::Net::Http::HttpResponse& response)
 {
     auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(response.getBody());
@@ -96,10 +104,12 @@ void IMClient::onResponseVerificationCode(const ZhKeyesIM::Net::Http::HttpRespon
     }
 
     nlohmann::json requestJson = *requestJsonOpt;
+    //TODO: 解析Json， 创建recvTask
 
 }
 
 void IMClient::onErrorVerificationCode(const std::string& errorMsg)
 {
-
+    auto reportErrorTask = std::make_shared<ReportErrorTask>(errorMsg);
+    TaskHandler::getInstance().registerUITask(std::move(reportErrorTask));
 }

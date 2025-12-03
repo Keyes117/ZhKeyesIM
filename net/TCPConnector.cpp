@@ -23,6 +23,7 @@ TCPConnector::TCPConnector(const std::shared_ptr<EventLoop>& spEventLoop)
     m_socket(INVALID_SOCKET),
     m_serverPort(0),
     m_connectTimeoutMs(5000),
+    m_timeOutTimerId(-1),
     m_isConnecting(false)
 {
 }
@@ -292,7 +293,7 @@ void TCPConnector::checkConnectResult()
 
 void TCPConnector::cleanup()
 {
-    if (m_socket != INVALID_SOCKET && m_spEventLoop && m_enableWrite)
+    if (m_socket != INVALID_SOCKET && m_spEventLoop )
     {
         m_spEventLoop->unregisterWriteEvent(m_socket, this);
     }
@@ -305,7 +306,6 @@ void TCPConnector::cleanup()
 
 void TCPConnector::onConnectionTimeout()
 {
-
     m_spEventLoop->removeTimer(m_timeOutTimerId);
     m_timeOutTimerId = -1;
 
@@ -315,7 +315,7 @@ void TCPConnector::onConnectionTimeout()
             m_connectFailedCallback();
     }
 
-
+    //m_spEventLoop->unregisterWriteEvent(m_socket,this);
 }
 
 

@@ -86,7 +86,6 @@ void RegisterDlg::onVerifyCodeReceived(bool success, QString message, int errorC
     if (success)
     {
         showTip("验证码已发送到您的邮箱，请查收", false);
-        startCountdown();  // 启动60秒倒计时
     }
     else
     {

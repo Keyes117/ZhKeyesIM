@@ -259,6 +259,7 @@ void EventLoop::checkAndDoTimers()
             {
                 
                 (*iter)->doTimer((*iter)->getId(), nowMs);
+                break;
             }
         }
     }

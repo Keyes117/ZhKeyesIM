@@ -23,7 +23,7 @@ public:
 private slots:
     void switchToRegisterDlg();
     void switchToLoginDlg();
-    
+    void onErrorMsg(QString errorMsg);
 private:
     Ui::MainWindowClass m_ui;
 

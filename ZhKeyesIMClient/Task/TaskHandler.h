@@ -34,6 +34,7 @@ public:
 
 signals:
     void verifyCodeRecevied(bool isSuccess, QString message, int errorCode);
+    void reportErrorMsg(QString errorMsg);
 
 private:
     TaskHandler() = default;

@@ -1,5 +1,10 @@
 #include "MainWindow.h"
 
+#include <QMessageBox>
+
+
+#include "TaskHandler.h"
+
 MainWindow::MainWindow(std::shared_ptr<IMClient> spClient,QWidget *parent)
     : QMainWindow(parent),
     m_spClient(spClient),
@@ -18,6 +23,7 @@ MainWindow::MainWindow(std::shared_ptr<IMClient> spClient,QWidget *parent)
 
     connect(m_loginDlg, &LoginDlg::switchRegisterDlg, this, &MainWindow::switchToRegisterDlg);
     connect(m_registerDlg, &RegisterDlg::switchLoginDlg, this, &MainWindow::switchToLoginDlg);
+    connect(&TaskHandler::getInstance(), &TaskHandler::reportErrorMsg, this, &MainWindow::onErrorMsg);
 
     m_loginDlg->setWindowFlags(Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
     m_registerDlg->setWindowFlags(Qt::CustomizeWindowHint| Qt::FramelessWindowHint);
@@ -37,4 +43,9 @@ void MainWindow::switchToLoginDlg()
     if (m_stackedWidget)
         m_stackedWidget->setCurrentWidget(m_loginDlg);
 
+}
+
+void MainWindow::onErrorMsg(QString errorMsg)
+{
+    QMessageBox::warning(this, "错误", errorMsg,"确认");
 }

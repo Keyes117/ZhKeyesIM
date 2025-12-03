@@ -264,13 +264,13 @@ void EventLoop::checkAndDoTimers()
     }
     m_isCheckingTimer = false;
 
-    if (m_pendingRemoveTimer.empty())
+    if (!m_pendingRemoveTimer.empty())
     {
         for (auto& timerId : m_pendingRemoveTimer)
             removeTimerInternal(timerId);
     }
 
-    if (m_pendingAddTimer.empty())
+    if (!m_pendingAddTimer.empty())
     {
         for (auto& spTimer : m_pendingAddTimer)
             addTimerInternal(spTimer);

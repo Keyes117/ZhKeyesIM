@@ -298,21 +298,24 @@ void TCPConnector::cleanup()
     }
 
     closesocket(m_socket);
+    m_isConnecting.store(false);
     m_socket = INVALID_SOCKET;
 
 }
 
 void TCPConnector::onConnectionTimeout()
 {
+
+    m_spEventLoop->removeTimer(m_timeOutTimerId);
+    m_timeOutTimerId = -1;
+
     if (m_isConnecting.load())
     {
         if (m_connectFailedCallback)
             m_connectFailedCallback();
     }
 
-    m_isConnecting.store(false);
-    m_spEventLoop->removeTimer(m_timeOutTimerId);
-    m_timeOutTimerId = -1;
+
 }
 
 

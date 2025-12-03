@@ -12,7 +12,7 @@ Timer::Timer(int32_t intervalMs, int64_t repeatCount,
 {
     m_id = Timer::generateTimerId();
 
-    int64_t nowMs = std::chrono::duration_cast<std::chrono::microseconds>
+    int64_t nowMs = std::chrono::duration_cast<std::chrono::milliseconds>
         (std::chrono::system_clock::now().time_since_epoch()).count();
 
     m_nextTriggeredTimeMs = nowMs + m_intervalMs;

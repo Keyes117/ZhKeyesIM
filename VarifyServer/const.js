@@ -1,9 +1,10 @@
 let code_prefix = "code_";
 
 const Errors = {
-    Success : 0 ,
-    RedisError : 1,
-    Exception : 2,
+    Success : 10000 ,
+    RedisError : 10001,
+    EmailError : 10002,
+    Exception : 10003,
 };
 
 module.exports = {code_prefix, Errors}

@@ -1,6 +1,8 @@
 #ifndef ZHKEYESIMCLIENT_IMCLIENT_H_
 #define ZHKEYESIMCLIENT_IMCLIENT_H_
 
+#include <string>
+
 #include "Http/HttpClient.h"
 #include "TCPClient.h"
 #include "ConfigManager.h"
@@ -16,11 +18,25 @@ public:
 
     void requestVerificationCode(const std::string& email);
 
+    void requestRegister(const std::string& username,
+        const std::string& email,
+        const std::string& password,
+        const std::string& verificationCode);
+
 private:
     void networkThreadFunc();
 
+//onResponse
+private:
     void onResponseVerificationCode(const ZhKeyesIM::Net::Http::HttpResponse& response);
+    void onResponseRegister(const ZhKeyesIM::Net::Http::HttpResponse& response);
+
+//onError
+private:
     void onErrorVerificationCode(const std::string& errorMsg);
+    void onErrorRegister(const std::string& errorMsg);
+
+
 private:
 
     std::atomic<bool>                       m_eventLoopRunning = false;

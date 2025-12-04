@@ -1,6 +1,34 @@
 # ZhKeyesIM
 
-.\b2.exe install --toolset=msvc-14.3 address-model=64 --build-type=complete --prefix="D:\resource\boost_1_81_0" link=shared runtime-link=shared threading=multi debug release
+## GateServer
+
+### 获取验证码服务
+
+#### 接受客户端消息
+
+```json
+{
+	"email":"xxxx@xxx.com"
+}
+```
+
+### RPC服务返回以及返回客户端消息
+
+```
+{
+	"error":"0",
+	"email":"xxxx@xxx.com",
+	"code":"1000"
+}
+```
+
+- error: 返回值为0 ，则无错误， 返回值为1则有错误
+- email: 接收验证码 的邮箱地址
+- code: rpc服务错误码
+  - 10000 ：成功
+  - 10001 ：redis 获取键值错误
+  - 10002 ：邮件服务错误
+  - 10003 ：服务端异常
 
 ## Redis
 

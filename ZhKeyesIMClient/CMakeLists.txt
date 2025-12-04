@@ -25,10 +25,17 @@ set(CLIENT_TASK_SOURCE
     Task/Task.h
     Task/TaskHandler.cpp
     Task/TaskHandler.h
+    
     Task/GetVerifyCodeTask.cpp
     Task/GetVerifyCodeTask.h
     Task/RecvVerifyCodeTask.cpp
     Task/RecvVerifyCodeTask.h
+
+    Task/SendRegisterTask.cpp
+    Task/SendRegisterTask.h
+    Task/RecvRegisterTask.cpp
+    Task/RecvRegisterTask.h
+
     Task/ReportErrorTask.cpp
     Task/ReportErrorTask.h
 )

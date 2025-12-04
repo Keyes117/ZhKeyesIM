@@ -61,6 +61,42 @@ void RegisterDlg::onCancelButtonClicked()
 }
 void RegisterDlg::onRegisterButtonClicked()
 {
+    if (m_ui.lineEdit_user->text().isEmpty())
+    {
+        showTip(tr("用户名不能为空"), false);
+        return;
+    }
+
+    if (m_ui.lineEdit_emal->text().isEmpty())
+    {
+        showTip(tr("邮箱不能为空"), false);
+        return;
+    }
+
+    if (m_ui.lineEdit_password->text().isEmpty())
+    {
+        showTip(tr("密码不能为空"), false);
+        return;
+    }
+
+    if (m_ui.lineEdit_confirm->text().isEmpty())
+    {
+        showTip(tr("密码不能为空"), false);
+        return;
+    }
+
+    if (m_ui.lineEdit_password->text() != m_ui.lineEdit_confirm->text())
+    {
+        showTip(tr("两次输入的密码不匹配"), false);
+        return;
+    }
+
+    if (m_ui.lineEdit_code->text() == "") {
+        showTip(tr("验证码不能为空"), false);
+        return;
+    }
+
+
 
 }
 

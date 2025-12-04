@@ -56,8 +56,8 @@ bool IMClient::init(const ConfigManager& config)
     }
     m_spTcpClient = std::make_unique<TCPClient>(m_spMainEventLoop);
     m_spHttpClient = std::make_unique<ZhKeyesIM::Net::Http::HttpClient>(m_spMainEventLoop);
-    m_spHttpClient->setConnectionTimeout(120000);
-    m_spHttpClient->setRequestTimeout(120000);
+    m_spHttpClient->setConnectionTimeout(5000);
+    m_spHttpClient->setRequestTimeout(5000);
     m_networkThread = std::make_unique<std::thread>(std::bind(&IMClient::networkThreadFunc, this));
     while (!m_eventLoopRunning.load())
     {
@@ -86,6 +86,10 @@ void IMClient::requestVerificationCode(const std::string& email)
         std::bind(&IMClient::onErrorVerificationCode, this, std::placeholders::_1));
 }
 
+void IMClient::requestRegister(const std::string& username, const std::string& email, const std::string& password, const std::string& verificationCode)
+{
+}
+
 void IMClient::networkThreadFunc()
 {
     m_eventLoopRunning.store(true);
@@ -99,17 +103,28 @@ void IMClient::onResponseVerificationCode(const ZhKeyesIM::Net::Http::HttpRespon
     auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(response.getBody());
     if (!requestJsonOpt)
     {
-        onErrorVerificationCode("IMClient:onResponseVerificationCode:接收返回值格式错误：不是正常的Json格式");
+        onErrorVerificationCode("验证码接收错误");
+        LOG_ERROR("IMClient:onResponseVerificationCode:接收返回值格式错误：不是正常的Json格式");
         return;
     }
 
     nlohmann::json requestJson = *requestJsonOpt;
+    //auto successOpt = ZhKeyes::Util::JsonUtil::getSafe<int>(requestJson, { "success" });
+    //std::string 
     //TODO: 解析Json， 创建recvTask
 
+}
+
+void IMClient::onResponseRegister(const ZhKeyesIM::Net::Http::HttpResponse& response)
+{
 }
 
 void IMClient::onErrorVerificationCode(const std::string& errorMsg)
 {
     auto reportErrorTask = std::make_shared<ReportErrorTask>(errorMsg);
     TaskHandler::getInstance().registerUITask(std::move(reportErrorTask));
+}
+
+void IMClient::onErrorRegister(const std::string& errorMsg)
+{
 }

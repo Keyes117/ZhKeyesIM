@@ -10,6 +10,7 @@ using grpc::ClientContext;
 using message::GetVerifyRequest;
 using message::GetVerifyResponse;
 using message::VerifyService;
+using namespace ServerStatus;
 
 VerifyGrpcClient::VerifyGrpcClient()    
 {

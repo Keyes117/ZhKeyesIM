@@ -3,6 +3,7 @@
 
 #include <future>
 
+#include "const.h"
 #include "ConfigManager.h"
 #include "Http/HttpServer.h"
 #include "Http/HttpRequest.h"
@@ -15,6 +16,24 @@
 
 namespace ZhKeyesIMHttp = ZhKeyesIM::Net::Http;
 
+
+/*
+* Grpc服务返回Json
+* {
+*   "error":"",     //错误,如果为1 则是有错误，0无错误
+*   "email":"",     //邮件接收方的邮箱地址， 一般用于二次校验
+*   "code":"",      //错误码： 10000-成功，10001-redis服务出错，10002-email服务出错，10003-grpc服务内部出错
+* }
+*
+* 返回客户端Json
+* {
+*   "success":""    //验证码是否发送成功：1-成功，0-失败
+*   "code":""       //错误码   详情请见ErrorCodes、
+*   "msg":""        //错误信息，一般由业务自己决定,
+*   "timestamp":""  //时间戳
+* }
+*
+*/
 
 class GateServer
 {
@@ -41,17 +60,20 @@ protected:
     virtual void handleUserRegister(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response,
         const std::map<std::string, std::string>& params);
 private:
-    void setJsonResponse(ZhKeyesIMHttp::HttpResponse& response,
-        const nlohmann::json& json,
-        ZhKeyesIMHttp::HttpStatusCode code);
+    //void setJsonResponse(ZhKeyesIMHttp::HttpResponse& response,
+    //    const nlohmann::json& json,
+    //    ServerStatus::ErrorCodes errorCode,
+    //    ZhKeyesIMHttp::HttpStatusCode code);
 
     void setErrorRequest(ZhKeyesIMHttp::HttpResponse& response,
-        ZhKeyesIMHttp::HttpStatusCode code,
-        const std::string& message);
+        ZhKeyesIMHttp::HttpStatusCode httpCode,
+        ServerStatus::ErrorCodes errorCode,
+        const std::string& message =  " ");
 
     void setSuccessReqeust(ZhKeyesIMHttp::HttpResponse& response,
         ZhKeyesIMHttp::HttpStatusCode code,
-        const std::string& message);
+        ServerStatus::ErrorCodes errorCode,
+        const std::string& message = " ");
 
     void registerRoutes();
 private:

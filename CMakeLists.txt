@@ -419,29 +419,28 @@ endfunction()
 # 复制项目内部 DLL 到目标目录的函数
 function(copy_project_dlls_to_target target_name)
     if(WIN32)
+    # 创建一个自定义目标来复制 DLL
+    set(COPY_TARGET_NAME "${target_name}_copy_dlls")
+
+    add_custom_target(${COPY_TARGET_NAME} ALL
         # 复制 net.dll
-        add_custom_command(TARGET ${target_name} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "$<TARGET_FILE:net>"
-                "$<TARGET_FILE_DIR:${target_name}>/$<TARGET_FILE_NAME:net>"
-            COMMENT "Copying net DLL to ${target_name} output directory"
-        )
-        
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<TARGET_FILE:net>"
+            "$<TARGET_FILE_DIR:${target_name}>/$<TARGET_FILE_NAME:net>"
         # 复制 util.dll
-        add_custom_command(TARGET ${target_name} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "$<TARGET_FILE:util>"
-                "$<TARGET_FILE_DIR:${target_name}>/$<TARGET_FILE_NAME:util>"
-            COMMENT "Copying util DLL to ${target_name} output directory"
-        )
-        
-        # 复制 Log.dll (注意 Debug 版本有 'd' 后缀)
-        add_custom_command(TARGET ${target_name} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                "$<TARGET_FILE:Log>"
-                "$<TARGET_FILE_DIR:${target_name}>/$<TARGET_FILE_NAME:Log>"
-            COMMENT "Copying Log DLL to ${target_name} output directory"
-        )
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<TARGET_FILE:util>"
+            "$<TARGET_FILE_DIR:${target_name}>/$<TARGET_FILE_NAME:util>"
+        # 复制 Log.dll
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<TARGET_FILE:Log>"
+            "$<TARGET_FILE_DIR:${target_name}>/$<TARGET_FILE_NAME:Log>"
+        COMMENT "Copying project DLLs to ${target_name} output directory"
+        DEPENDS net util Log ${target_name}
+    )
+
+    # 确保在目标之后执行
+    add_dependencies(${COPY_TARGET_NAME} ${target_name} net util Log)
     endif()
 endfunction()
 

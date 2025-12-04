@@ -24,6 +24,7 @@ private slots:
     void switchToRegisterDlg();
     void switchToLoginDlg();
     void onErrorMsg(QString errorMsg);
+    void onSuccessMsg(QString successMsg);
 private:
     Ui::MainWindowClass m_ui;
 

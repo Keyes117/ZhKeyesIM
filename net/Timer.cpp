@@ -38,9 +38,10 @@ int64_t Timer::nextTriggeredTimerMs()
 
 void Timer::doTimer(int64_t timerId, int64_t nowMs)
 {
+
     if (m_repeatedCount > 0)
         m_repeatedCount--;
-    else
+    else if (m_repeatedCount == 0)
         return;
 
     if (m_repeatedCount > 0 || m_repeatedCount == -1)

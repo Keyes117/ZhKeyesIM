@@ -27,7 +27,7 @@ namespace ZhKeyesIMHttp = ZhKeyesIM::Net::Http;
 *
 * 返回客户端Json
 * {
-*   "success":""    //验证码是否发送成功：1-成功，0-失败
+*   "success":""    //功能是否成功：1-成功，0-失败
 *   "code":""       //错误码   详情请见ErrorCodes、
 *   "msg":""        //错误信息，一般由业务自己决定,
 *   "timestamp":""  //时间戳

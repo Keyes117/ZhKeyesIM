@@ -9,6 +9,7 @@
 #include "fmt/format.h"
 
 #include "ReportErrorTask.h"
+#include "ReportSuccessTask.h"
 
 
 IMClient::IMClient()
@@ -63,7 +64,7 @@ bool IMClient::init(const ConfigManager& config)
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    std::cout << "网络线程已启动: " << m_networkThread->get_id() << std::endl;
+    LOG_INFO("网络线程已启动: %d", m_networkThread->get_id());
 
     return true;
 }
@@ -79,7 +80,7 @@ void IMClient::requestVerificationCode(const std::string& email)
     requestJson["email"] = email;
 
 
-    std::string url = fmt::format("http://{}{}", m_httpBaseUrl.c_str(), ApiRoutes::Code::GET_VERIFICATION_CODE);
+    std::string url = fmt::format("http://{}{}", m_httpBaseUrl.c_str(), ApiRoutes::API_VERIFY_GETCODE);
     m_spHttpClient->postJson(url,
         requestJson.dump(),
         std::bind(&IMClient::onResponseVerificationCode, this, std::placeholders::_1),
@@ -88,6 +89,17 @@ void IMClient::requestVerificationCode(const std::string& email)
 
 void IMClient::requestRegister(const std::string& username, const std::string& email, const std::string& password, const std::string& verificationCode)
 {
+    nlohmann::json requestJson;
+    requestJson["username"] = username;
+    requestJson["password"] = password;
+    requestJson["email"] = email;
+    requestJson["code"] = verificationCode;
+
+    std::string url = fmt::format("http://{}{}", m_httpBaseUrl.c_str(), ApiRoutes::API_USER_REGISTER);
+    m_spHttpClient->postJson(url,
+        requestJson.dump(),
+        std::bind(&IMClient::onResponseRegister, this, std::placeholders::_1),
+        std::bind(&IMClient::onErrorRegister, this, std::placeholders::_1));
 }
 
 void IMClient::networkThreadFunc()
@@ -95,6 +107,18 @@ void IMClient::networkThreadFunc()
     m_eventLoopRunning.store(true);
     m_spMainEventLoop->run();
     m_eventLoopRunning.store(false);
+}
+
+void IMClient::reportErrorMsg(const std::string& msg)
+{
+    auto reportErrorTask = std::make_shared<ReportErrorTask>(msg);
+    TaskHandler::getInstance().registerUITask(std::move(reportErrorTask));
+}
+
+void IMClient::reportSuccessMsg(const std::string& msg)
+{
+    auto reportSuccessTask = std::make_shared<ReportSuccessTask>(msg);
+    TaskHandler::getInstance().registerUITask(std::move(reportSuccessTask));
 }
 
 
@@ -109,22 +133,67 @@ void IMClient::onResponseVerificationCode(const ZhKeyesIM::Net::Http::HttpRespon
     }
 
     nlohmann::json requestJson = *requestJsonOpt;
-    //auto successOpt = ZhKeyes::Util::JsonUtil::getSafe<int>(requestJson, { "success" });
+    auto successOpt = ZhKeyes::Util::JsonUtil::getSafe<int>(requestJson,  "success" );
+    if (!successOpt)
+    {
+        onErrorVerificationCode("验证码接收错误");
+        LOG_ERROR("IMClient:onResponseVerificationCode:接收返回值格式错误：不是正常的Json格式");
+        return;
+    }
+
+    int success = *successOpt;
+    if (success == 0)
+    {
+        onErrorVerificationCode("验证码服务出错");
+        LOG_ERROR("IMClient:onResponseVerificationCode:未成功发送验证吗");
+        return;
+    }
     //std::string 
     //TODO: 解析Json， 创建recvTask
+
 
 }
 
 void IMClient::onResponseRegister(const ZhKeyesIM::Net::Http::HttpResponse& response)
 {
+    auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(response.getBody());
+    if (!requestJsonOpt)
+    {
+        onErrorRegister("注册功能返回信息错误");
+        LOG_ERROR("IMClient:onResponseVerificationCode:接收返回值格式错误：不是正常的Json格式");
+        return;
+    }
+
+    nlohmann::json requestJson = *requestJsonOpt;
+    auto successOpt = ZhKeyes::Util::JsonUtil::getSafe<int>(requestJson, "success");
+    auto msgOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(requestJson, "msg");
+    if (!successOpt || !msgOpt)
+    {
+        onErrorRegister("注册功能返回信息错误");
+        LOG_ERROR("IMClient:onResponseVerificationCode:接收返回值格式错误：不是正常的Json格式");
+        return;
+    }
+
+    int success = *successOpt;
+    std::string msg = *msgOpt;
+    if (success == 0)
+    {
+        onErrorRegister(msg);
+        LOG_ERROR("IMClient:onResponseVerificationCode:未成功发送验证吗");
+        return;
+    }
+    else if (success == 1)
+    {
+        reportSuccessMsg("注册成功!");
+    }
 }
 
 void IMClient::onErrorVerificationCode(const std::string& errorMsg)
 {
-    auto reportErrorTask = std::make_shared<ReportErrorTask>(errorMsg);
-    TaskHandler::getInstance().registerUITask(std::move(reportErrorTask));
+    reportErrorMsg(errorMsg);
 }
 
 void IMClient::onErrorRegister(const std::string& errorMsg)
 {
+    reportErrorMsg(errorMsg);
 }

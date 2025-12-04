@@ -5,10 +5,10 @@
 
 namespace ApiRoutes
 {
-    namespace Code
-    {
-        constexpr const char* GET_VERIFICATION_CODE = "/api/verify/getCode";
-    }
+    constexpr const char* API_VERIFY_GETCODE = "/api/verify/getCode";
+
+    constexpr const char* API_USER_REGISTER = "/api/user/register"; 
+
 }
 
 

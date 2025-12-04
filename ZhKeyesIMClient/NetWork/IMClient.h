@@ -25,6 +25,8 @@ public:
 
 private:
     void networkThreadFunc();
+    void reportErrorMsg(const std::string& msg);
+    void reportSuccessMsg(const std::string& msg);
 
 //onResponse
 private:

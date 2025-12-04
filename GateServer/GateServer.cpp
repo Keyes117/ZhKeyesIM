@@ -171,20 +171,34 @@ void GateServer::handleGetVerifyCode(const ZhKeyesIMHttp::HttpRequest& request, 
         else if (status == std::future_status::timeout) {
             // 超时处理
             LOG_ERROR("GRPC call timeout for email: %s", email.c_str());
+            grpcResponse.set_error(static_cast<uint32_t>(ServerStatus::GrpcErrors::Timeout));
         }
         else {
             // 其他错误
             LOG_ERROR("GRPC call deferred for email: %s", email.c_str());
+            grpcResponse.set_error(static_cast<uint32_t>(ServerStatus::GrpcErrors::Exception));
         }
         //// 5. 记录日志
         LOG_DEBUG("Email: %s, Error code: %d", email.c_str(), grpcResponse.error());
 
         //// 6. 相应
-        ServerStatus::GrpcErrors grpcError =
+        ServerStatus::GrpcErrors grpcStatus =
             static_cast<ServerStatus::GrpcErrors>(grpcResponse.error());
-        std::string resEmail = grpcResponse.email();
-        std::string code = grpcResponse.code();
 
+        if (grpcStatus == ServerStatus::GrpcErrors::Success)
+        {
+            setSuccessReqeust(response,
+                ZhKeyesIMHttp::HttpStatusCode::OK,
+                ServerStatus::ErrorCodes::Success,
+                "Verification Code already sent");
+        }
+        else
+        {
+            setErrorRequest(response,
+                ZhKeyesIMHttp::HttpStatusCode::InternalServerError,
+                ServerStatus::ErrorCodes::RPCFailed,
+                "Verification Code Server Error");
+        }
     }
     catch (const nlohmann::json::exception& e) {
         // JSON 解析错误
@@ -224,6 +238,60 @@ void GateServer::handleUserLogin(const ZhKeyesIMHttp::HttpRequest& request, ZhKe
 void GateServer::handleUserRegister(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response, const std::map<std::string, std::string>& params)
 {
     try {
+
+        auto jsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(request.getBody());
+        if (!jsonOpt)
+        {
+            setErrorRequest(response,
+                ZhKeyesIMHttp::HttpStatusCode::BadRequest,
+                ServerStatus::ErrorCodes::InternalError,
+                "Invalid reqeust JSON format"
+            );
+            return;
+        }
+
+        auto usernameOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "username");
+        auto passwordOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "password");
+        auto emailOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "email");
+        auto codeOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "code");
+        if (!emailOpt || !usernameOpt || !emailOpt || !codeOpt)
+        {
+            setErrorRequest(response,
+                ZhKeyesIMHttp::HttpStatusCode::BadRequest,
+                ServerStatus::ErrorCodes::InternalError,
+                "error request JSON format");
+            return;
+        }
+
+        std::string username = *usernameOpt;
+        std::string password = *passwordOpt;
+        std::string email = *emailOpt;
+        std::string code = *codeOpt;
+
+        std::string verifyCode;
+        bool isVerified = m_spRedisManager->get(email, verifyCode);
+        if (!isVerified)
+        {
+            setErrorRequest(response,
+                ZhKeyesIMHttp::HttpStatusCode::InternalServerError,
+                ServerStatus::ErrorCodes::VarifyExpired,
+                "error request JSON format");
+            return;
+        }
+
+        if (code != verifyCode)
+        {
+            setErrorRequest(response,
+                ZhKeyesIMHttp::HttpStatusCode::InternalServerError,
+                ServerStatus::ErrorCodes::VarifyCodeErr,
+                "error request JSON format");
+            return;
+        }
+
+        bool isUserInRedis = m_spRedisManager->existsKey(username);
+
+        //TODO验证MySQL中是否存在用户
+
         setSuccessReqeust(response,
             ZhKeyesIMHttp::HttpStatusCode::OK,
             ServerStatus::ErrorCodes::Success,
@@ -335,4 +403,7 @@ void GateServer::registerRoutes()
 
     m_router.addRoute(HttpMethod::POST, "api/verify/getCode",
         std::bind(&GateServer::handleGetVerifyCode, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+
+    m_router.addRoute(HttpMethod::POST, "api/user/register",
+        std::bind(&GateServer::handleUserRegister, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 }

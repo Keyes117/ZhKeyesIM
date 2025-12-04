@@ -74,7 +74,7 @@ GetVerifyResponse VerifyGrpcClient::GetVerifyCode(std::string email)
     }
     else
     {
-        response.set_error(ErrorCodes::RPCFailed);
+        response.set_error(static_cast<int32_t>(ErrorCodes::RPCFailed));
         return response;
     }
 }
@@ -123,7 +123,7 @@ void VerifyGrpcClient::processCQ()
                 call->status.error_message().c_str());
 
             // 设置错误码
-            call->response.set_error(ErrorCodes::RPCFailed);
+            call->response.set_error(static_cast<uint32_t>(ErrorCodes::RPCFailed));
         }
         else {
             // RPC 调用成功

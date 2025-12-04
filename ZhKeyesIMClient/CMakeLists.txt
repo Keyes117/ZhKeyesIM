@@ -38,6 +38,8 @@ set(CLIENT_TASK_SOURCE
 
     Task/ReportErrorTask.cpp
     Task/ReportErrorTask.h
+    Task/ReportSuccessTask.cpp
+    Task/ReportSuccessTask.h
 )
 
 # Qt配置

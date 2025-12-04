@@ -24,6 +24,7 @@ MainWindow::MainWindow(std::shared_ptr<IMClient> spClient,QWidget *parent)
     connect(m_loginDlg, &LoginDlg::switchRegisterDlg, this, &MainWindow::switchToRegisterDlg);
     connect(m_registerDlg, &RegisterDlg::switchLoginDlg, this, &MainWindow::switchToLoginDlg);
     connect(&TaskHandler::getInstance(), &TaskHandler::reportErrorMsg, this, &MainWindow::onErrorMsg);
+    connect(&TaskHandler::getInstance(), &TaskHandler::reportSuccessMsg, this, &MainWindow::onSuccessMsg);
 
     m_loginDlg->setWindowFlags(Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
     m_registerDlg->setWindowFlags(Qt::CustomizeWindowHint| Qt::FramelessWindowHint);
@@ -47,5 +48,10 @@ void MainWindow::switchToLoginDlg()
 
 void MainWindow::onErrorMsg(QString errorMsg)
 {
-    QMessageBox::warning(this, "错误", errorMsg,"确认");
+    QMessageBox::critical(this, "错误", errorMsg,"确认");
+}
+
+void MainWindow::onSuccessMsg(QString successMsg)
+{
+    QMessageBox::information(this, "成功", successMsg, "确认");
 }

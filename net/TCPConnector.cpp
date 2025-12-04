@@ -264,12 +264,7 @@ void TCPConnector::checkConnectResult()
     if (error == 0)
     {
         LOG_INFO("connection successful");
-        m_isConnecting.store(false);
-
-        if (m_enableWrite)
-        {
-            m_spEventLoop->unregisterWriteEvent(m_socket, this);
-        }
+           
 
         if (m_connectCallback)
         {
@@ -297,7 +292,8 @@ void TCPConnector::cleanup()
     {
         m_spEventLoop->unregisterWriteEvent(m_socket, this);
     }
-
+    if(m_timeOutTimerId > 0)
+        m_spEventLoop->removeTimer(m_timeOutTimerId);
     closesocket(m_socket);
     m_isConnecting.store(false);
     m_socket = INVALID_SOCKET;
@@ -306,16 +302,12 @@ void TCPConnector::cleanup()
 
 void TCPConnector::onConnectionTimeout()
 {
-    m_spEventLoop->removeTimer(m_timeOutTimerId);
-    m_timeOutTimerId = -1;
-
     if (m_isConnecting.load())
     {
         if (m_connectFailedCallback)
             m_connectFailedCallback();
     }
 
-    //m_spEventLoop->unregisterWriteEvent(m_socket,this);
 }
 
 

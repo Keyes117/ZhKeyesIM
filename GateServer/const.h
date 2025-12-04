@@ -25,6 +25,7 @@ namespace ServerStatus
         RedisError = 10001,
         EmailError = 10002,
         Exception = 10003,
+        Timeout = 10004
     };
 }
 

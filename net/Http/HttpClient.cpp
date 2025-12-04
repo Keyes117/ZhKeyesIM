@@ -82,6 +82,7 @@ bool HttpClient::post(const std::string& url,
     request.setHeader("User-Agent", "ZhKeyes-HttpClient/1.0");
     request.setHeader("Content-Type", "application/x-www-form-urlencoded");
     request.setHeader("Connection", "keep-alive");
+    request.setContentLength(body.size());
     request.setBody(body);
 
     std::shared_ptr<HttpClientSession> session
@@ -115,6 +116,7 @@ bool HttpClient::postJson(const std::string& url,
     HttpRequest request(HttpMethod::POST, requestUrl);
     request.setHeader("Host", urlInfo.host + ":" + std::to_string(urlInfo.port));
     request.setHeader("User-Agent", "ZhKeyes-HttpClient/1.0");
+    request.setContentLength(jsonData.size());
     request.setJsonBody(jsonData);
     request.setHeader("Connection", "keep-alive");
 

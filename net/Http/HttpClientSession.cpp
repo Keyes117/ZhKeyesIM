@@ -1,5 +1,5 @@
 /**
- * @desc:   HttpClientSession ÊµÏÖ
+ * @desc:   HttpClientSession å®ç°
  * @author: ZhKeyes
  * @date:   2025/11/30
  */
@@ -42,7 +42,7 @@ bool HttpClientSession::sendRequest(const HttpRequest& request,
         return false;
     }
 
-    // ¼ÓÈë¶ÓÁĞ
+    // åŠ å…¥é˜Ÿåˆ—
     PendingRequest pending;
     pending.request = request;
     pending.responseCallback = callback;
@@ -51,17 +51,17 @@ bool HttpClientSession::sendRequest(const HttpRequest& request,
 
     m_pendingRequests.push(std::move(pending));
 
-    //  ¸üĞÂSession »îÔ¾Ê±¼ä
+    //  æ›´æ–°Session æ´»è·ƒæ—¶é—´
     m_lastActivityTime = std::chrono::steady_clock::now();
 
     LOG_DEBUG("Request queued to %s:%u, queue size: %zu",
         m_host.c_str(), m_port, m_pendingRequests.size());
 
-    // Èç¹ûÎ´Á¬½Ó£¬·¢ÆğÁ¬½Ó
+    // å¦‚æœæœªè¿æ¥ï¼Œå‘èµ·è¿æ¥
     if (!m_spConnection && !m_isConnecting) {
         startConnect();
     }
-    // Èç¹ûÒÑÁ¬½ÓÇÒ¿ÕÏĞ£¬Á¢¼´´¦Àí
+    // å¦‚æœå·²è¿æ¥ä¸”ç©ºé—²ï¼Œç«‹å³å¤„ç†
     else if (m_spConnection && !m_isBusy) {
         processQueue();
     }
@@ -84,7 +84,7 @@ void HttpClientSession::close()
     m_isConnecting.store(false);
     m_isBusy.store(false);
 
-    // Í¨ÖªËùÓĞµÈ´ıµÄÇëÇó
+    // é€šçŸ¥æ‰€æœ‰ç­‰å¾…çš„è¯·æ±‚
     while (!m_pendingRequests.empty()) {
         auto& pending = m_pendingRequests.front();
         if (pending.errorCallback) {
@@ -129,17 +129,17 @@ void HttpClientSession::startConnect()
     m_isConnecting = true;
     m_connector = std::make_unique<TCPConnector>(m_eventLoop);
 
-    // ÉèÖÃÁ¬½Ó³É¹¦»Øµ÷
+    // è®¾ç½®è¿æ¥æˆåŠŸå›è°ƒ
     m_connector->setConnectCallback(
         std::bind(&HttpClientSession::onConnected,this,std::placeholders::_1));
 
-    // ÉèÖÃÁ¬½ÓÊ§°Ü»Øµ÷
+    // è®¾ç½®è¿æ¥å¤±è´¥å›è°ƒ
     m_connector->setConnectFailedCallback(
         std::bind(&HttpClientSession::onConnectFailed, this));
 
     LOG_INFO("HttpClient: Connecting to %s:%u...", m_host.c_str(), m_port);
 
-    // ·¢ÆğÁ¬½Ó
+    // å‘èµ·è¿æ¥
     if (!m_connector->startConnect(m_host, m_port, m_connectTimeoutMs)) {
         m_isConnecting = false;
         m_connector.reset();
@@ -153,28 +153,32 @@ void HttpClientSession::onConnected(SOCKET socket)
 
     m_isConnecting = false;
 
-    // ´´½¨ TCPConnection
+    // åˆ›å»º TCPConnection
     m_spConnection = std::make_shared<TCPConnection>(socket, m_eventLoop);
 
-    // ÉèÖÃ»Øµ÷
+    // è®¾ç½®å›è°ƒ
     m_spConnection->setReadCallback(
         std::bind(&HttpClientSession::onRead, this, std::placeholders::_1));
 
-    m_spConnection->setCloseCallback(
-        std::bind(&HttpClientSession::onDisconnected, this));
+    m_spConnection->setCloseCallback([this]()
+        {
+            m_eventLoop->registerCustomTask(std::bind(&HttpClientSession::onDisconnected, this));
+        }
+    );
+
         
-    // ¿ªÊ¼¶ÁÈ¡
+    // å¼€å§‹è¯»å–
     m_spConnection->startRead();
 
-    // Á¬½ÓÆ÷ÒÑÍê³ÉÈÎÎñ
+    // è¿æ¥å™¨å·²å®Œæˆä»»åŠ¡
     m_connector.reset();
 
     LOG_INFO("Connected to %s:%u", m_host.c_str(), m_port);
 
-    //  ¸üĞÂSession »îÔ¾Ê±¼ä
+    //  æ›´æ–°Session æ´»è·ƒæ—¶é—´
     m_lastActivityTime = std::chrono::steady_clock::now();
 
-    // ´¦Àí¶ÓÁĞÖĞµÄÇëÇó
+    // å¤„ç†é˜Ÿåˆ—ä¸­çš„è¯·æ±‚
     processQueue();
 }
 
@@ -187,7 +191,7 @@ void HttpClientSession::onConnectFailed()
 
     LOG_ERROR("Failed to connect to %s:%u", m_host.c_str(), m_port);
 
-    // Í¨ÖªËùÓĞµÈ´ıµÄÇëÇó
+    // é€šçŸ¥æ‰€æœ‰ç­‰å¾…çš„è¯·æ±‚
     while (!m_pendingRequests.empty()) {
         auto& pending = m_pendingRequests.front();
         if (pending.errorCallback) {
@@ -206,7 +210,7 @@ void HttpClientSession::onDisconnected()
     m_spConnection.reset();
     m_isBusy = false;
 
-    // Èç¹û»¹ÓĞµÈ´ıµÄÇëÇó£¬³¢ÊÔÖØÁ¬
+    // å¦‚æœè¿˜æœ‰ç­‰å¾…çš„è¯·æ±‚ï¼Œå°è¯•é‡è¿
     if (!m_pendingRequests.empty() && !m_isConnecting && !m_isConnecting.load()) {
         LOG_INFO("Reconnecting for pending requests...");
         startConnect();
@@ -215,7 +219,7 @@ void HttpClientSession::onDisconnected()
 
 void HttpClientSession::onRead(Buffer& buffer)
 {
-    //  ¸üĞÂSession »îÔ¾Ê±¼ä
+    //  æ›´æ–°Session æ´»è·ƒæ—¶é—´
     m_lastActivityTime = std::chrono::steady_clock::now();
 
     ParseResult result = m_HttpParser.feed(buffer);
@@ -243,7 +247,7 @@ void HttpClientSession::handleResponse(std::shared_ptr<HttpResponse>& spResponse
             return;
         }
 
-        // È¡³ö¶ÔÓ¦µÄÇëÇó
+        // å–å‡ºå¯¹åº”çš„è¯·æ±‚
         PendingRequest pending = std::move(m_pendingRequests.front());
         m_pendingRequests.pop();
         m_isBusy = false;
@@ -251,12 +255,12 @@ void HttpClientSession::handleResponse(std::shared_ptr<HttpResponse>& spResponse
         LOG_DEBUG("Response received for %s:%u, remaining queue: %zu",
             m_host.c_str(), m_port, m_pendingRequests.size());
 
-        // ÊÍ·ÅËøºóÔÙµ÷ÓÃ»Øµ÷£¨±ÜÃâËÀËø£©
+        // é‡Šæ”¾é”åå†è°ƒç”¨å›è°ƒï¼ˆé¿å…æ­»é”ï¼‰
         callback = pending.responseCallback;
 
-        //  ¸üĞÂSession »îÔ¾Ê±¼ä
+        //  æ›´æ–°Session æ´»è·ƒæ—¶é—´
         m_lastActivityTime = std::chrono::steady_clock::now();
-        //  ¼ì²éÊÇ·ñĞèÒª¹Ø±ÕÁ¬½Ó
+        //  æ£€æŸ¥æ˜¯å¦éœ€è¦å…³é—­è¿æ¥
         if (m_requestCount >= m_maxRequestsPerConnection) {
             LOG_INFO("Max requests per connection (%zu) reached for %s:%u, closing",
                 m_maxRequestsPerConnection, m_host.c_str(), m_port);
@@ -264,7 +268,7 @@ void HttpClientSession::handleResponse(std::shared_ptr<HttpResponse>& spResponse
                 m_spConnection->shutdownAfterWrite();
             }
         }
-        // ¼ì²éÏìÓ¦Í·ÊÇ·ñÒªÇó¹Ø±ÕÁ¬½Ó
+        // æ£€æŸ¥å“åº”å¤´æ˜¯å¦è¦æ±‚å…³é—­è¿æ¥
         else if (spResponse->getConnection() == "close") {
             LOG_INFO("Server requested connection close for %s:%u",
                 m_host.c_str(), m_port);
@@ -277,7 +281,7 @@ void HttpClientSession::handleResponse(std::shared_ptr<HttpResponse>& spResponse
         }
     }
     
-    // È»ºóµ÷ÓÃ»Øµ÷
+    // ç„¶åè°ƒç”¨å›è°ƒ
     if (callback) {
         callback(*spResponse);
     }
@@ -300,7 +304,7 @@ void HttpClientSession::handleParseError()
         m_isBusy = false;
 
         
-    } // ÊÍ·ÅËø
+    } // é‡Šæ”¾é”
 
 
     if (errorCallback) {
@@ -310,7 +314,7 @@ void HttpClientSession::handleParseError()
 
 void HttpClientSession::processQueue()
 {
-    // µ÷ÓÃÇ°±ØĞëÒÑ³ÖÓĞ m_queueMutex
+    // è°ƒç”¨å‰å¿…é¡»å·²æŒæœ‰ m_queueMutex
 
     if (m_pendingRequests.empty() || m_isBusy || !m_spConnection) {
         return;
@@ -318,43 +322,43 @@ void HttpClientSession::processQueue()
 
     m_isBusy = true;
 
-    // È¡³öµÚÒ»¸öÇëÇó£¨µ«²»´Ó¶ÓÁĞÒÆ³ı£¬µÈÏìÓ¦µ½´ïºóÔÙÒÆ³ı£©
+    // å–å‡ºç¬¬ä¸€ä¸ªè¯·æ±‚ï¼ˆä½†ä¸ä»é˜Ÿåˆ—ç§»é™¤ï¼Œç­‰å“åº”åˆ°è¾¾åå†ç§»é™¤ï¼‰
     const PendingRequest& pending = m_pendingRequests.front();
 
     LOG_DEBUG("Sending request to %s:%u", m_host.c_str(), m_port);
 
-    // ·¢ËÍÇëÇó
+    // å‘é€è¯·æ±‚
     if (!m_spConnection->send(pending.request.toString())) {
-        // ·¢ËÍÊ§°Ü
+        // å‘é€å¤±è´¥
         LOG_ERROR("Failed to send request to %s:%u", m_host.c_str(), m_port);
 
-        auto errorCallback = pending.errorCallback;  // ÌáÈ¡»Øµ÷
+        auto errorCallback = pending.errorCallback;  // æå–å›è°ƒ
         m_pendingRequests.pop();
         m_isBusy = false;
 
-        // ¹Ø±ÕÁ¬½Ó
+        // å…³é—­è¿æ¥
         if (m_spConnection) {
             m_spConnection.reset();
         }
 
-        // ÔÚËøÍâµ÷ÓÃ»Øµ÷
+        // åœ¨é”å¤–è°ƒç”¨å›è°ƒ
         m_queueMutex.unlock();
         if (errorCallback) {
             errorCallback("Failed to send request");
         }
         m_queueMutex.lock();
 
-        // Èç¹û»¹ÓĞ´ı´¦ÀíÇëÇó£¬³¢ÊÔÖØÁ¬
+        // å¦‚æœè¿˜æœ‰å¾…å¤„ç†è¯·æ±‚ï¼Œå°è¯•é‡è¿
         if (!m_pendingRequests.empty() && !m_closed.load() && !m_isConnecting.load()) {
             startConnect();
         }
     }
-    // ·ñÔòµÈ´ıÏìÓ¦£¨ÔÚ handleResponse ÖĞ´¦Àí£©
+    // å¦åˆ™ç­‰å¾…å“åº”ï¼ˆåœ¨ handleResponse ä¸­å¤„ç†ï¼‰
 }
 
 void ZhKeyesIM::Net::Http::HttpClientSession::handleTimeout()
 {
-    // ×¢Òâ£ºµ÷ÓÃ´Ë·½·¨Ç°±ØĞëÒÑ³ÖÓĞ m_queueMutex
+    // æ³¨æ„ï¼šè°ƒç”¨æ­¤æ–¹æ³•å‰å¿…é¡»å·²æŒæœ‰ m_queueMutex
 
     if (m_pendingRequests.empty()) {
         return;
@@ -367,19 +371,19 @@ void ZhKeyesIM::Net::Http::HttpClientSession::handleTimeout()
 
     LOG_ERROR("Request timeout for %s:%u", m_host.c_str(), m_port);
 
-    // ¹Ø±ÕÁ¬½Ó
+    // å…³é—­è¿æ¥
     if (m_spConnection) {
         m_spConnection.reset();
     }
 
-    // ÏÈ½âËøÔÙµ÷ÓÃ»Øµ÷
+    // å…ˆè§£é”å†è°ƒç”¨å›è°ƒ
     m_queueMutex.unlock();
     if (errorCallback) {
         errorCallback("Request timeout");
     }
     m_queueMutex.lock();
 
-    // Èç¹û»¹ÓĞ´ı´¦ÀíÇëÇó£¬³¢ÊÔÖØÁ¬
+    // å¦‚æœè¿˜æœ‰å¾…å¤„ç†è¯·æ±‚ï¼Œå°è¯•é‡è¿
     if (!m_pendingRequests.empty() && !m_closed.load() && !m_isConnecting.load()) {
         startConnect();
     }

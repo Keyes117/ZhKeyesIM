@@ -8,7 +8,7 @@
 
 
 /**
- * @brief repolish ÓÃÀ´Ë¢ĞÂqss
+ * @brief repolish ?qss
  */
 
 extern std::function<void(QWidget*)> repolish;

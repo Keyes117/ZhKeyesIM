@@ -59,6 +59,7 @@ void RegisterDlg::onCancelButtonClicked()
 {
     emit switchLoginDlg();
 }
+
 void RegisterDlg::onRegisterButtonClicked()
 {
     if (m_ui.lineEdit_user->text().isEmpty())

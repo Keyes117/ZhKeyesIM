@@ -332,7 +332,7 @@ void HttpClientSession::processQueue()
         // 发送失败
         LOG_ERROR("Failed to send request to %s:%u", m_host.c_str(), m_port);
 
-        auto errorCallback = pending.errorCallback;  // 提取回调
+        ErrorCallback errorCallback = pending.errorCallback;  // 提取回调
         m_pendingRequests.pop();
         m_isBusy = false;
 
@@ -364,8 +364,8 @@ void ZhKeyesIM::Net::Http::HttpClientSession::handleTimeout()
         return;
     }
 
-    auto& pending = m_pendingRequests.front();
-    auto errorCallback = pending.errorCallback;
+    PendingRequest& pending = m_pendingRequests.front();
+    ErrorCallback errorCallback = pending.errorCallback;
     m_pendingRequests.pop();
     m_isBusy = false;
 

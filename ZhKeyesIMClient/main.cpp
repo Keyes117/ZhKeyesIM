@@ -50,20 +50,20 @@ int main(int argc, char* argv[])
     ConfigManager config;
     if (!config.load("config.json"))
     {
-        LOG_ERROR("ÅäÖÃÎÄ¼ş¶ÁÈ¡Ê§°Ü....");
+        LOG_ERROR("é…ç½®æ–‡ä»¶è¯»å–å¤±è´¥....");
         return 1;
     }
 
     std::shared_ptr<IMClient> spIMClient = std::make_shared<IMClient>();
     if (!spIMClient->init(config))
     {
-        LOG_ERROR("ÍøÂç¿Í»§¶Ë³õÊ¼»¯Ê§°Ü....");
+        LOG_ERROR("ç½‘ç»œå®¢æˆ·ç«¯åˆå§‹åŒ–å¤±è´¥....");
         return 1;
     }       
 
     if (!TaskHandler::getInstance().init())
     {
-        LOG_ERROR("»ù´¡×é¼ş³õÊ¼»¯Ê§°Ü....");
+        LOG_ERROR("åŸºç¡€ç»„ä»¶åˆå§‹åŒ–å¤±è´¥....");
         return 1;
     }
 

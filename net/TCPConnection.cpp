@@ -11,9 +11,9 @@ TCPConnection::TCPConnection(SOCKET socket, const std::shared_ptr<EventLoop>& sp
 
 TCPConnection::~TCPConnection()
 {
-    if (m_enableRead)
+    if (m_registerReadEvent)
         unregisterReadEvent();
-    if (m_enableWrite)
+    if (m_registerWriteEvent)
         unregisterWriteEvent();
 
 
@@ -260,7 +260,7 @@ void TCPConnection::unregisterReadEvent()
     if (!m_spEventLoop)
         return;
 
-    if (!m_registerReadEvent)
+    if (!m_registerReadEvent && !isWriteEnabled())
         return;
 
     m_spEventLoop->unregisterReadEvent(m_socket, this);
@@ -272,7 +272,7 @@ void TCPConnection::unregisterWriteEvent()
     if (!m_spEventLoop)
         return;
 
-    if (!m_registerWriteEvent)
+    if (!m_registerWriteEvent && !isWriteEnabled())
         return;
 
     m_spEventLoop->unregisterWriteEvent(m_socket, this);

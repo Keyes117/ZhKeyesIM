@@ -32,6 +32,7 @@ RedisConnPool::RedisConnPool(size_t poolSize, const char* host,
 
         successCount++;
         freeReplyObject(reply);
+        m_connections.push(context);
    
     }
 
@@ -41,8 +42,16 @@ RedisConnPool::RedisConnPool(size_t poolSize, const char* host,
 RedisConnPool::~RedisConnPool()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
-    while (m_connections.empty())
+    while (!m_connections.empty())
+    {
+        auto* context = m_connections.front();
         m_connections.pop();
+        if (context != nullptr)
+        {
+            redisFree(context);
+        }
+    }
+      
 }
 
 redisContext* RedisConnPool::getConnection()

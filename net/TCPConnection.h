@@ -63,6 +63,7 @@ private:
 
     bool    m_shutdownAfterWrite {false};
 
+    //表示TCPConnection 上是否已经注册了 读事件 或 写事件
     bool    m_registerReadEvent{ false };
     bool    m_registerWriteEvent{ false };
 

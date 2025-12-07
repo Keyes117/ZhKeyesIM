@@ -268,14 +268,16 @@ void GateServer::handleUserRegister(const ZhKeyesIMHttp::HttpRequest& request, Z
         std::string email = *emailOpt;
         std::string code = *codeOpt;
 
+        std::string redisKey = ServerParam::redis_prefix + email;
         std::string verifyCode;
-        bool isVerified = m_spRedisManager->get(email, verifyCode);
+
+        bool isVerified = m_spRedisManager->get(redisKey, verifyCode);
         if (!isVerified)
         {
             setErrorRequest(response,
                 ZhKeyesIMHttp::HttpStatusCode::InternalServerError,
                 ServerStatus::ErrorCodes::VarifyExpired,
-                "error request JSON format");
+                "Failed to request verification code");
             return;
         }
 

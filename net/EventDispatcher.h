@@ -32,6 +32,7 @@ public:
     }
 
 protected:
+    //表示Dispatcher是否能够 进行读写事件
     bool    m_enableRead{ false };
     bool    m_enableWrite{ false };
 };

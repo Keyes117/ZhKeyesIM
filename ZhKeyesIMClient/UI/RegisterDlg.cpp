@@ -7,6 +7,7 @@
 
 #include "global.h"
 #include "TaskHandler.h"
+#include "SendRegisterTask.h"
 #include "GetVerifyCodeTask.h"
 
 RegisterDlg::RegisterDlg(std::shared_ptr<IMClient> spClient, QWidget* parent)
@@ -92,12 +93,23 @@ void RegisterDlg::onRegisterButtonClicked()
         return;
     }
 
+    
+
     if (m_ui.lineEdit_code->text() == "") {
         showTip(tr("验证码不能为空"), false);
         return;
     }
 
+    QString strUser = m_ui.lineEdit_user->text();
+    QString strEmail = m_ui.lineEdit_emal->text();
+    QString strPassword = m_ui.lineEdit_password->text();
+    QString strCode = m_ui.lineEdit_code->text();
 
+    auto regiserTask = std::make_shared<SendRegisterTask>(
+        m_spClient,strUser.toStdString(), strEmail.toStdString(), strPassword.toStdString(), strCode.toStdString()
+    );
+
+    TaskHandler::getInstance().registerNetTask(std::move(regiserTask));
 
 }
 

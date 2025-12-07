@@ -23,9 +23,9 @@ TCPConnector::TCPConnector(const std::shared_ptr<EventLoop>& spEventLoop)
     m_socket(INVALID_SOCKET),
     m_serverPort(0),
     m_connectTimeoutMs(5000),
-    m_timeOutTimerId(-1),
-    m_isConnecting(false)
+    m_timeOutTimerId(-1)
 {
+    m_isConnecting.store(false);
 }
 
 TCPConnector::~TCPConnector()
@@ -208,6 +208,13 @@ bool TCPConnector::connect()
             m_connectStartTime = std::chrono::steady_clock::now();
             m_spEventLoop->registerWriteEvent(m_socket, this);
 
+            // 【修复】Linux 平台也添加定时器
+            m_timeOutTimerId = m_spEventLoop->addTimer(
+                m_connectTimeoutMs,
+                1,
+                std::bind(&TCPConnector::onConnectionTimeout, this)
+            );
+
 
             return true;
         }
@@ -265,6 +272,17 @@ void TCPConnector::checkConnectResult()
     {
         LOG_INFO("connection successful");
            
+        // 【修复】在移交 socket 前先注销写事件
+        if (m_socket != INVALID_SOCKET && m_spEventLoop)
+        {
+            m_spEventLoop->unregisterWriteEvent(m_socket, this);
+        }
+
+        if (m_timeOutTimerId > 0 && m_spEventLoop)
+        {
+            m_spEventLoop->removeTimer(m_timeOutTimerId);
+            m_timeOutTimerId = -1;
+        }
 
         if (m_connectCallback)
         {

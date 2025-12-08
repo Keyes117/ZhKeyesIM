@@ -26,6 +26,10 @@ MySqlConnPool::MySqlConnPool(const std::string& url, const std::string& user,
         {
             sql::mysql::MySQL_Driver* driver = sql::mysql::get_mysql_driver_instance();
             auto* conn = driver->connect(m_url, m_user, m_pass);
+
+            if (!conn)
+                continue;
+
             conn->setSchema(m_schema);
 
             auto currentTime = std::chrono::system_clock::now().time_since_epoch();
@@ -34,6 +38,7 @@ MySqlConnPool::MySqlConnPool(const std::string& url, const std::string& user,
             m_pool.push(std::make_unique<MySqlConnection>(conn, timestamp));
         }
 
+        m_poolSize = m_pool.size();
         m_checkThread = std::thread(std::bind(&MySqlConnPool::checkThreadFunc, this));
         m_checkThread.detach();
         
@@ -53,6 +58,12 @@ MySqlConnPool::~MySqlConnPool()
     }
 }
 
+bool MySqlConnPool::init()
+{
+    m_bStop = true;
+    return  (m_poolSize > 0);
+}
+
 void MySqlConnPool::checkThreadFunc()
 {
     while (!m_bStop)
@@ -69,7 +80,7 @@ void MySqlConnPool::checkConnectionPro()
 
     {
         std::lock_guard<std::mutex> guard(m_mutex);
-        targetCount = m_pool.size();
+        targetCount = m_poolSize;
     }
 
     //2. 当前已经处理的数量

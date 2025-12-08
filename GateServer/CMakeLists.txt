@@ -8,6 +8,7 @@ set(SERVER_SOURCES
     message.grpc.pb.cc
     MySqlConnPool.cpp
     MySqlDao.cpp
+    MySqlManager.cpp
     RedisManager.cpp
     RedisConnPool.cpp
 
@@ -21,6 +22,7 @@ set(SERVER_HEADERS
     message.grpc.pb.h
     MySqlConnPool.h
     MySqlDao.h
+    MySqlManager.h
     RedisManager.h
     RedisConnPool.h
 )

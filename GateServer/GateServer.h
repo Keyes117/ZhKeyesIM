@@ -10,6 +10,7 @@
 #include "Http/HttpResponse.h"
 #include "Http/Router.h"
 #include "RedisManager.h"
+#include "MySqlManager.h"
 #include "VerifyGrpcClient.h"
 
 #include "JsonUtil.h"
@@ -33,6 +34,7 @@ namespace ZhKeyesIMHttp = ZhKeyesIM::Net::Http;
 *   "timestamp":""  //Ê±¼ä´Á
 * }
 *
+* 
 */
 
 class GateServer
@@ -50,6 +52,7 @@ protected:
 
     virtual void handleGetRoot(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response,
         const std::map<std::string, std::string>& params);
+
 
     virtual void handleGetVerifyCode(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response,
         const std::map<std::string, std::string>& params);
@@ -81,7 +84,8 @@ private:
 
 
     std::unique_ptr<VerifyGrpcClient>  m_spGrpcVerifyClient;
-    std::unique_ptr<RedisManager>       m_spRedisManager;
+    std::unique_ptr<RedisManager>      m_spRedisManager;
+    std::unique_ptr<MySqlManager>      m_spMySqlManager;
     std::unique_ptr<ZhKeyesIMHttp::HttpServer> m_spHttpServer;
 
 private:

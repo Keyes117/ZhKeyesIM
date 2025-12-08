@@ -7,6 +7,7 @@ using namespace nlohmann;
 GateServer::GateServer():
     m_spGrpcVerifyClient(std::make_unique<VerifyGrpcClient>()),
     m_spRedisManager(std::make_unique<RedisManager>()),
+    m_spMySqlManager(std::make_unique<MySqlManager>()),
     m_spHttpServer( std::make_unique<ZhKeyesIMHttp::HttpServer>())
 {
 
@@ -55,6 +56,12 @@ bool GateServer::init(ConfigManager& config)
             LOG_ERROR("GateServer: redis 客户端 初始化失败");
             return false;
         }
+        if (!m_spMySqlManager->init(config))
+        {
+            LOG_ERROR("GateServer: MySql 客户端 初始化失败");
+            return false;
+        }
+
 
         m_spHttpServer->setRequestCallBack(std::bind(&GateServer::onHttpRequest, this, std::placeholders::_1, std::placeholders::_2));
         registerRoutes();
@@ -116,7 +123,11 @@ void GateServer::handleGetRoot(const ZhKeyesIMHttp::HttpRequest& request, ZhKeye
 
 void GateServer::handleGetVerifyCode(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response, const std::map<std::string, std::string>& params)
 {
-
+    /*
+    * {
+    *   "email":"xxx@xxx.xxx"
+    * }
+    */
     try
     {
         auto jsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(request.getBody());
@@ -220,11 +231,96 @@ void GateServer::handleGetVerifyCode(const ZhKeyesIMHttp::HttpRequest& request, 
 
 void GateServer::handleUserLogin(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response, const std::map<std::string, std::string>& params)
 {
+    /*
+    * {
+    *   "user":"xxx",
+    *   "email" : "xxxx",
+    *   "password" : "xxxx",
+    *   "confirm" : "xxxx",
+    *   "code"  : "xxxx
+    * }
+    */
+
     try {
+
+        auto jsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(request.getBody());
+        if (!jsonOpt)
+        {
+            setErrorRequest(response,
+                ZhKeyesIMHttp::HttpStatusCode::BadRequest,
+                ServerStatus::ErrorCodes::InternalError,
+                "Invalid reqeust JSON format"
+            );
+            return;
+        }
+
+        auto userOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "user");
+        auto emailOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "email");
+        auto passwordOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "password");
+        auto confirmOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "confirm");
+        auto codeOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "code");
+
+        if (!userOpt || !emailOpt || !passwordOpt || !confirmOpt || !codeOpt)
+        {
+            setErrorRequest(response,
+                ZhKeyesIMHttp::HttpStatusCode::BadRequest,
+                ServerStatus::ErrorCodes::InternalError,
+                "Error Json Param");
+            return;
+        }
+
+        std::string user = *userOpt;
+        std::string email = *emailOpt;
+        std::string password = *passwordOpt;
+        std::string confirm = *confirmOpt;
+        std::string code = *codeOpt;
+
+        if (password != confirm)
+        {
+            setErrorRequest(response,
+                ZhKeyesIMHttp::HttpStatusCode::BadRequest,
+                ServerStatus::ErrorCodes::Error_Json,
+                "password and confirm are not matched");
+            return;
+        }
+
+        std::string redisKey = ServerParam::redis_prefix + email;
+        std::string redisCode;
+        bool bExistRedis = m_spRedisManager->get(redisKey, redisCode);
+        if (!bExistRedis)
+        {
+            setErrorRequest(response,
+                ZhKeyesIMHttp::HttpStatusCode::BadRequest,
+                ServerStatus::ErrorCodes::VarifyExpired,
+                "verifyCode already Expired ");
+            return;
+        }
+
+        if (redisCode != code)
+        {
+            setErrorRequest(response,
+                ZhKeyesIMHttp::HttpStatusCode::BadRequest,
+                ServerStatus::ErrorCodes::VarifyCodeErr,
+                "verifyCode Error ");
+            return;
+        }
+
+        int uid = m_spMySqlManager->registerUser(user, email, password);
+        if (uid == 0 || uid == -1)
+        {
+            setErrorRequest(response,
+                ZhKeyesIMHttp::HttpStatusCode::BadRequest,
+                ServerStatus::ErrorCodes::UserExist,
+                "User Already Registered ");
+            return;
+        }
+
         setSuccessReqeust(response,
             ZhKeyesIMHttp::HttpStatusCode::OK,
             ServerStatus::ErrorCodes::Success,
             "User registered successfully");
+
+        return;
     }
     catch (const std::exception& e) {
         setErrorRequest(response,

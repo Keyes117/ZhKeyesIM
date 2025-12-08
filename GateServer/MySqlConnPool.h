@@ -39,6 +39,8 @@ public:
 
     ~MySqlConnPool();
 
+    bool init();
+
     void close();
 
     std::shared_ptr<MySqlConnection> getConnection();

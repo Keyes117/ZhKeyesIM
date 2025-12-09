@@ -17,7 +17,7 @@
    <item>
     <spacer name="verticalSpacer_2">
      <property name="orientation">
-      <enum>Qt::Orientation::Vertical</enum>
+      <enum>Qt::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -28,7 +28,7 @@
     </spacer>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="layout_main" stretch="0,2,2,2,2,2,3,2">
+    <layout class="QVBoxLayout" name="layout_main" stretch="2,2,2,2,2,2,2,2,2,2,3,2">
      <property name="spacing">
       <number>10</number>
      </property>
@@ -45,19 +45,6 @@
       <number>20</number>
      </property>
      <item>
-      <widget class="QLabel" name="err_tip">
-       <property name="layoutDirection">
-        <enum>Qt::LayoutDirection::LeftToRight</enum>
-       </property>
-       <property name="text">
-        <string>错误提示</string>
-       </property>
-       <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignCenter</set>
-       </property>
-      </widget>
-     </item>
-     <item>
       <layout class="QHBoxLayout" name="layout_user" stretch="2,8">
        <item>
         <widget class="QLabel" name="label_user">
@@ -70,6 +57,16 @@
         <widget class="QLineEdit" name="lineEdit_user"/>
        </item>
       </layout>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_userErr">
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
      </item>
      <item>
       <layout class="QHBoxLayout" name="layout_email" stretch="2,8">
@@ -86,7 +83,17 @@
       </layout>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="layout_password" stretch="2,8">
+      <widget class="QLabel" name="label_emailErr">
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="layout_password" stretch="2,8,1">
        <item>
         <widget class="QLabel" name="label_password">
          <property name="text">
@@ -97,10 +104,27 @@
        <item>
         <widget class="QLineEdit" name="lineEdit_password"/>
        </item>
+       <item>
+        <widget class="ClickedLabel" name="label_pass_visible">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
       </layout>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="layout_confirm" stretch="2,8">
+      <widget class="QLabel" name="label_passwordErr">
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="layout_confirm" stretch="2,8,1">
        <item>
         <widget class="QLabel" name="label_confirm">
          <property name="text">
@@ -111,7 +135,24 @@
        <item>
         <widget class="QLineEdit" name="lineEdit_confirm"/>
        </item>
+       <item>
+        <widget class="ClickedLabel" name="label_confirm_visible">
+         <property name="text">
+          <string/>
+         </property>
+        </widget>
+       </item>
       </layout>
+     </item>
+     <item>
+      <widget class="QLabel" name="label_confirmErr">
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
      </item>
      <item>
       <layout class="QHBoxLayout" name="layout_code" stretch="2,6,2">
@@ -135,9 +176,19 @@
       </layout>
      </item>
      <item>
+      <widget class="QLabel" name="label_codeErr">
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="verticalSpacer">
        <property name="orientation">
-        <enum>Qt::Orientation::Vertical</enum>
+        <enum>Qt::Vertical</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -170,6 +221,13 @@
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>ClickedLabel</class>
+   <extends>QLabel</extends>
+   <header>clickedlabel.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

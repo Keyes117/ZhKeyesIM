@@ -6,6 +6,7 @@
 
 #include "ui_RegisterDlg.h"
 
+#include "global.h"
 #include "IMClient.h"
 
 class RegisterDlg : public QDialog
@@ -18,8 +19,16 @@ public:
 
 private:
     void setUpSignals();
-    void showTip(const QString& str, bool isError);
+    //void showTip(const QString& str, bool isError);
+    //void AddTipErr(TipErr err, QString tips);
+    //void DelTipErr(TipErr err);
     void startCountdown();
+
+    // 设置输入框错误状态
+    void setLineEditError(QLineEdit* lineEdit, bool hasError);
+    // 显示/隐藏错误提示
+    void showFieldError(const QString& fieldName, const QString& errorMsg);
+    void hideFieldError(const QString& fieldName);
 
 signals:
     void switchLoginDlg();
@@ -28,8 +37,19 @@ private slots:
     void onCancelButtonClicked();
     void onRegisterButtonClicked();
     void onCodeButtonClicked();
-
     void onVerifyCodeReceived(bool success, QString message, int errorCode);
+
+    void onUserTextChanged(const QString& text);
+    void onEmailTextChanged(const QString& text);
+    void onPasswordTextChanged(const QString& text);
+    void onConfirmTextChanged(const QString& text);
+    void onCodeTextChanged(const QString& text);
+
+    bool checkUserValid();
+    bool checkEmailValid();
+    bool checkPassValid();
+    bool checkConfirmValid();
+    bool checkVerifyValid();
 
 private:
 
@@ -37,6 +57,7 @@ private:
     // 验证码倒计时
     int m_countdown{ 0 };
     QTimer* m_countdownTimer;
+    QMap<QString, QLabel*> m_errorLabels;
     std::shared_ptr<IMClient> m_spClient;
 
 

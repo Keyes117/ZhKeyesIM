@@ -148,8 +148,6 @@ void IMClient::onResponseVerificationCode(const ZhKeyesIM::Net::Http::HttpRespon
         LOG_ERROR("IMClient:onResponseVerificationCode:未成功发送验证吗");
         return;
     }
-    //std::string 
-    //TODO: 解析Json， 创建recvTask
 
 
 }
@@ -179,7 +177,7 @@ void IMClient::onResponseRegister(const ZhKeyesIM::Net::Http::HttpResponse& resp
     if (success == 0)
     {
         onErrorRegister(msg);
-        LOG_ERROR("IMClient:onResponseVerificationCode:未成功发送验证吗");
+        LOG_ERROR("IMClient:onResponseVerificationCode:未成功注册用户");
         return;
     }
     else if (success == 1)

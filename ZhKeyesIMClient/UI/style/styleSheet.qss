@@ -3,11 +3,70 @@ background-color:rgb(255,255,255)
 }
 
 
-
-#err_tip[state="normal"]{
-	color: green;
+/* 输入框正常状态 */
+QLineEdit {
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    padding: 5px 9px;
+    background-color: white;
+    color: black;
+    font-size: 12px;
 }
 
-#err_tip[state="err"]{
-	color: red;
+QLineEdit:focus {
+    border: 1px solid #4A90E2;
+    outline: none;
+}
+
+/* 输入框错误状态 */
+QLineEdit[error="true"] {
+    border: 1px solid #ff4757;
+    background-color: #fff5f5;
+}
+
+/* 错误提示标签样式 */
+QLabel[error="true"] {
+    color: #ff4757;
+    font-size: 12px;
+    padding-left: 20px;
+    padding-top: 4px;
+    min-height: 20px;
+}
+
+/* 错误图标（使用 Unicode 字符或图标） */
+QLabel[error="true"]::before {
+    content: "⚠ ";
+    color: #ff4757;
+}
+
+#label_confirm_visible[state='unvisible']{
+    border-image: url(:/res/res/unvisible.png);
+}
+
+#label_confirm_visible[state='unvisible_hover']{
+    border-image: url(:/res/res/unvisible_hover.png);
+}
+
+#label_confirm_visible[state='visible']{
+    border-image: url(:/res/res/visible.png);
+}
+
+#label_confirm_visible[state='visible_hover']{
+    border-image: url(:/res/res/visible_hover.png);
+}
+
+#label_pass_visible[state='unvisible']{
+     border-image: url(:/res/res/unvisible.png);
+}
+
+#label_pass_visible[state='unvisible_hover']{
+     border-image: url(:/res/res/unvisible_hover.png);
+}
+
+#label_pass_visible[state='visible']{
+     border-image: url(:/res/res/visible.png);
+}
+
+#label_pass_visible[state='visible_hover']{
+     border-image: url(:/res/res/visible_hover.png);
 }

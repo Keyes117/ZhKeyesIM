@@ -8,14 +8,30 @@ set(CLIENT_UI_SOURCE
     UI/LoginDlg.cpp
     UI/LoginDlg.h
     UI/LoginDlg.ui
+
     UI/RegisterDlg.cpp
     UI/RegisterDlg.h
     UI/RegisterDlg.ui
+
     UI/MainWindow.cpp
     UI/MainWindow.h
     UI/MainWindow.ui
+
+    UI/ResetDlg.cpp
+    UI/ResetDlg.h
+    UI/ResetDlg.ui
+
+    UI/TimerButton.cpp
+    UI/TimerButton.h
+
+    UI/ClickedLabel.cpp
+    UI/ClickedLabel.h
+
     UI/global.h
     UI/global.cpp
+    
+    
+    
     UI/resource.qrc
     UI/style/styleSheet.qss
 )

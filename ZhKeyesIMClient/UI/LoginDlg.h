@@ -19,10 +19,12 @@ private:
 
 signals:
     void switchRegisterDlg();
+    void switchResetDlg();
 
 private slots:
     void onLoginButtonClicked();
     void onRegisterButtonClicked();
+    void onForgotPasswordLabelClicked();
 private:
 
     void setUpSignals();

@@ -10,6 +10,7 @@
 
 #include "LoginDlg.h"
 #include "RegisterDlg.h"
+#include "ResetDlg.h"
 #include "IMClient.h"
 
 class MainWindow : public QMainWindow
@@ -22,7 +23,9 @@ public:
 
 private slots:
     void switchToRegisterDlg();
+    void switchToResetDlg();
     void switchToLoginDlg();
+
     void onErrorMsg(QString errorMsg);
     void onSuccessMsg(QString successMsg);
 private:
@@ -33,6 +36,7 @@ private:
     QStackedWidget*     m_stackedWidget;
     LoginDlg*           m_loginDlg;
     RegisterDlg*        m_registerDlg;
+    ResetDlg*           m_resetDlg;
 };
 
 #endif

@@ -32,6 +32,12 @@ RegisterDlg::RegisterDlg(std::shared_ptr<IMClient> spClient, QWidget* parent)
     //m_ui.err_tip->setProperty("state", "normal");
     //repolish(m_ui.err_tip);
 
+    m_ui.label_pass_visible->setState("unvisible", "unvisible_hover", "", "visible", "visible_hover", "");
+    m_ui.label_confirm_visible->setState("unvisible", "unvisible_hover", "", "visible", "visible_hover", "");
+    m_ui.label_pass_visible->setCursor(Qt::PointingHandCursor);
+    m_ui.label_confirm_visible->setCursor(Qt::PointingHandCursor);
+
+
     m_errorLabels["user"] = m_ui.label_userErr;
     m_errorLabels["email"] = m_ui.label_emailErr;
     m_errorLabels["password"] = m_ui.label_passwordErr;
@@ -51,16 +57,19 @@ void RegisterDlg::setUpSignals()
     connect(m_ui.button_code, &QPushButton::clicked, this, &RegisterDlg::onCodeButtonClicked);
 
     connect(m_ui.lineEdit_user, &QLineEdit::textChanged, this, &RegisterDlg::onUserTextChanged);
-    connect(m_ui.lineEdit_emal, &QLineEdit::textChanged, this, &RegisterDlg::onEmailTextChanged);
+    connect(m_ui.lineEdit_email, &QLineEdit::textChanged, this, &RegisterDlg::onEmailTextChanged);
     connect(m_ui.lineEdit_password, &QLineEdit::textChanged, this, &RegisterDlg::onPasswordTextChanged);
     connect(m_ui.lineEdit_confirm, &QLineEdit::textChanged, this, &RegisterDlg::onConfirmTextChanged);
     connect(m_ui.lineEdit_code, &QLineEdit::textChanged, this, &RegisterDlg::onCodeTextChanged);
 
     connect(m_ui.lineEdit_user, &QLineEdit::editingFinished, this, &RegisterDlg::checkUserValid);
-    connect(m_ui.lineEdit_emal, &QLineEdit::editingFinished, this, &RegisterDlg::checkEmailValid);
+    connect(m_ui.lineEdit_email, &QLineEdit::editingFinished, this, &RegisterDlg::checkEmailValid);
     connect(m_ui.lineEdit_password, &QLineEdit::editingFinished, this, &RegisterDlg::checkPassValid);
     connect(m_ui.lineEdit_confirm, &QLineEdit::editingFinished, this, &RegisterDlg::checkConfirmValid);
     connect(m_ui.lineEdit_code, &QLineEdit::editingFinished, this, &RegisterDlg::checkVerifyValid);
+
+    connect(m_ui.label_pass_visible, &ClickedLabel::clicked, this, &RegisterDlg::switchLabelPassVisible);
+    connect(m_ui.label_confirm_visible, &ClickedLabel::clicked, this, &RegisterDlg::switchLabelConfirmVisible);
 
     connect(&TaskHandler::getInstance(), &TaskHandler::verifyCodeRecevied, this, &RegisterDlg::onVerifyCodeReceived);
 }
@@ -352,3 +361,30 @@ bool RegisterDlg::checkVerifyValid()
     hideFieldError("code");
     return true;
 }
+
+void RegisterDlg::switchLabelPassVisible()
+{
+    auto state = m_ui.label_pass_visible->getCurState();
+    if (state == ClickState::Normal)
+    {
+        m_ui.lineEdit_password->setEchoMode(QLineEdit::Password);
+    }
+    else
+    {
+        m_ui.lineEdit_password->setEchoMode(QLineEdit::Normal);
+    }
+}
+
+void RegisterDlg::switchLabelConfirmVisible()
+{
+    auto state = m_ui.label_confirm_visible->getCurState();
+    if (state == ClickState::Normal)
+    {
+        m_ui.lineEdit_confirm->setEchoMode(QLineEdit::Password);
+    }
+    else
+    {
+        m_ui.lineEdit_confirm->setEchoMode(QLineEdit::Normal);
+    }
+}
+

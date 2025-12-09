@@ -4,12 +4,20 @@
 #include <QMessageBox>
 #include <QSizePolicy>
 
+#include "ClickedLabel.h"
+#include "global.h"
+
 LoginDlg::LoginDlg(std::shared_ptr<IMClient> spClient,QWidget* parent)
     :QDialog(parent),
     m_spClient(spClient)
 {
     m_ui.setupUi(this);
     setUpSignals();
+
+    m_ui.label_forgetPwd->setState("normal", "hover", "", "selected", "selected_hover", "");
+    m_ui.label_forgetPwd->setCursor(Qt::PointingHandCursor);
+
+
 
 }
 
@@ -46,9 +54,17 @@ void LoginDlg::onRegisterButtonClicked()
     emit switchRegisterDlg();
 }
 
+void LoginDlg::onForgotPasswordLabelClicked()
+{
+    emit switchResetDlg();
+
+}
+
 void LoginDlg::setUpSignals()
 {
     connect(m_ui.button_logon, &QPushButton::clicked, this, &LoginDlg::onLoginButtonClicked);
     connect(m_ui.button_register, &QPushButton::clicked, this, &LoginDlg::onRegisterButtonClicked);
+
+    connect(m_ui.label_forgetPwd, &ClickedLabel::clicked, this, &LoginDlg::onForgotPasswordLabelClicked);
 }
 

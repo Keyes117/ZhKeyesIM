@@ -82,7 +82,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QLabel" name="label_forgetPwd">
+        <widget class="ClickedLabel" name="label_forgetPwd">
          <property name="text">
           <string>忘记密码？</string>
          </property>
@@ -232,6 +232,13 @@
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>ClickedLabel</class>
+   <extends>QLabel</extends>
+   <header>clickedlabel.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

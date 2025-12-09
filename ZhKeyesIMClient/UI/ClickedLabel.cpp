@@ -24,6 +24,8 @@ void ClickedLabel::mousePressEvent(QMouseEvent* event)
             repolish(this);
             update();
         }
+
+        emit clicked();
     }
 
     QLabel::mousePressEvent(event);

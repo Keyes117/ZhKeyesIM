@@ -22,7 +22,7 @@ public:
         const QString& select = "", const QString& select_hover = "", const QString& select_press = ""
     );
 
-    ClickState GetCurState() { return m_curState; }
+    ClickState getCurState() { return m_curState; }
 signals:
     void clicked(void);
 

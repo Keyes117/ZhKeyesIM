@@ -51,6 +51,9 @@ private slots:
     bool checkConfirmValid();
     bool checkVerifyValid();
 
+    void switchLabelPassVisible();
+    void switchLabelConfirmVisible();
+
 private:
 
     Ui::RegisterDlgClass m_ui;

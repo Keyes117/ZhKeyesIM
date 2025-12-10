@@ -23,6 +23,14 @@ public:
         const std::string& password,
         const std::string& verificationCode);
 
+    void requestResetPassword(const std::string& username,
+        const std::string& email,
+        const std::string& password,
+        const std::string& verificationCode);
+
+    void requestUserLogin(const std::string& username,
+        const std::string password);
+
 private:
     void networkThreadFunc();
     void reportErrorMsg(const std::string& msg);
@@ -32,12 +40,15 @@ private:
 private:
     void onResponseVerificationCode(const ZhKeyesIM::Net::Http::HttpResponse& response);
     void onResponseRegister(const ZhKeyesIM::Net::Http::HttpResponse& response);
+    void onResponseResetPassword(const ZhKeyesIM::Net::Http::HttpResponse& response);
+    void onResponseUserLogin(const ZhKeyesIM::Net::Http::HttpResponse& response);
 
 //onError
 private:
     void onErrorVerificationCode(const std::string& errorMsg);
     void onErrorRegister(const std::string& errorMsg);
-
+    void onErrorResetPassword(const std::string& errorMsg);
+    void onErrorUserLogin(const std::string& errorMsg);
 
 private:
 

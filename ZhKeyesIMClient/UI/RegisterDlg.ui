@@ -17,7 +17,7 @@
    <item>
     <spacer name="verticalSpacer_2">
      <property name="orientation">
-      <enum>Qt::Orientation::Vertical</enum>
+      <enum>Qt::Vertical</enum>
      </property>
      <property name="sizeHint" stdset="0">
       <size>
@@ -49,13 +49,7 @@
        <item>
         <widget class="QLabel" name="label_user">
          <property name="text">
-          <string>用户：</string>
-         </property>
-         <property name="textFormat">
-          <enum>Qt::TextFormat::AutoText</enum>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+          <string>用       户：</string>
          </property>
         </widget>
        </item>
@@ -70,7 +64,7 @@
         <string>TextLabel</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignCenter</set>
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
@@ -79,12 +73,12 @@
        <item>
         <widget class="QLabel" name="lable_email">
          <property name="text">
-          <string>邮箱：</string>
+          <string>邮       箱：</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="lineEdit_emal"/>
+        <widget class="QLineEdit" name="lineEdit_email"/>
        </item>
       </layout>
      </item>
@@ -94,16 +88,16 @@
         <string>TextLabel</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignCenter</set>
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="layout_password" stretch="2,8,1">
+      <layout class="QHBoxLayout" name="layout_password" stretch="2,7,1">
        <item>
         <widget class="QLabel" name="label_password">
          <property name="text">
-          <string>密码:</string>
+          <string>密      码:</string>
          </property>
         </widget>
        </item>
@@ -125,12 +119,12 @@
         <string>TextLabel</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignCenter</set>
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="layout_confirm" stretch="2,8,1">
+      <layout class="QHBoxLayout" name="layout_confirm" stretch="2,7,1">
        <item>
         <widget class="QLabel" name="label_confirm">
          <property name="text">
@@ -156,7 +150,7 @@
         <string>TextLabel</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignCenter</set>
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
@@ -165,7 +159,7 @@
        <item>
         <widget class="QLabel" name="label_code">
          <property name="text">
-          <string>验证码：</string>
+          <string>验  证 码：</string>
          </property>
         </widget>
        </item>
@@ -173,7 +167,7 @@
         <widget class="QLineEdit" name="lineEdit_code"/>
        </item>
        <item>
-        <widget class="TimerButton" name="button_code">
+        <widget class="QPushButton" name="button_code">
          <property name="text">
           <string>获取验证码</string>
          </property>
@@ -187,14 +181,14 @@
         <string>TextLabel</string>
        </property>
        <property name="alignment">
-        <set>Qt::AlignmentFlag::AlignCenter</set>
+        <set>Qt::AlignCenter</set>
        </property>
       </widget>
      </item>
      <item>
       <spacer name="verticalSpacer">
        <property name="orientation">
-        <enum>Qt::Orientation::Vertical</enum>
+        <enum>Qt::Vertical</enum>
        </property>
        <property name="sizeHint" stdset="0">
         <size>
@@ -205,7 +199,20 @@
       </spacer>
      </item>
      <item>
-      <layout class="QHBoxLayout" name="layout_operation">
+      <layout class="QHBoxLayout" name="layout_operation" stretch="0,3,4,3,0">
+       <item>
+        <spacer name="horizontalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
        <item>
         <widget class="QPushButton" name="button_register">
          <property name="text">
@@ -214,11 +221,37 @@
         </widget>
        </item>
        <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
         <widget class="QPushButton" name="button_cancel">
          <property name="text">
           <string>取消</string>
          </property>
         </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
        </item>
       </layout>
      </item>
@@ -232,11 +265,6 @@
    <class>ClickedLabel</class>
    <extends>QLabel</extends>
    <header>clickedlabel.h</header>
-  </customwidget>
-  <customwidget>
-   <class>TimerButton</class>
-   <extends>QPushButton</extends>
-   <header>timerbutton.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

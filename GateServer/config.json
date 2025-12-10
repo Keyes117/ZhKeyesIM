@@ -2,7 +2,8 @@
     "redis": {
         "host":"172.25.224.240",
         "port":"6379",
-        "password":"123456"
+        "password":"123456",
+        "connNumber":10
     },
     "rpcServer": {
         "host":"127.0.0.1",
@@ -13,5 +14,17 @@
         "ip":"127.0.0.1",
         "port":"8080",
         "IOType":"0"
+    },
+    "mysql":{
+        "host":"127.0.0.1",
+        "port":"3306",
+        "user":"root",
+        "schema":"test",
+        "password":"123456",
+        "connNumber":10
+    },
+    "log":{
+        "level":"debug",
+        "path":"./logs"
     }
 }

@@ -9,6 +9,10 @@ namespace ApiRoutes
 
     constexpr const char* API_USER_REGISTER = "/api/user/register"; 
 
+    constexpr const char* API_USER_RESETPASS = "/api/user/resetPassword";
+
+    constexpr const char* API_USER_LOGIN = "/api/user/login";
+
 }
 
 

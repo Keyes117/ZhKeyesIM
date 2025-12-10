@@ -102,6 +102,34 @@ void IMClient::requestRegister(const std::string& username, const std::string& e
         std::bind(&IMClient::onErrorRegister, this, std::placeholders::_1));
 }
 
+void IMClient::requestResetPassword(const std::string& username, const std::string& email, const std::string& password, const std::string& verificationCode)
+{
+    nlohmann::json requestJson;
+    requestJson["username"] = username;
+    requestJson["password"] = password;
+    requestJson["email"] = email;
+    requestJson["code"] = verificationCode;
+
+    std::string url = fmt::format("http://{}{}", m_httpBaseUrl.c_str(), ApiRoutes::API_USER_RESETPASS);
+    m_spHttpClient->postJson(url,
+        requestJson.dump(),
+        std::bind(&IMClient::onResponseResetPassword, this, std::placeholders::_1),
+        std::bind(&IMClient::onErrorResetPassword, this, std::placeholders::_1));
+}
+
+void IMClient::requestUserLogin(const std::string& username, const std::string password)
+{
+    nlohmann::json requestJson;
+    requestJson["username"] = username;
+    requestJson["password"] = password;
+
+    std::string url = fmt::format("http://{}{}", m_httpBaseUrl.c_str(), ApiRoutes::API_USER_RESETPASS);
+    m_spHttpClient->postJson(url,
+        requestJson.dump(),
+        std::bind(&IMClient::onResponseUserLogin, this, std::placeholders::_1),
+        std::bind(&IMClient::onErrorUserLogin, this, std::placeholders::_1));
+}
+
 void IMClient::networkThreadFunc()
 {
     m_eventLoopRunning.store(true);
@@ -186,12 +214,90 @@ void IMClient::onResponseRegister(const ZhKeyesIM::Net::Http::HttpResponse& resp
     }
 }
 
+void IMClient::onResponseResetPassword(const ZhKeyesIM::Net::Http::HttpResponse& response)
+{
+    auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(response.getBody());
+    if (!requestJsonOpt)
+    {
+        onErrorRegister("重置密码功能返回信息错误");
+        LOG_ERROR("IMClient:onResponseResetPassword:接收返回值格式错误：不是正常的Json格式");
+        return;
+    }
+
+    nlohmann::json requestJson = *requestJsonOpt;
+    auto successOpt = ZhKeyes::Util::JsonUtil::getSafe<int>(requestJson, "success");
+    auto msgOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(requestJson, "msg");
+    if (!successOpt || !msgOpt)
+    {
+        onErrorRegister("重置密码功能返回信息错误");
+        LOG_ERROR("IMClient:onResponseResetPassword:接收返回值格式错误：不是正常的Json格式");
+        return;
+    }
+
+    int success = *successOpt;
+    std::string msg = *msgOpt;
+    if (success == 0)
+    {
+        onErrorRegister(msg);
+        LOG_ERROR("IMClient:onResponseResetPassword:未成功重置密码");
+    }
+    else if (success == 1)
+    {
+        reportSuccessMsg("重置密码成功!");
+    }
+    return;
+}
+
+void IMClient::onResponseUserLogin(const ZhKeyesIM::Net::Http::HttpResponse& response)
+{
+    auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(response.getBody());
+    if (!requestJsonOpt)
+    {
+        onErrorRegister("登录功能返回信息错误");
+        LOG_ERROR("IMClient:onResponseResetPassword:接收返回值格式错误：不是正常的Json格式");
+        return;
+    }
+
+    nlohmann::json requestJson = *requestJsonOpt;
+    auto successOpt = ZhKeyes::Util::JsonUtil::getSafe<int>(requestJson, "success");
+    auto msgOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(requestJson, "msg");
+    if (!successOpt || !msgOpt)
+    {
+        onErrorRegister("登录功能返回信息错误");
+        LOG_ERROR("IMClient:onResponseResetPassword:接收返回值格式错误：不是正常的Json格式");
+        return;
+    }
+
+    int success = *successOpt;
+    std::string msg = *msgOpt;
+    if (success == 0)
+    {
+        onErrorRegister(msg);
+        LOG_ERROR("IMClient:onResponseResetPassword:登录失败");
+    }
+    else if (success == 1)
+    {
+        reportSuccessMsg("登录成功!");
+    }
+    return;
+}
+
 void IMClient::onErrorVerificationCode(const std::string& errorMsg)
 {
     reportErrorMsg(errorMsg);
 }
 
 void IMClient::onErrorRegister(const std::string& errorMsg)
+{
+    reportErrorMsg(errorMsg);
+}
+
+void IMClient::onErrorResetPassword(const std::string& errorMsg)
+{
+    reportErrorMsg(errorMsg);
+}
+
+void IMClient::onErrorUserLogin(const std::string& errorMsg)
 {
     reportErrorMsg(errorMsg);
 }

@@ -13,6 +13,12 @@ public:
     virtual ~Task() = default;
 
     virtual void doTask() = 0;
+
+private:
+    Task(const Task& rhs) = delete;
+    Task& operator=(const Task& rhs) = delete;
+    Task(Task&& rhs) = delete;
+    Task& operator=(Task&& rhs) = delete;
 };
 
 

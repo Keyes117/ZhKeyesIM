@@ -33,10 +33,14 @@ public:
     void registerUITask(std::shared_ptr<Task>&& task);
 
 signals:
-    void verifyCodeRecevied(bool isSuccess, QString message, int errorCode);
+    void verifyCodeRecevied(bool isSuccess,const QString& message, int errorCode);
+    void registerRecevied(bool isSuccess, const QString& message, int errorCode);
+    void resetPasswordRecevied(bool isSuccess, const QString& message, int errorCode);
+    void userLoginRecevied(bool isSuccess, const QString& message, int errorCode);
+    
     void reportErrorMsg(QString errorMsg);
     void reportSuccessMsg(QString successMsg);
-
+    
 private:
     TaskHandler() = default;
     ~TaskHandler() = default;

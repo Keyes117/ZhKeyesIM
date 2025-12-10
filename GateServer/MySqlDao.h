@@ -10,7 +10,7 @@
 struct UserInfo
 {
     std::string name;
-    std::string pwd;
+    std::string password;
     int uid;
     std::string email;
 };
@@ -28,10 +28,10 @@ public:
 
     int registerUser(const std::string& name, const std::string& email, const std::string& pwd);
     int registerUserTransaction(const std::string& name, const std::string& email, const std::string& pwd, const std::string& icon);
-  /*  bool CheckEmail(const std::string& name, const std::string& email);
-    bool UpdatePwd(const std::string& name, const std::string& newpwd);
-    bool CheckPwd(const std::string& name, const std::string& pwd, UserInfo& userInfo);
-    bool TestProcedure(const std::string& email, int& uid, std::string& name);*/
+    bool checkEmail(const std::string& name, const std::string& email);
+    bool updatePassword(const std::string& name, const std::string& newpwd);
+    bool checkPassword(const std::string& name, const std::string& pwd, UserInfo& userInfo);
+    //bool TestProcedure(const std::string& email, int& uid, std::string& name);
 
 private:
     std::unique_ptr<MySqlConnPool> m_pool;

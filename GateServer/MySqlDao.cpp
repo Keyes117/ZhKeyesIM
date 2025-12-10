@@ -71,3 +71,134 @@ int MySqlDao::registerUserTransaction(const std::string& name, const std::string
 {
     return 0;
 }
+
+bool MySqlDao::checkEmail(const std::string& name, const std::string& email)
+{
+    std::shared_ptr<MySqlConnection> conn = m_pool->getConnection();
+
+    try
+    {
+        if (conn == nullptr)
+        {
+            m_pool->returnConnection(std::move(conn));
+            return false;
+        }
+
+        std::unique_ptr<sql::PreparedStatement> pstmt(conn->m_spConn->prepareStatement(
+            "SELECT email FROM user WHERE name = ?"
+        ));
+
+        pstmt->setString(1, name);
+
+        std::unique_ptr<sql::ResultSet> res(pstmt->executeQuery());
+
+        while (res->next())
+        {
+            if (email != res->getString("email"))
+            {
+                m_pool->returnConnection(std::move(conn));
+                return false;
+            }
+
+            m_pool->returnConnection(std::move(conn));
+            return true;
+        }
+    }
+    catch (sql::SQLException& e)
+    {
+        LOG_ERROR("SQLException: %s \n  \
+                   MySQL error code : %d \n , \
+                   SQLState: %s", e.what(), e.getErrorCode(), e.getSQLState()
+        );
+        m_pool->returnConnection(std::move(conn));
+        return false;
+    }
+}
+
+bool MySqlDao::updatePassword(const std::string& name, const std::string& newPass)
+{
+    std::shared_ptr<MySqlConnection> conn = m_pool->getConnection();
+
+    try
+    {
+        if (conn == nullptr)
+        {
+            m_pool->returnConnection(std::move(conn));
+            return false;
+        }
+
+        std::unique_ptr<sql::PreparedStatement> pstmt(conn->m_spConn->prepareStatement(
+            "UPDATE user SET pwd = ? WHERE name = ?"
+        ));
+
+        pstmt->setString(1, newPass);
+        pstmt->setString(2, name);
+
+        int updateCount = pstmt->executeUpdate();
+
+        LOG_INFO("Updated rows: %d ", updateCount);
+        m_pool->returnConnection(std::move(conn));
+
+        return true;
+    }
+    catch (sql::SQLException& e)
+    {
+        LOG_ERROR("SQLException: %s \n  \
+                   MySQL error code : %d \n , \
+                   SQLState: %s", e.what(), e.getErrorCode(), e.getSQLState()
+        );
+        m_pool->returnConnection(std::move(conn));
+        return false;
+    }
+}
+
+bool MySqlDao::checkPassword(const std::string& name, const std::string& pwd, UserInfo& userInfo)
+{
+    std::shared_ptr<MySqlConnection> conn = m_pool->getConnection();
+
+    try
+    {
+        if (conn == nullptr)
+        {
+            m_pool->returnConnection(std::move(conn));
+            return false;
+        }
+
+        std::unique_ptr<sql::PreparedStatement> pstmt(conn->m_spConn->prepareStatement(
+            "SELECT * FROM user WHERE name = ?"
+        ));
+
+        pstmt->setString(1, name);
+
+        std::unique_ptr<sql::ResultSet> res(pstmt->executeQuery());
+        std::string origin_pwd = "";
+        while (res->next())
+        {
+            origin_pwd = res->getString("pwd");
+            LOG_INFO("Password: %s", origin_pwd.c_str());
+            break;
+        }
+
+        if (pwd != origin_pwd)
+        {
+            m_pool->returnConnection(std::move(conn));
+            return false;
+        }
+
+        m_pool->returnConnection(std::move(conn));
+        userInfo.name = name;
+        userInfo.email = res->getString("email");
+        userInfo.uid = res->getInt("uid");
+        userInfo.password = origin_pwd;
+        return true;
+    }
+    catch(sql::SQLException& e)
+    {
+        LOG_ERROR("SQLException: %s \n  \
+                   MySQL error code : %d \n , \
+                   SQLState: %s", e.what(), e.getErrorCode(), e.getSQLState()
+        );
+        m_pool->returnConnection(std::move(conn));
+        return false;
+    }
+}

@@ -52,6 +52,16 @@ set(CLIENT_TASK_SOURCE
     Task/RecvRegisterTask.cpp
     Task/RecvRegisterTask.h
 
+    Task/SendResetPassTask.cpp
+    Task/SendResetPassTask.h
+    Task/RecvResetPassTask.cpp
+    Task/RecvResetPassTask.h
+
+    Task/SendUserLoginTask.cpp
+    Task/SendUserLoginTask.h
+    Task/RecvUserLoginTask.cpp
+    Task/RecvUserLoginTask.h
+
     Task/ReportErrorTask.cpp
     Task/ReportErrorTask.h
     Task/ReportSuccessTask.cpp

@@ -146,7 +146,7 @@ void RegisterDlg::onRegisterButtonClicked()
     }
 
     QString strUser = m_ui.lineEdit_user->text();
-    QString strEmail = m_ui.lineEdit_emal->text();
+    QString strEmail = m_ui.lineEdit_email->text();
     QString strPassword = m_ui.lineEdit_password->text();
     QString strCode = m_ui.lineEdit_code->text();
 
@@ -161,7 +161,7 @@ void RegisterDlg::onRegisterButtonClicked()
 void RegisterDlg::onCodeButtonClicked()
 {
     bool match = checkEmailValid();
-    QString email = m_ui.lineEdit_emal->text();
+    QString email = m_ui.lineEdit_email->text();
     if (match)
     {
         //发送验证码
@@ -197,17 +197,17 @@ void RegisterDlg::onUserTextChanged(const QString& text)
 void RegisterDlg::onEmailTextChanged(const QString& text)
 {
     if (text.isEmpty()) {
-        setLineEditError(m_ui.lineEdit_emal, true);
+        setLineEditError(m_ui.lineEdit_email, true);
         showFieldError("email", tr("邮箱不能为空"));
     }
     else {
         QRegularExpression regex(R"((\w+)(\.|_)?(\w*)@(\w+)(\.(\w+))+)");
         if (!regex.match(text).hasMatch()) {
-            setLineEditError(m_ui.lineEdit_emal, true);
+            setLineEditError(m_ui.lineEdit_email, true);
             showFieldError("email", tr("邮箱格式不正确"));
         }
         else {
-            setLineEditError(m_ui.lineEdit_emal, false);
+            setLineEditError(m_ui.lineEdit_email, false);
             hideFieldError("email");
         }
     }
@@ -280,21 +280,21 @@ bool RegisterDlg::checkUserValid()
 
 bool RegisterDlg::checkEmailValid()
 {
-    QString email = m_ui.lineEdit_emal->text();
+    QString email = m_ui.lineEdit_email->text();
     if (email.isEmpty()) {
-        setLineEditError(m_ui.lineEdit_emal, true);
+        setLineEditError(m_ui.lineEdit_email, true);
         showFieldError("email", tr("邮箱不能为空"));
         return false;
     }
 
     QRegularExpression regex(R"((\w+)(\.|_)?(\w*)@(\w+)(\.(\w+))+)");
     if (!regex.match(email).hasMatch()) {
-        setLineEditError(m_ui.lineEdit_emal, true);
+        setLineEditError(m_ui.lineEdit_email, true);
         showFieldError("email", tr("邮箱地址不正确"));
         return false;
     }
 
-    setLineEditError(m_ui.lineEdit_emal, false);
+    setLineEditError(m_ui.lineEdit_email, false);
     hideFieldError("email");
     return true;
 }

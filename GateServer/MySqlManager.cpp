@@ -33,3 +33,23 @@ bool MySqlManager::init(const ConfigManager& config)
     return m_dao->init(host, port, password, schema, user, connNumber);
 
 }
+
+int MySqlManager::registerUser(const std::string& name, const std::string& email, const std::string& password)
+{
+    return m_dao->registerUser(name, email, password);
+}
+
+bool MySqlManager::checkEmail(const std::string& name, const std::string& email)
+{
+    return m_dao->checkEmail(name, email);
+}
+
+bool MySqlManager::updatePassword(const std::string& name, const std::string newPassword)
+{
+    return m_dao->updatePassword(name, newPassword);
+}
+
+bool MySqlManager::checkPassword(const std::string& name, const std::string& password, UserInfo& userInfo)
+{
+    return m_dao->checkPassword(name, password, userInfo);
+}

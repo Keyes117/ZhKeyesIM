@@ -3,7 +3,7 @@
 
 namespace ServerParam
 {
-    constexpr const char* redis_prefix = "code_";
+    constexpr const char* code_prefix = "code_";
 }
 
 namespace ServerStatus

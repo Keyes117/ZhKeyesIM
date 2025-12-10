@@ -62,6 +62,9 @@ protected:
 
     virtual void handleUserRegister(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response,
         const std::map<std::string, std::string>& params);
+
+    virtual void handleUserResetPass(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response,
+        const std::map<std::string, std::string>& params);
 private:
     //void setJsonResponse(ZhKeyesIMHttp::HttpResponse& response,
     //    const nlohmann::json& json,

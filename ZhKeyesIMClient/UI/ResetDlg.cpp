@@ -3,6 +3,9 @@
 #include <QRegularExpression>
 
 #include "global.h"
+#include "SendResetPassTask.h"
+#include "GetVerifyCodeTask.h"
+#include "TaskHandler.h"
 
 ResetDlg::ResetDlg(std::shared_ptr<IMClient> spClient, QWidget *parent)
     : QDialog(parent),
@@ -14,7 +17,10 @@ ResetDlg::ResetDlg(std::shared_ptr<IMClient> spClient, QWidget *parent)
     m_ui.label_code_error->setVisible(false);
     m_ui.label_password_error->setVisible(false);
 
-    
+    connect(m_ui.button_cancel, &QPushButton::clicked, this, &ResetDlg::onCancelButtonClicked);
+    connect(m_ui.button_confirm, &QPushButton::clicked, this, &ResetDlg::onConfirmButtonClicked);
+    connect(m_ui.button_code, &QPushButton::clicked, this, &ResetDlg::onCodeButtonClicked);
+
     connect(m_ui.lineEdit_user, &QLineEdit::textChanged, this, &ResetDlg::onUserTextChanged);
     connect(m_ui.lineEdit_email, &QLineEdit::textChanged, this, &ResetDlg::onEmailTextChanged);
     connect(m_ui.lineEdit_password, &QLineEdit::textChanged, this, &ResetDlg::onPasswordTextChanged);
@@ -24,6 +30,11 @@ ResetDlg::ResetDlg(std::shared_ptr<IMClient> spClient, QWidget *parent)
     connect(m_ui.lineEdit_email, &QLineEdit::editingFinished, this, &ResetDlg::checkEmailValid);
     connect(m_ui.lineEdit_password, &QLineEdit::editingFinished, this, &ResetDlg::checkPassValid);
     connect(m_ui.lineEdit_code, &QLineEdit::editingFinished, this, &ResetDlg::checkVerifyValid);
+
+    m_errorLabels["user"] = m_ui.label_user_error;
+    m_errorLabels["email"] = m_ui.label_email_error;
+    m_errorLabels["password"] = m_ui.label_password_error;
+    m_errorLabels["code"] = m_ui.label_code_error;
 }
 
 ResetDlg::~ResetDlg()
@@ -201,4 +212,46 @@ bool ResetDlg::checkVerifyValid()
     setLineEditError(m_ui.lineEdit_code, false);
     hideFieldError("code");
     return true;
+}
+
+void ResetDlg::onCancelButtonClicked()
+{
+    emit switchLoginDlg();
+}
+
+void ResetDlg::onConfirmButtonClicked()
+{
+    if (!checkUserValid())
+        return;
+
+    if (!checkEmailValid())
+        return;
+
+    if (!checkPassValid())
+        return;
+
+    if (!checkVerifyValid())
+        return;
+
+    QString user = m_ui.lineEdit_user->text();
+    QString email = m_ui.lineEdit_email->text();
+    QString code = m_ui.lineEdit_code->text();
+    QString password = m_ui.lineEdit_password->text();
+
+    auto resetTask = std::make_shared<SendResetPassTask>(m_spClient, user.toStdString(),
+        email.toStdString(), code.toStdString(), password.toStdString()
+    );
+
+    TaskHandler::getInstance().registerNetTask(std::move(resetTask));
+}
+
+void ResetDlg::onCodeButtonClicked()
+{
+    if (!checkEmailValid())
+        return;
+
+    QString email = m_ui.lineEdit_email->text();
+
+    auto codeTask = std::make_shared<GetVerifyCodeTask>(m_spClient, email.toStdString());
+    TaskHandler::getInstance().registerNetTask(std::move(codeTask));
 }

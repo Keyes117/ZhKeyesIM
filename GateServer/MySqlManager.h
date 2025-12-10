@@ -16,10 +16,13 @@ public:
 
     bool init(const ConfigManager& config);
 
-    int registerUser(const std::string& name, const std::string& email, const std::string& pwd)
-    {
-        return m_dao->registerUser(name, email, pwd);
-    }
+    int registerUser(const std::string& name, const std::string& email, const std::string& pwd);
+
+    bool checkEmail(const std::string& name, const std::string& email);
+
+    bool updatePassword(const std::string& name, const std::string newPass);
+
+    bool checkPassword(const std::string& name, const std::string& password, UserInfo& userInfo);
 
 private:
     std::unique_ptr<MySqlDao> m_dao;

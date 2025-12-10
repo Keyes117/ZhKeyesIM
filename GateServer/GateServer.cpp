@@ -255,12 +255,9 @@ void GateServer::handleUserLogin(const ZhKeyesIMHttp::HttpRequest& request, ZhKe
         }
 
         auto userOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "user");
-        auto emailOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "email");
         auto passwordOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "password");
-        auto confirmOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "confirm");
-        auto codeOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "code");
 
-        if (!userOpt || !emailOpt || !passwordOpt || !confirmOpt || !codeOpt)
+        if (!userOpt || !passwordOpt  )
         {
             setErrorRequest(response,
                 ZhKeyesIMHttp::HttpStatusCode::BadRequest,
@@ -270,48 +267,16 @@ void GateServer::handleUserLogin(const ZhKeyesIMHttp::HttpRequest& request, ZhKe
         }
 
         std::string user = *userOpt;
-        std::string email = *emailOpt;
         std::string password = *passwordOpt;
-        std::string confirm = *confirmOpt;
-        std::string code = *codeOpt;
 
-        if (password != confirm)
+        UserInfo userInfo;
+        bool isPasswordValid = m_spMySqlManager->checkPassword(user, password, userInfo);
+        if (!isPasswordValid)
         {
             setErrorRequest(response,
                 ZhKeyesIMHttp::HttpStatusCode::BadRequest,
                 ServerStatus::ErrorCodes::Error_Json,
-                "password and confirm are not matched");
-            return;
-        }
-
-        std::string redisKey = ServerParam::redis_prefix + email;
-        std::string redisCode;
-        bool bExistRedis = m_spRedisManager->get(redisKey, redisCode);
-        if (!bExistRedis)
-        {
-            setErrorRequest(response,
-                ZhKeyesIMHttp::HttpStatusCode::BadRequest,
-                ServerStatus::ErrorCodes::VarifyExpired,
-                "verifyCode already Expired ");
-            return;
-        }
-
-        if (redisCode != code)
-        {
-            setErrorRequest(response,
-                ZhKeyesIMHttp::HttpStatusCode::BadRequest,
-                ServerStatus::ErrorCodes::VarifyCodeErr,
-                "verifyCode Error ");
-            return;
-        }
-
-        int uid = m_spMySqlManager->registerUser(user, email, password);
-        if (uid == 0 || uid == -1)
-        {
-            setErrorRequest(response,
-                ZhKeyesIMHttp::HttpStatusCode::BadRequest,
-                ServerStatus::ErrorCodes::UserExist,
-                "User Already Registered ");
+                "Password not matched");
             return;
         }
 
@@ -327,11 +292,101 @@ void GateServer::handleUserLogin(const ZhKeyesIMHttp::HttpRequest& request, ZhKe
             ZhKeyesIMHttp::HttpStatusCode::BadRequest,
             ServerStatus::ErrorCodes::InternalError,
             e.what());
+        return;
     }
 
 }
 
 void GateServer::handleUserRegister(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response, const std::map<std::string, std::string>& params)
+{
+    try {
+
+        auto jsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(request.getBody());
+        if (!jsonOpt)
+        {
+            setErrorRequest(response,
+                ZhKeyesIMHttp::HttpStatusCode::BadRequest,
+                ServerStatus::ErrorCodes::InternalError,
+                "Invalid reqeust JSON format"
+            );
+            return;
+        }
+
+        auto usernameOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "username");
+        auto passwordOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "password");
+        auto emailOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "email");
+        auto codeOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "code");
+        if (!emailOpt || !usernameOpt || !emailOpt || !codeOpt)
+        {
+            setErrorRequest(response,
+                ZhKeyesIMHttp::HttpStatusCode::BadRequest,
+                ServerStatus::ErrorCodes::InternalError,
+                "Error request JSON format");
+            return;
+        }
+
+        std::string username = *usernameOpt;
+        std::string password = *passwordOpt;
+        std::string email = *emailOpt;
+        std::string code = *codeOpt;
+
+        std::string redisKey = ServerParam::code_prefix + email;
+        std::string verifyCode;
+
+        bool isVerified = m_spRedisManager->get(redisKey, verifyCode);
+        if (!isVerified)
+        {
+            setErrorRequest(response,
+                ZhKeyesIMHttp::HttpStatusCode::InternalServerError,
+                ServerStatus::ErrorCodes::VarifyExpired,
+                "Failed to request verification code");
+            return;
+        }
+
+        if (code != verifyCode)
+        {
+            setErrorRequest(response,
+                ZhKeyesIMHttp::HttpStatusCode::InternalServerError,
+                ServerStatus::ErrorCodes::VarifyCodeErr,
+                "Error request JSON format");
+            return;
+        }
+
+        //TODO验证MySQL中是否存在用户
+        int uid = m_spMySqlManager->registerUser(username, email, password);
+        if (uid == 0 ) {
+
+            setErrorRequest(response,
+                ZhKeyesIMHttp::HttpStatusCode::InternalServerError,
+                ServerStatus::ErrorCodes::UserExist,
+                "User Already Exist");
+            return;
+        }
+        else if (uid == -1)
+        {
+            setErrorRequest(response,
+                ZhKeyesIMHttp::HttpStatusCode::InternalServerError,
+                ServerStatus::ErrorCodes::UidInvalid,
+                "User Register Error");
+            return;
+        }
+
+        setSuccessReqeust(response,
+            ZhKeyesIMHttp::HttpStatusCode::OK,
+            ServerStatus::ErrorCodes::Success,
+            "User registered successfully");
+        return;
+    }
+    catch (const std::exception& e) {
+        setErrorRequest(response,
+            ZhKeyesIMHttp::HttpStatusCode::BadRequest,
+            ServerStatus::ErrorCodes::InternalError,
+            e.what());
+        return;
+    }
+}
+
+void GateServer::handleUserResetPass(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response, const std::map<std::string, std::string>& params)
 {
     try {
 
@@ -364,7 +419,7 @@ void GateServer::handleUserRegister(const ZhKeyesIMHttp::HttpRequest& request, Z
         std::string email = *emailOpt;
         std::string code = *codeOpt;
 
-        std::string redisKey = ServerParam::redis_prefix + email;
+        std::string redisKey = ServerParam::code_prefix + email;
         std::string verifyCode;
 
         bool isVerified = m_spRedisManager->get(redisKey, verifyCode);
@@ -386,14 +441,31 @@ void GateServer::handleUserRegister(const ZhKeyesIMHttp::HttpRequest& request, Z
             return;
         }
 
-        bool isUserInRedis = m_spRedisManager->existsKey(username);
+        //查询 和执行MySQL
+        bool email_valid = m_spMySqlManager->checkEmail(username, email);
+        if (!email_valid)
+        {
+            setErrorRequest(response,
+                ZhKeyesIMHttp::HttpStatusCode::InternalServerError,
+                ServerStatus::ErrorCodes::EmailNotMatch,
+                "email not match");
+            return;
+        }
 
-        //TODO验证MySQL中是否存在用户
+        bool bUpdate = m_spMySqlManager->updatePassword(username, password);
+        if (bUpdate)
+        {
+            setErrorRequest(response,
+                ZhKeyesIMHttp::HttpStatusCode::InternalServerError,
+                ServerStatus::ErrorCodes::PasswdUpFailed,
+                "password update failed");
+            return;
+        }
 
         setSuccessReqeust(response,
             ZhKeyesIMHttp::HttpStatusCode::OK,
             ServerStatus::ErrorCodes::Success,
-            "User registered successfully");
+            "Reset password successfully");
     }
     catch (const std::exception& e) {
         setErrorRequest(response,
@@ -446,7 +518,7 @@ void GateServer::setErrorRequest(ZhKeyesIMHttp::HttpResponse& response,
         }
         else
         {
-            response.setBody("{\"code\":" + std::to_string(static_cast<int>(code)) +
+            response.setJsonResponse("{\"code\":" + std::to_string(static_cast<int>(code)) +
                 ",\"success\":\"" + message + "\"}");
         }
     }
@@ -504,4 +576,10 @@ void GateServer::registerRoutes()
 
     m_router.addRoute(HttpMethod::POST, "api/user/register",
         std::bind(&GateServer::handleUserRegister, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+
+    m_router.addRoute(HttpMethod::POST, "api/user/resetPass",
+        std::bind(&GateServer::handleUserResetPass,this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+
+    m_router.addRoute(HttpMethod::POST, "api/user/login",
+        std::bind(&GateServer::handleUserLogin, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 }

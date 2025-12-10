@@ -36,6 +36,10 @@ private slots:
     bool checkPassValid();
     bool checkVerifyValid();
 
+   
+    void onCancelButtonClicked();
+    void onConfirmButtonClicked();
+    void onCodeButtonClicked();
 
 private:
     Ui::ResetDlgClass m_ui;

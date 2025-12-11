@@ -16,8 +16,6 @@
 
 
 
-
-
 using GetVerifyCodeCallback = std::function<void(const message::GetVerifyResponse&)>;
 
 class VerifyGrpcClient

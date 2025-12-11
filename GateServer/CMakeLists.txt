@@ -4,6 +4,7 @@ set(SERVER_SOURCES
     main.cpp          # 主程序入口
     GateServer.cpp
     VerifyGrpcClient.cpp
+    StatusGrpcClient.cpp
     message.pb.cc
     message.grpc.pb.cc
     MySqlConnPool.cpp
@@ -18,6 +19,7 @@ set(SERVER_HEADERS
     const.h
     GateServer.h
     VerifyGrpcClient.h
+    StatusGrpcClient.h
     message.pb.h
     message.grpc.pb.h
     MySqlConnPool.h

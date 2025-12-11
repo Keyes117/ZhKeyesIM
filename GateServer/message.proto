@@ -26,5 +26,5 @@ message GetChatServerResponse{
 }
 
 service StatusService{
-   rpc GetChatServer (GetChatServerReq) returns (GetChatServerRsp) {}
+   rpc GetChatServer (GetChatServerRequest) returns (GetChatServerResponse) {}
 }

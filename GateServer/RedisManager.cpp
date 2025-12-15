@@ -55,7 +55,7 @@ bool RedisManager::get(const std::string& key, std::string& value)
         return false;
     }
 
-    // ´¦Àí NIL ÏàÓ¦(key ²»´æÔÚ)
+    // å¤„ç† NIL ç›¸åº”(key ä¸å­˜åœ¨)
     if (pReply->type == REDIS_REPLY_NIL)
     {
         LOG_INFO("Redis: Key [ %s ] not found", key.c_str());
@@ -106,7 +106,7 @@ bool RedisManager::set(const std::string& key, const std::string& value)
         return false;
     }
 
-    //Èç¹ûÖ´ÐÐÊ§°ÜÔòÊÍ·ÅÁ¬½Ó
+    //å¦‚æžœæ‰§è¡Œå¤±è´¥åˆ™é‡Šæ”¾è¿žæŽ¥
     if (!(pReply->type == REDIS_REPLY_STATUS && (strcmp(pReply->str, "OK") == 0 
         || strcmp(pReply->str, "ok") == 0)))
     {
@@ -116,7 +116,7 @@ bool RedisManager::set(const std::string& key, const std::string& value)
         return false;
     }
 
-    //Ö´ÐÐ³É¹¦
+    //æ‰§è¡ŒæˆåŠŸ
     freeReplyObject(pReply);
 
     m_spConnPool->returnConnection(pConnection);
@@ -377,7 +377,7 @@ bool RedisManager::HSet(const char* key, const char* hkey, const char* hvalue, s
         return false;
     }
 
-    // ÐÞ¸´£º¼ì²éÊÇ·ñÎª NIL£¨ÁÐ±íÎª¿Õ£©»ò STRING£¨ÓÐÖµ£©
+    // ä¿®å¤ï¼šæ£€æŸ¥æ˜¯å¦ä¸º NILï¼ˆåˆ—è¡¨ä¸ºç©ºï¼‰æˆ– STRINGï¼ˆæœ‰å€¼ï¼‰
     if (pReply->type == REDIS_REPLY_NIL)
     {
 

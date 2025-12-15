@@ -32,37 +32,93 @@ int MySqlDao::registerUser(const std::string& name, const std::string& email, co
     try
     {
         if (spConn == nullptr)
-            return false;
+            return -1;
 
-        std::unique_ptr< sql::PreparedStatement> stmt
-        (spConn->m_spConn->prepareStatement("CALL reg_user(?,?,?,@result)"));
+        spConn->m_spConn->setAutoCommit(false);
 
-        stmt->setString(1, name);
-        stmt->setString(2, email);
-        stmt->setString(3, pwd);
+        std::unique_ptr <sql::PreparedStatement> checkNameStmt(
+            spConn->m_spConn->prepareStatement(
+                "select count(*) as cnt from 'user' where 'email' = ?"
+            ));
 
-        // 由于PreparedStatement不直接支持注册输出参数，我们需要使用会话变量或其他方法来获取输出参数的值
-        //执行存储过程
-        stmt->execute();
-        std::unique_ptr<sql::Statement> stmtResult(spConn->m_spConn->createStatement());
-        std::unique_ptr<sql::ResultSet> res(stmtResult->executeQuery("SELECT @result AS result"));
-        
-        if (res->next()) {
-            int result = res->getInt("result");
-            LOG_INFO("Result: %d", result);
+        checkNameStmt->setString(1, email);
+        std::unique_ptr<sql::ResultSet> nameRes(checkNameStmt->executeQuery());
+
+        if (nameRes->next() && nameRes->getInt("cnt") > 0)
+        {
+            spConn->m_spConn->rollback();
+            spConn->m_spConn->setAutoCommit(true);
             m_pool->returnConnection(std::move(spConn));
-            return result;
+            return 0;
+        }
+
+
+        std::unique_ptr<sql::PreparedStatement> insertStmt
+        (spConn->m_spConn->prepareStatement(
+            "INSERT INTO `user` (`name`, `email`, `pwd`) VALUES (?, ?, ?)"
+        ));
+        insertStmt->setString(1, name);
+        insertStmt->setString(2, email);
+        insertStmt->setString(3, pwd);
+        insertStmt->executeUpdate();
+
+        // 4. 获取插入的自增 id
+        std::unique_ptr<sql::Statement> getIdStmt(spConn->m_spConn->createStatement());
+        std::unique_ptr<sql::ResultSet> idRes(getIdStmt->executeQuery("SELECT LAST_INSERT_ID() as uid"));
+
+        int uid = -1;
+        if (idRes->next())
+        {
+            uid = idRes->getInt("uid");
+
+            // 5. 如果 uid 字段和 id 字段是分开的，需要更新 uid 字段
+            // 如果表结构中 uid 就是 id，可以跳过这一步
+            if (uid > 0)
+            {
+                std::unique_ptr<sql::PreparedStatement> updateUidStmt
+                (spConn->m_spConn->prepareStatement("UPDATE `user` SET `uid` = ? WHERE `id` = ?"));
+                updateUidStmt->setInt(1, uid);
+                updateUidStmt->setInt(2, uid);
+                updateUidStmt->executeUpdate();
+            }
+        }
+
+        // 6. 提交事务
+        spConn->m_spConn->commit();
+        spConn->m_spConn->setAutoCommit(true);
+
+        m_pool->returnConnection(std::move(spConn));
+
+        if (uid > 0)
+        {
+            LOG_INFO("User registered successfully: username=[%s], email=[%s], uid=[%d]",
+                name.c_str(), email.c_str(), uid);
+            return uid;
+        }
+        else
+        {
+            LOG_ERROR("Failed to get inserted user id");
+            return -1;
+        }
+    }
+    catch (sql::SQLException& e) {
+        try
+        {
+            spConn->m_spConn->rollback();
+            spConn->m_spConn->setAutoCommit(true);
+        }
+        catch (sql::SQLException& rollbackEx)
+        {
+            LOG_ERROR("Failed to rollback transaction: %s", rollbackEx.what());
         }
 
         m_pool->returnConnection(std::move(spConn));
-        return -1;
-    }
-    catch (sql::SQLException& e) {
-        m_pool->returnConnection(std::move(spConn));
-        LOG_ERROR("SQLException: %s \n  \
-                   MySQL error code : %d \n , \
-                   SQLState: %s" , e.what(), e.getErrorCode(), e.getSQLState()
-            );
+
+        LOG_ERROR("SQLException in registerUser: %s \n"
+            "MySQL error code: %d \n"
+            "SQLState: %s",
+            e.what(), e.getErrorCode(), e.getSQLState());
+
         return -1;
     }
 }

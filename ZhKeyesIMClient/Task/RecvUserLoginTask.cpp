@@ -10,5 +10,6 @@ RecvUserLoginTask::RecvUserLoginTask(bool success, const std::string& message,
 
 void RecvUserLoginTask::doTask()
 {
-    emit TaskHandler::getInstance().userLoginRecevied();
+    emit TaskHandler::getInstance().userLoginRecevied(m_success, 
+        QString::fromStdString(m_message),m_errorCode);
 }

@@ -245,6 +245,6 @@ void MySqlConnPool::returnConnection(std::shared_ptr<MySqlConnection> spConn)
 
 void MySqlConnPool::close()
 {
-    m_bStop = true;
+    m_bStop.store(true);
     m_cv.notify_all();
 }

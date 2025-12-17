@@ -19,17 +19,35 @@ namespace ZhKeyesIM {
 class NET_API Router final
 {
 public:
+
+    enum class RouteType
+    {
+        SYNC,
+        ASYNC
+    };
+
     using HandlerFunc = std::function<void(const HttpRequest&,
         HttpResponse&, const std::map<std::string, std::string>&)>;
 
 
+    using AsyncDone = std::function<void(HttpResponse&&)>;
+    using AsyncHandlerFunc = std::function<void(const HttpRequest&,
+        AsyncDone, const std::map<std::string, std::string>&)>;
+
     Router() = default;
     ~Router() = default;
 
+    //同步路由
     void addRoute(HttpMethod method, const std::string& pattern,
         HandlerFunc handler);
-
+    //同步路由分发
     bool dispatch(const HttpRequest& request, HttpResponse& response);
+
+
+    bool addAsyncRoute(HttpMethod method, const std::string& pattern,
+        AsyncHandlerFunc handler);
+
+    bool dispatchAsync(const HttpRequest& request, AsyncDone done);
 
 private:
     struct RouteEntry
@@ -39,6 +57,11 @@ private:
         std::regex regex;           //编译之后的正则表达式
         std::vector<std::string> paramNames;  // 参数名列表
         HandlerFunc handler;
+
+
+        RouteType type;
+        HandlerFunc handler;
+        AsyncHandlerFunc asyncHandler;
     };
 
     std::vector<RouteEntry> m_routes;

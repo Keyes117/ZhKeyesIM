@@ -25,6 +25,9 @@ namespace ZhKeyesIM {
 
                 using RequestCallBack = std::function<void(const HttpRequest&, HttpResponse&)>;
 
+                using AsyncDone = std::function<void(HttpResponse&&)>;
+                using AsyncRequestCallBack = std::function<void(const HttpRequest&, AsyncDone)>;
+
                 HttpServer() = default;
                 ~HttpServer();
 
@@ -39,10 +42,18 @@ namespace ZhKeyesIM {
 
                 // 内部回调
                 void handleRequest(const HttpRequest& request, HttpResponse& response);
+
+                void handleRequestAsync(const HttpRequest& requst, AsyncDone done);
+
                 //请求回调
                 void setRequestCallBack(RequestCallBack&& callback)
                 {
                     m_requestCallBack = std::move(callback);
+                }
+
+                void setAsyncRequestCallBack(AsyncRequestCallBack&& callback)
+                {
+                    m_asyncRequestCallBack = std::move(callback);
                 }
 
                 void onDisConnected(SOCKET clientSocket);
@@ -58,6 +69,7 @@ namespace ZhKeyesIM {
 
                 mutable std::mutex      m_sessionMutex;
                 RequestCallBack m_requestCallBack;
+                AsyncRequestCallBack m_asyncRequestCallBack;
             };
 
         }

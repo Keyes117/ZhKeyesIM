@@ -50,6 +50,32 @@ public:
 protected:
     virtual void onHttpRequest(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response);
 
+    virtual void onHttpRequestAsync(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpServer::AsyncDone done);
+
+
+
+    // ... 其他路由处理函数保持不变，但添加异步版本
+    virtual void handleGetRootAsync(const ZhKeyesIMHttp::HttpRequest& request, 
+        ZhKeyesIMHttp::HttpServer::AsyncDone done,
+        const std::map<std::string, std::string>& params);
+
+    virtual void handleGetVerifyCodeAsync(const ZhKeyesIMHttp::HttpRequest& request,
+        ZhKeyesIMHttp::HttpServer::AsyncDone done,
+        const std::map<std::string, std::string>& params);
+
+    virtual void handleUserLoginAsync(const ZhKeyesIMHttp::HttpRequest& request,
+        ZhKeyesIMHttp::HttpServer::AsyncDone done,
+        const std::map<std::string, std::string>& params);
+
+    virtual void handleUserRegisterAsync(const ZhKeyesIMHttp::HttpRequest& request,
+        ZhKeyesIMHttp::HttpServer::AsyncDone done,
+        const std::map<std::string, std::string>& params);
+
+    virtual void handleUserResetPassAsync(const ZhKeyesIMHttp::HttpRequest& request,
+        ZhKeyesIMHttp::HttpServer::AsyncDone done,
+        const std::map<std::string, std::string>& params);
+
+
     virtual void handleGetRoot(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response,
         const std::map<std::string, std::string>& params);
 

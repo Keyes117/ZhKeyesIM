@@ -26,42 +26,40 @@ ZhKeyesIM::Net::Http::HttpSession::~HttpSession()
 
 void HttpSession::onRead(Buffer& buffer)
 {
+
+    //如果上一条请求还没有完成相应， 直接忽略（正常情况下也不应该，外部会pauseRead）
+    if (m_waitingResponse)
+        return;
+
     ParseResult result = m_HttpParser.feed(buffer);
 
     if (result == ParseResult::PARSE_RESULT_COMPLETE)
     {
-        if (m_pHttpServer)
-        {  // 服务端模式
-            auto request = m_HttpParser.getRequest();
-            if (request)
-            {
-                handleRequest(request);
-            }
-        }
-        else
+        if (!m_pHttpServer)
         {
             handleParseError();
+            return;
         }
 
-        // 重置解析器，准备处理下一个消息
-        if (shouldKeepAlive()) {
-            m_HttpParser.reset();
-
-        }
-        else
+        // 服务端模式
+        auto request = m_HttpParser.getRequest();
+        if (!request)
         {
-            m_spConnection->shutdownAfterWrite();
+            handleRequest(request);
+            return;
         }
     }
-    else if (result == ParseResult::PARSE_RESULT_ERROR)
+
+    if (result == ParseResult::PARSE_RESULT_ERROR)
     {
         handleParseError();
+        return;
     }
 }
 
 void HttpSession::onWrite()
 {
-
+  
 }
 void HttpSession::onClose()
 {
@@ -75,17 +73,44 @@ bool HttpSession::sendResponse(const HttpResponse& response)
 
 void HttpSession::handleRequest(std::shared_ptr<HttpRequest>& spRequest)
 {
-    if (m_pHttpServer)
-    {
-        HttpResponse response;
-        m_pHttpServer->handleRequest(*spRequest, response);
-
-        sendResponse(response);
-    }
-    else
+    if (! m_pHttpServer  || spRequest)
     {
         m_spConnection->onClose();
+        return;
     }
+
+
+    m_keepAlive = spRequest->isKeepAlive();
+    m_waitingResponse = true;
+
+    m_spConnection->pauseRead();
+
+    std::weak_ptr<HttpSession> weakSelf = shared_from_this();
+
+    m_pHttpServer->handleRequestAsync(*spRequest, [weakSelf](HttpResponse&& response) mutable {
+        auto self = weakSelf.lock();
+
+        if (!self)
+            return;
+
+        if (!self->m_keepAlive)
+            response.setHeader("Connection", "close");
+        else
+            response.setHeader("Connection", "keep-alive");
+
+        self->sendResponse(response);
+
+        if (!self->m_keepAlive)
+        {
+            self->m_spConnection->shutdownAfterWrite();
+        }
+        else
+        {
+            self->m_waitingResponse = false;
+            self->m_HttpParser.reset();
+            self->m_spConnection->resumeRead();
+        }
+    });
 }
 
 void ZhKeyesIM::Net::Http::HttpSession::handleParseError()

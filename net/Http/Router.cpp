@@ -11,6 +11,7 @@ void Router::addRoute(Http::HttpMethod method,
 {
     RouteEntry  entry;
     entry.method = method;
+    entry.type = RouteType::SYNC;
     entry.pattern = pattern;
 
     auto [regex, paramNames] = compilePattern(pattern);
@@ -34,11 +35,50 @@ bool Router::dispatch(const HttpRequest& request, HttpResponse& response)
         {
             //TODO: 执行路由特定的中间件
 
+            if (route.type != RouteType::SYNC)
+                return false;
             route.handler(request, response, params);
+            return true; 
+        }
+    }
+
+    return false;
+}
+
+bool ZhKeyesIM::Net::Http::Router::addAsyncRoute(HttpMethod method,
+    const std::string& pattern,
+    AsyncHandlerFunc handler)
+{
+    
+    RouteEntry entry;
+    entry.method = method;
+    entry.pattern = pattern;
+    entry.type = RouteType::ASYNC;
+    entry.asyncHandler = handler;
+
+    auto [regex, paramNames] = compilePattern(pattern);
+    entry.regex = regex;
+    entry.paramNames = paramNames;
+
+    m_routes.emplace_back(std::move(entry));
+}
+
+bool ZhKeyesIM::Net::Http::Router::dispatchAsync(const HttpRequest& request, AsyncDone done)
+{
+    std::map<std::string, std::string> params;
+    for (const auto& route : m_routes)
+    {
+        if (route.method == request.getMethod() &&
+            matchRoute(route, request.getPath(), params))
+        {
+            //TODO: 执行路由特定的中间件
+
+            if (route.type != RouteType::ASYNC)
+                return false;
+
+            route.asyncHandler(request, std::move(done), params);
             return true;
         }
-
-        continue;
     }
 
     return false;

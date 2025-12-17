@@ -26,7 +26,7 @@ namespace ZhKeyesIM {
         namespace Http {
 
             class HttpServer;
-            class NET_API HttpSession
+            class NET_API HttpSession : public std::enable_shared_from_this<HttpSession>
             {
             public:
                 using SessionID = uint32_t;
@@ -54,6 +54,9 @@ namespace ZhKeyesIM {
                 HttpParser                      m_HttpParser;
                 std::shared_ptr<TCPConnection>  m_spConnection;
                 SessionID                       m_sessionID;
+
+                bool                            m_waitingResponse = false;
+                bool                            m_keepAlive = false;
             };
 
         }

@@ -64,6 +64,49 @@ void TCPConnection::shutdownAfterWrite()
     }
 }
 
+void TCPConnection::pauseRead()
+{
+    if (isCallableInOwnerThread())
+    {
+        if (m_registerReadEvent)
+        {
+            enableRead(false);
+            unregisterReadEvent();
+        }
+        else
+        {
+            enableRead(false);
+;        }
+    }
+    else
+    {
+        m_spEventLoop->registerCustomTask(std::bind(
+            &TCPConnection::pauseRead,this
+        ));
+    }
+}
+
+void TCPConnection::resumeRead()
+{
+    if (isCallableInOwnerThread())
+    {
+        if (m_socket == INVALID_SOCKET)
+            return;
+
+        enableRead(true);
+        if (!m_registerReadEvent)
+        {
+            registerReadEvent();
+        }
+    }
+    else
+    {
+        m_spEventLoop->registerCustomTask(std::bind(
+            &TCPConnection::resumeRead, this
+        ));
+    }
+}
+
 void TCPConnection::onRead()
 {
     char buf[65536];

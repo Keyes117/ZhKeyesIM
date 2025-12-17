@@ -28,6 +28,9 @@ public:
 
     void shutdownAfterWrite();
 
+    void pauseRead();
+    void resumeRead();
+
 public:
     virtual void onRead() override;
     virtual void onWrite() override;

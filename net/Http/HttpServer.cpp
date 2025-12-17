@@ -44,9 +44,6 @@ void HttpServer::onConnected(std::shared_ptr<TCPConnection>& spConn)
         m_sessions.insert(std::make_pair(sessionId, spHttpSession));
         m_socketToSession.insert(std::make_pair(spConn->getSocket(), sessionId));
     }
-
-
-
 }
 
 void HttpServer::onDisConnected(SOCKET clientSocket)
@@ -83,6 +80,22 @@ void HttpServer::handleRequest(const HttpRequest& request, HttpResponse& respons
     else {
         response.setErrorResponse(HttpStatusCode::NotFound, "Not Found");
     }
+}
+
+void ZhKeyesIM::Net::Http::HttpServer::handleRequestAsync(const HttpRequest& request, AsyncDone done)
+{
+    if (!done)
+        return;
+
+    if (m_asyncRequestCallBack)
+    {
+        m_asyncRequestCallBack(request, std::move(done));
+        return;
+    }
+
+    HttpResponse response;
+    response.setErrorResponse(HttpStatusCode::NotFound, "NotFound");
+    done(std::move(response));
 }
 
 void HttpServer::cleanupSessions()

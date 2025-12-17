@@ -3,6 +3,7 @@ set(UTIL_SOURCES
     Util.cpp
     JsonUtil.cpp
     ConfigManager.cpp
+    WorkThreadPool.cpp
 )
 
 set(UTIL_HEADERS
@@ -10,6 +11,7 @@ set(UTIL_HEADERS
     JsonUtil.h
     ConfigManager.h
     util_export.h
+    WorkThreadPool.h
 )
 
 add_library(util SHARED ${UTIL_SOURCES} ${UTIL_HEADERS})

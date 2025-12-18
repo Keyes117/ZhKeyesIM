@@ -61,6 +61,7 @@ bool ZhKeyesIM::Net::Http::Router::addAsyncRoute(HttpMethod method,
     entry.paramNames = paramNames;
 
     m_routes.emplace_back(std::move(entry));
+    return true;
 }
 
 bool ZhKeyesIM::Net::Http::Router::dispatchAsync(const HttpRequest& request, AsyncDone done)

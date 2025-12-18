@@ -46,21 +46,21 @@ bool GateServer::init(ConfigManager& config)
         }
 
 
-        if (!m_spGrpcVerifyClient->init(config))
-        {
-            LOG_ERROR("GateServer: gprc 客户端 初始化失败");
-            return false;
-        }
-        if (!m_spRedisManager->init(config))
-        {
-            LOG_ERROR("GateServer: redis 客户端 初始化失败");
-            return false;
-        }
-        if (!m_spMySqlManager->init(config))
-        {
-            LOG_ERROR("GateServer: MySql 客户端 初始化失败");
-            return false;
-        }
+        //if (!m_spGrpcVerifyClient->init(config))
+        //{
+        //    LOG_ERROR("GateServer: gprc 客户端 初始化失败");
+        //    return false;
+        //}
+        //if (!m_spRedisManager->init(config))
+        //{
+        //    LOG_ERROR("GateServer: redis 客户端 初始化失败");
+        //    return false;
+        //}
+        //if (!m_spMySqlManager->init(config))
+        //{
+        //    LOG_ERROR("GateServer: MySql 客户端 初始化失败");
+        //    return false;
+        //}
 
         m_spHttpServer->setAsyncRequestCallBack(
             std::bind(&GateServer::onHttpRequestAsync, this,

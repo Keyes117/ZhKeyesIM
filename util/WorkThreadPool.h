@@ -119,7 +119,7 @@ private:
     WorkThreadPool& operator=(WorkThreadPool&&) = delete;
 };
 
-// 模板函数实现必须在头文件中
+// 模板函数实现
 template<typename F, typename... Args>
 auto WorkThreadPool::submit(F&& f, Args&&... args) 
     -> std::future<typename std::invoke_result<F, Args...>::type>

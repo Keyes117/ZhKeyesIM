@@ -43,7 +43,7 @@ void HttpSession::onRead(Buffer& buffer)
 
         // 服务端模式
         auto request = m_HttpParser.getRequest();
-        if (!request)
+        if (request)
         {
             handleRequest(request);
             return;
@@ -73,7 +73,7 @@ bool HttpSession::sendResponse(const HttpResponse& response)
 
 void HttpSession::handleRequest(std::shared_ptr<HttpRequest>& spRequest)
 {
-    if (! m_pHttpServer  || spRequest)
+    if (! m_pHttpServer  || !spRequest)
     {
         m_spConnection->onClose();
         return;

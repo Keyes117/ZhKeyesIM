@@ -56,7 +56,6 @@ private:
         std::string pattern;         //原始模式 /user/:id
         std::regex regex;           //编译之后的正则表达式
         std::vector<std::string> paramNames;  // 参数名列表
-        HandlerFunc handler;
 
 
         RouteType type;

@@ -5,10 +5,13 @@
 #include <cstdint>
 
 struct UserInfo {
-    int uid;
+    int uid = -1;
     std::string username;
     std::string email;
     std::string passwordHash;
+
+    int64_t createTime = 0;
+    int64_t lastLoginTime = 0;
 };
 
 #endif // GATESERVER_MODEL_USER_H_

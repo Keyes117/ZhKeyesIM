@@ -3,30 +3,58 @@
 set(SERVER_SOURCES
     main.cpp          # 主程序入口
     GateServer.cpp
-    VerifyGrpcClient.cpp
-    StatusGrpcClient.cpp
     message.pb.cc
     message.grpc.pb.cc
-    MySqlConnPool.cpp
-    MySqlDao.cpp
-    MySqlManager.cpp
-    RedisManager.cpp
-    RedisConnPool.cpp
+
+    controller/BaseController.cpp
+    controller/UserController.cpp
+    controller/VerifyController.cpp
+
+    infrastructure/VerifyGrpcClient.cpp
+    infrastructure/StatusGrpcClient.cpp
+    infrastructure/MySqlConnPool.cpp
+    infrastructure/MySqlDao.cpp
+    infrastructure/MySqlManager.cpp
+    infrastructure/RedisManager.cpp
+    infrastructure/RedisConnPool.cpp
+
+    repository/UserRepository.cpp
+    repository/UserRepository.cpp
+
+    service/AuthService.cpp
+    service/UserService.cpp
+    service/VerifyService.cpp
 
 )
 
 set(SERVER_HEADERS
     const.h
     GateServer.h
-    VerifyGrpcClient.h
-    StatusGrpcClient.h
     message.pb.h
     message.grpc.pb.h
-    MySqlConnPool.h
-    MySqlDao.h
-    MySqlManager.h
-    RedisManager.h
-    RedisConnPool.h
+
+
+    controller/BaseController.h
+    controller/UserController.h
+    controller/VerifyController.h
+
+    infrastructure/VerifyGrpcClient.h
+    infrastructure/StatusGrpcClient.h
+    infrastructure/MySqlConnPool.h
+    infrastructure/MySqlDao.h
+    infrastructure/MySqlManager.h
+    infrastructure/RedisManager.h
+    infrastructure/RedisConnPool.h
+
+    model/User.h
+    model/ServerResult.h
+
+    repository/UserRepository.h
+    repository/UserRepository.h
+
+    service/AuthService.h
+    service/UserService.h
+    service/VerifyService.h
 )
 
 
@@ -34,6 +62,15 @@ set(SERVER_HEADERS
 # ==================== 创建可执行文件 ====================
 # 创建服务端可执行文件
 add_executable(GateServer ${SERVER_SOURCES} ${SERVER_HEADERS})
+
+
+source_group(
+  TREE ${CMAKE_CURRENT_SOURCE_DIR}
+  FILES ${SERVER_SOURCES} ${SERVER_HEADERS}
+)
+
+set_target_properties(ZhKeyesIMClient PROPERTIES AUTOGEN_SOURCE_GROUP "Generated")
+
 
 configure_target_output(GateServer "GateServer")
 
@@ -44,6 +81,7 @@ set_target_properties(GateServer PROPERTIES
 # ==================== 包含目录设置 ====================
 # 设置包含目录
 target_include_directories(GateServer PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/net   # 网络库头文件路径
     ${CMAKE_SOURCE_DIR}/util  # 工具库头文件路径
     ${CMAKE_SOURCE_DIR}/Log

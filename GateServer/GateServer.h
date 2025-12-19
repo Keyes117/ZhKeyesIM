@@ -19,19 +19,19 @@ namespace ZhKeyesIMHttp = ZhKeyesIM::Net::Http;
 
 
 /*
-* Grpc·þÎñ·µ»ØJson
+* GrpcæœåŠ¡è¿”å›žJson
 * {
-*   "error":"",     //´íÎó,Èç¹ûÎª1 ÔòÊÇÓÐ´íÎó£¬0ÎÞ´íÎó
-*   "email":"",     //ÓÊ¼þ½ÓÊÕ·½µÄÓÊÏäµØÖ·£¬ Ò»°ãÓÃÓÚ¶þ´ÎÐ£Ñé
-*   "code":"",      //´íÎóÂë£º 10000-³É¹¦£¬10001-redis·þÎñ³ö´í£¬10002-email·þÎñ³ö´í£¬10003-grpc·þÎñÄÚ²¿³ö´í
+*   "error":"",     //é”™è¯¯,å¦‚æžœä¸º1 åˆ™æ˜¯æœ‰é”™è¯¯ï¼Œ0æ— é”™è¯¯
+*   "email":"",     //é‚®ä»¶æŽ¥æ”¶æ–¹çš„é‚®ç®±åœ°å€ï¼Œ ä¸€èˆ¬ç”¨äºŽäºŒæ¬¡æ ¡éªŒ
+*   "code":"",      //é”™è¯¯ç ï¼š 10000-æˆåŠŸï¼Œ10001-redisæœåŠ¡å‡ºé”™ï¼Œ10002-emailæœåŠ¡å‡ºé”™ï¼Œ10003-grpcæœåŠ¡å†…éƒ¨å‡ºé”™
 * }
 *
-* ·µ»Ø¿Í»§¶ËJson
+* è¿”å›žå®¢æˆ·ç«¯Json
 * {
-*   "success":""    //¹¦ÄÜÊÇ·ñ³É¹¦£º1-³É¹¦£¬0-Ê§°Ü
-*   "code":""       //´íÎóÂë   ÏêÇéÇë¼ûErrorCodes¡¢
-*   "msg":""        //´íÎóÐÅÏ¢£¬Ò»°ãÓÉÒµÎñ×Ô¼º¾ö¶¨,
-*   "timestamp":""  //Ê±¼ä´Á
+*   "success":""    //åŠŸèƒ½æ˜¯å¦æˆåŠŸï¼š1-æˆåŠŸï¼Œ0-å¤±è´¥
+*   "code":""       //é”™è¯¯ç    è¯¦æƒ…è¯·è§ErrorCodesã€
+*   "msg":""        //é”™è¯¯ä¿¡æ¯ï¼Œä¸€èˆ¬ç”±ä¸šåŠ¡è‡ªå·±å†³å®š,
+*   "timestamp":""  //æ—¶é—´æˆ³
 * }
 *
 * 
@@ -54,7 +54,7 @@ protected:
 
 
 
-    // ... ÆäËûÂ·ÓÉ´¦Àíº¯Êý±£³Ö²»±ä£¬µ«Ìí¼ÓÒì²½°æ±¾
+    // ... å…¶ä»–è·¯ç”±å¤„ç†å‡½æ•°ä¿æŒä¸å˜ï¼Œä½†æ·»åŠ å¼‚æ­¥ç‰ˆæœ¬
     virtual void handleGetRootAsync(const ZhKeyesIMHttp::HttpRequest& request, 
         ZhKeyesIMHttp::HttpServer::AsyncDone done,
         const std::map<std::string, std::string>& params);

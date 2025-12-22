@@ -11,8 +11,8 @@
 class UserRepository 
 {
 public:
-    explicit UserRepository(const std::shared_ptr<MySqlManager> mySqlManager);
-    ~UserRepository();
+    explicit UserRepository(std::shared_ptr<MySqlManager> mySqlManager);
+    ~UserRepository() = default;
 
     std::optional<UserInfo> findByUsername(const std::string& username);
     std::optional<UserInfo> findByEmail(const std::string& email);
@@ -38,7 +38,7 @@ public:
 
     bool updateLastLoginTime(int uid);
 private:
-    std::shared_ptr<MySqlManager> m_mySqlManager;
+    std::shared_ptr<MySqlManager> m_spMySql;
 }
 
 

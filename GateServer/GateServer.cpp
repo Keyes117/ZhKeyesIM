@@ -5,9 +5,9 @@ using namespace nlohmann;
 //using namespace message;
 
 GateServer::GateServer():
-    m_spGrpcVerifyClient(std::make_unique<VerifyGrpcClient>()),
-    m_spRedisManager(std::make_unique<RedisManager>()),
-    m_spMySqlManager(std::make_unique<MySqlManager>()),
+    m_spGrpcVerifyClient(std::make_shared<VerifyGrpcClient>()),
+    m_spRedisManager(std::make_shared<RedisManager>()),
+    m_spMySqlManager(std::make_shared<MySqlManager>()),
     m_spHttpServer( std::make_unique<ZhKeyesIMHttp::HttpServer>())
 {
 
@@ -61,6 +61,13 @@ bool GateServer::init(ConfigManager& config)
         //    LOG_ERROR("GateServer: MySql 客户端 初始化失败");
         //    return false;
         //}
+
+        m_spRedisRepository = std::make_shared<RedisRepository>(m_spRedisManager);
+
+        m_spVerifyService = std::make_shared<VerifyService>(m_spGrpcVerifyClient, m_spRedisRepository);
+
+        m_spVerifyController = std::make_unique<VerifyController>(m_spVerifyService);
+
 
         m_spHttpServer->setAsyncRequestCallBack(
             std::bind(&GateServer::onHttpRequestAsync, this,
@@ -139,7 +146,7 @@ void GateServer::onHttpRequestAsync(const ZhKeyesIMHttp::HttpRequest& request, Z
     // 2. 身份验证（对于需要鉴权的接口）
     // 3. 路由分发
 
-    if (!m_router.dispatchAsync(request, std::move(done)))
+    if (!m_router.dispatchAsync(request, done))
     {
         HttpResponse response;
         setErrorRequest(response,
@@ -1051,7 +1058,7 @@ void GateServer::registerRoutes()
             std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
     m_router.addAsyncRoute(HttpMethod::POST, "api/verify/getCode",
-        std::bind(&GateServer::handleGetVerifyCodeAsync, this,
+        std::bind(&VerifyController::handleGetVerifyCode, m_spVerifyController.get(),
             std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
     m_router.addAsyncRoute(HttpMethod::POST, "api/user/register",

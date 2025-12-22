@@ -1,21 +1,28 @@
 #ifndef GATESERVER_CONTROLLER_VERIFYCONTROLLER_H_
 #define GATESERVER_CONTROLLER_VERIFYCONTROLLER_H_
 
-#include "BaseController.h"
-#include "../service/VerifyService.h"
 #include <map>
+#include <memory>
+
+#include "controller/BaseController.h"
+#include "service/VerifyService.h"
+#include "model/ServiceResult.h"
 
 class VerifyController : public BaseController {
 public:
-    explicit VerifyController(VerifyService* verifyService);
+    explicit VerifyController(std::shared_ptr<VerifyService> verifyService);
     ~VerifyController() = default;
 
-    void getVerifyCode(const HttpRequest& request,
+    void handleGetVerifyCode(const HttpRequest& request,
                       HttpServer::AsyncDone done,
-                      const std::map<std::string, std::string>& params);
+        const std::map<std::string, std::string>& params = {});
 
 private:
-    VerifyService* m_verifyService;
+    void onHandlerGetVerifyCodeDone(HttpServer::AsyncDone done,
+        const VerifyCodeResult& result);
+
+private:
+    std::shared_ptr<VerifyService> m_spVerifyService;
 };
 
 #endif // GATESERVER_CONTROLLER_VERIFYCONTROLLER_H_

@@ -19,7 +19,7 @@ set(SERVER_SOURCES
     infrastructure/RedisConnPool.cpp
 
     repository/UserRepository.cpp
-    repository/UserRepository.cpp
+    repository/RedisRepository.cpp
 
     service/AuthService.cpp
     service/UserService.cpp
@@ -47,10 +47,10 @@ set(SERVER_HEADERS
     infrastructure/RedisConnPool.h
 
     model/User.h
-    model/ServerResult.h
+    model/ServiceResult.h
 
     repository/UserRepository.h
-    repository/UserRepository.h
+    repository/RedisRepository.h
 
     service/AuthService.h
     service/UserService.h

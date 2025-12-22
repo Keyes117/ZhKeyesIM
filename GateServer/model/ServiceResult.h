@@ -2,15 +2,17 @@
 #define GATESERVER_MODEL_SERVICERESULT_H_
 
 #include <string>
-#include "User.h"
+#include "model/User.h"
 
 struct LoginResult {
     bool success;
     std::string message;
     UserInfo userInfo;
+    ServerStatus::ErrorCodes code;
     std::string token;
 
-    static LoginResult createSuccss(const UserInfo& user, const std::string& token)
+    static LoginResult createSuccss(const UserInfo& user, 
+        const std::string& token)
     {
         LoginResult result;
         result.success = true;
@@ -20,7 +22,8 @@ struct LoginResult {
         return result;
     }
 
-    static LoginResult createFailure(const std::string& msg)
+    static LoginResult createFailure(const std::string& msg,
+        ServerStatus::ErrorCodes code)
     {
         LoginResult result;
         result.success = false;
@@ -32,6 +35,7 @@ struct LoginResult {
 struct RegisterResult {
     bool success;
     std::string message;
+    ServerStatus::ErrorCodes code;
     int uid = -1;
 
 
@@ -45,7 +49,8 @@ struct RegisterResult {
     }
 
 
-    static RegisterResult createFailure(const std::string& msg)
+    static RegisterResult createFailure(const std::string& msg,
+        ServerStatus::ErrorCodes code)
     {
         RegisterResult result;
         result.success = false;
@@ -56,6 +61,7 @@ struct RegisterResult {
 
 struct ResetPasswordResult {
     bool success;
+    ServerStatus::ErrorCodes code;
     std::string message;
 
     static ResetPasswordResult createSuccess() {
@@ -65,7 +71,8 @@ struct ResetPasswordResult {
         return result;
     }
     
-    static ResetPasswordResult createFailure(const std::string& msg) {
+    static ResetPasswordResult createFailure(const std::string& msg,
+        ServerStatus::ErrorCodes code) {
         ResetPasswordResult result;
         result.success = false;
         result.message = msg;
@@ -75,18 +82,24 @@ struct ResetPasswordResult {
 
 struct VerifyCodeResult {
     bool success = false;
+    ServerStatus::ErrorCodes code;
     std::string message;
     
-    static VerifyCodeResult createSuccess() {
+    static VerifyCodeResult createSuccess()
+    {
         VerifyCodeResult result;
         result.success = true;
+        result.code = ServerStatus::ErrorCodes::Success;
         result.message = "Verification code sent";
         return result;
     }
     
-    static VerifyCodeResult createFailure(const std::string& msg) {
+    static VerifyCodeResult createFailure(const std::string& msg,
+        ServerStatus::ErrorCodes code) 
+    {
         VerifyCodeResult result;
         result.success = false;
+        result.code = code;
         result.message = msg;
         return result;
     }

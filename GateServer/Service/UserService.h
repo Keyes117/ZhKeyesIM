@@ -1,9 +1,9 @@
 #ifndef GATESERVER_SERVICE_USERSERVICE_H_
 #define GATESERVER_SERVICE_USERSERVICE_H_
 
-#include "../model/User.h"
-#include "../model/ServiceResult.h"
-#include "../repository/UserRepository.h"
+#include "model/User.h"
+#include "model/ServiceResult.h"
+#include "repository/UserRepository.h"
 #include "AuthService.h"
 
 class UserService {

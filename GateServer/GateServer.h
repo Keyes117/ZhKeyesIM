@@ -9,14 +9,18 @@
 #include "Http/HttpRequest.h"
 #include "Http/HttpResponse.h"
 #include "Http/Router.h"
-#include "RedisManager.h"
-#include "MySqlManager.h"
-#include "VerifyGrpcClient.h"
+
+#include "infrastructure/RedisManager.h"
+#include "infrastructure/MySqlManager.h"
+#include "infrastructure/VerifyGrpcClient.h"
+
+#include "service/VerifyService.h"
+#include "controller/VerifyController.h"
+#include "repository/RedisRepository.h"
 
 #include "JsonUtil.h"
 
 namespace ZhKeyesIMHttp = ZhKeyesIM::Net::Http;
-
 
 /*
 * Grpc服务返回Json
@@ -112,10 +116,20 @@ private:
     ZhKeyesIMHttp::Router m_router;
 
 
-    std::unique_ptr<VerifyGrpcClient>  m_spGrpcVerifyClient;
-    std::unique_ptr<RedisManager>      m_spRedisManager;
-    std::unique_ptr<MySqlManager>      m_spMySqlManager;
+    std::shared_ptr<VerifyGrpcClient>  m_spGrpcVerifyClient;
+    std::shared_ptr<RedisManager>      m_spRedisManager;
+    std::shared_ptr<MySqlManager>      m_spMySqlManager;
+
     std::unique_ptr<ZhKeyesIMHttp::HttpServer> m_spHttpServer;
+
+    // =========== Controller ==================
+    std::unique_ptr<VerifyController>   m_spVerifyController;
+
+    // =========== Service ================
+    std::shared_ptr<VerifyService>      m_spVerifyService;
+
+    // =========== Repository ==================
+    std::shared_ptr<RedisRepository>    m_spRedisRepository;
 
 private:
     GateServer(const GateServer&) = delete;

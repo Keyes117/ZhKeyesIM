@@ -21,7 +21,10 @@ namespace ServerStatus
         PasswdInvalid = 1009,   //密码更新失败
         TokenInvalid = 1010,   //Token失效
         UidInvalid = 1011,  //uid无效
-        InternalError = 1012    //GateServer 内部错误
+
+      
+        InternalError = 1012,    //Http 内部错误
+        ParamError = 1013        //参数错误
     };
 
     enum class GrpcErrors

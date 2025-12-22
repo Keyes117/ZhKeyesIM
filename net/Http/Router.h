@@ -47,7 +47,7 @@ public:
     bool addAsyncRoute(HttpMethod method, const std::string& pattern,
         AsyncHandlerFunc handler);
 
-    bool dispatchAsync(const HttpRequest& request, AsyncDone done);
+    bool dispatchAsync(const HttpRequest& request, AsyncDone& done);
 
 private:
     struct RouteEntry

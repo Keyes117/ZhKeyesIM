@@ -6,7 +6,7 @@
 
 class RedisRepository {
 public:
-    explicit RedisRepository(RedisManager* redis);
+    explicit RedisRepository(std::shared_ptr<RedisManager> redis);
     ~RedisRepository() = default;
 
     // 验证码相关
@@ -20,7 +20,7 @@ public:
     bool deleteToken(int uid);
 
 private:
-    RedisManager* m_redis;
+    std::shared_ptr<RedisManager> m_spRedis;
 };
 
 #endif // GATESERVER_REPOSITORY_REDISREPOSITORY_H_

@@ -49,6 +49,10 @@ void VerifyController::handleGetVerifyCode(const HttpRequest& request,
             email, std::bind(&VerifyController::onHandlerGetVerifyCodeDone, this, done, std::placeholders::_1)
         );
     }
+    catch (const std::exception& e)
+    {
+
+    }
 }
 
 void VerifyController::onHandlerGetVerifyCodeDone(HttpServer::AsyncDone done,

@@ -9,7 +9,7 @@ bool RedisRepository::saveVerifyCode(const std::string& email,
                                     const std::string& code, 
                                     int expireSeconds)
 {
-    
+    return false;
 }
 
 std::optional<std::string> RedisRepository::getVerifyCode(const std::string& email)

@@ -16,10 +16,10 @@
         "IOType":"0"
     },
     "mysql":{
-        "host":"127.0.0.1",
+        "host":"172.25.224.240",
         "port":"3306",
         "user":"root",
-        "schema":"test",
+        "schema":"ZhkeyesMysql",
         "password":"123456",
         "connNumber":10
     },

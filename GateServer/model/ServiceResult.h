@@ -2,6 +2,8 @@
 #define GATESERVER_MODEL_SERVICERESULT_H_
 
 #include <string>
+
+#include "const.h"
 #include "model/User.h"
 
 struct LoginResult {

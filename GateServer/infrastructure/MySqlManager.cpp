@@ -14,7 +14,7 @@ bool MySqlManager::init(const ConfigManager& config)
     auto hostOpt = config.getSafe<std::string>({ "mysql","host" });
     auto portOpt = config.getSafe<std::string>({ "mysql","port" });
     auto passwordOpt = config.getSafe<std::string>({ "mysql","password" });
-    auto schemaOpt = config.getSafe<std::string>({ "mysql","scheme" });
+    auto schemaOpt = config.getSafe<std::string>({ "mysql","schema" });
     auto userOpt = config.getSafe<std::string>({ "mysql","user" });
     auto connNumOpt = config.getSafe<int>({ "mysql","connNumber" });
 

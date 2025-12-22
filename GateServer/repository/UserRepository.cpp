@@ -7,8 +7,9 @@ UserRepository::UserRepository(std::shared_ptr<MySqlManager> mySqlManager)
 
 std::optional<UserInfo> UserRepository::findByUsername(const std::string& username)
 {
+    return std::optional<UserInfo>();
     UserInfo userInfo;
-    bool isValid = m_spMySql->checkPassword(username,)
+    //bool isValid = m_spMySql->checkPassword(username,)
 }
 
 std::optional<UserInfo> UserRepository::findByEmail(const std::string& email)

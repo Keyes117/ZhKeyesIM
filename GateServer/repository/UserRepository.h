@@ -8,7 +8,7 @@
 #include "model/User.h"
 #include "infrastructure/MySqlManager.h"
 
-class UserRepository 
+class UserRepository
 {
 public:
     explicit UserRepository(std::shared_ptr<MySqlManager> mySqlManager);
@@ -18,28 +18,28 @@ public:
     std::optional<UserInfo> findByEmail(const std::string& email);
     std::optional<UserInfo> findByUid(int uid);
 
-    
+
     bool exsitsByUsername(const std::string& username);
     bool exsitsByEmail(const std::string& email);
 
 
     int create(const std::string& username,
-            const std::string& email,
-            const std::string& passwordHash);
+        const std::string& email,
+        const std::string& passwordHash);
     bool updatePassword(const std::string& username,
-            const std::string& newPasswordHash);
+        const std::string& newPasswordHash);
 
-    bool checkPassword(const std::string& username, 
-            const std::string& password,
-            UserInfo& outUserInfo);
+    bool checkPassword(const std::string& username,
+        const std::string& password,
+        UserInfo& outUserInfo);
 
     bool checkEmail(const std::string& username,
-            const std::string& email);
+        const std::string& email);
 
     bool updateLastLoginTime(int uid);
 private:
     std::shared_ptr<MySqlManager> m_spMySql;
-}
+};
 
 
 #endif //!GATESERVER_REPOSITORY_USERREPOSITORY_H_

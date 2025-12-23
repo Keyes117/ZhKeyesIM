@@ -22,7 +22,7 @@ void VerifyController::handleGetVerifyCode(const HttpRequest& request,
         if (!jsonOpt)
         {
             msg = "Invalid JSON format";
-            LOG_WARN("VerifyController: %s", msg);
+            LOG_WARN("VerifyController: request error %s", msg);
 
             sendError(done, HttpStatusCode::BadRequest,
                 ServerStatus::ErrorCodes::InternalError,
@@ -33,9 +33,9 @@ void VerifyController::handleGetVerifyCode(const HttpRequest& request,
         auto emailOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "email");
         if (!emailOpt || emailOpt->empty())
         {
-            msg = "Missing Email Fields";
+            msg = "Error Json Param";
 
-            LOG_WARN("VerifyController: %s ", msg);
+            LOG_WARN("VerifyController: param error %s ", msg);
 
             sendError(done, HttpStatusCode::BadRequest,
                 ServerStatus::ErrorCodes::InternalError,
@@ -46,16 +46,20 @@ void VerifyController::handleGetVerifyCode(const HttpRequest& request,
         std::string email = *emailOpt;
 
         m_spVerifyService->getVerifyCodeAsync(
-            email, std::bind(&VerifyController::onHandlerGetVerifyCodeDone, this, done, std::placeholders::_1)
+            email, std::bind(&VerifyController::onHandleGetVerifyCodeDone, this, done, std::placeholders::_1)
         );
     }
     catch (const std::exception& e)
     {
-
+        msg = e.what();
+        LOG_ERROR("VerifyController: error [ %s ]", e.what());
+        sendError(done, HttpStatusCode::InternalServerError,
+            ServerStatus::ErrorCodes::InternalError, msg);
+        return;
     }
 }
 
-void VerifyController::onHandlerGetVerifyCodeDone(HttpServer::AsyncDone done,
+void VerifyController::onHandleGetVerifyCodeDone(HttpServer::AsyncDone done,
     const VerifyCodeResult& result)
 {
     if (result.success)

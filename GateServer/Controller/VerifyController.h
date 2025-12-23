@@ -18,7 +18,7 @@ public:
         const std::map<std::string, std::string>& params = {});
 
 private:
-    void onHandlerGetVerifyCodeDone(HttpServer::AsyncDone done,
+    void onHandleGetVerifyCodeDone(HttpServer::AsyncDone done,
         const VerifyCodeResult& result);
 
 private:

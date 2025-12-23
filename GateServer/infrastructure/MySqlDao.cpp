@@ -16,10 +16,8 @@ MySqlDao::~MySqlDao()
 bool MySqlDao::init(const std::string& host, const std::string& port, const std::string& password,
     const std::string& schema, const std::string& user, int connNum)
 {
-
     m_pool = std::make_unique<MySqlConnPool>(host + ":" + port, user, password, schema, connNum);
     return m_pool->init();
-
 }
 
 
@@ -242,10 +240,10 @@ bool MySqlDao::checkPassword(const std::string& name, const std::string& pwd, Us
         }
 
         m_pool->returnConnection(std::move(conn));
-        userInfo.name = name;
+        userInfo.username = name;
         userInfo.email = res->getString("email");
         userInfo.uid = res->getInt("uid");
-        userInfo.password = origin_pwd;
+        userInfo.passwordHash = origin_pwd;
         return true;
     }
     catch(sql::SQLException& e)

@@ -4,15 +4,27 @@
 #include "model/User.h"
 #include "model/ServiceResult.h"
 #include "repository/UserRepository.h"
-#include "AuthService.h"
+#include "service/AuthService.h"
+
+
+#include "WorkThreadPool.h"
 
 class UserService {
 public:
-    UserService(UserRepository* userRepo, AuthService* authService);
+
+    using LoginCallback = std::function<void(const LoginResult&)>;
+
+    UserService(std::shared_ptr<UserRepository> userRepo,
+        std::shared_ptr<AuthService> authService,
+        std::shared_ptr<WorkThreadPool> threadPool);
+
     ~UserService() = default;
 
     // 用户业务逻辑
-    LoginResult login(const std::string& username, const std::string& password);
+    LoginResult login(const std::string& username, 
+                    const std::string& password,
+                    LoginCallback callback
+    );
     
     RegisterResult registerUser(const std::string& username,
                                const std::string& email,
@@ -25,8 +37,9 @@ public:
                                      const std::string& verifyCode);
 
 private:
-    UserRepository* m_userRepo;
-    AuthService* m_authService;
+    std::shared_ptr<UserRepository> m_spUserRepo;
+    std::shared_ptr<AuthService> m_spAuthService;
+    std::shared_ptr< WorkThreadPool> m_spWorkThreadPool;
 };
 
 #endif // GATESERVER_SERVICE_USERSERVICE_H_

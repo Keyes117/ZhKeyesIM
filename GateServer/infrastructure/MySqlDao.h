@@ -7,13 +7,7 @@
 #include "ConfigManager.h"
 #include "MySqlConnPool.h"
 
-struct UserInfo
-{
-    std::string name;
-    std::string password;
-    int uid;
-    std::string email;
-};
+#include "model/User.h"
 
 class MySqlDao
 {
@@ -30,7 +24,9 @@ public:
     int registerUserTransaction(const std::string& name, const std::string& email, const std::string& pwd, const std::string& icon);
     bool checkEmail(const std::string& name, const std::string& email);
     bool updatePassword(const std::string& name, const std::string& newpwd);
+
     bool checkPassword(const std::string& name, const std::string& pwd, UserInfo& userInfo);
+    bool findUserByName(const std::string& name, UserInfo& userInfo);
     //bool TestProcedure(const std::string& email, int& uid, std::string& name);
 
 private:

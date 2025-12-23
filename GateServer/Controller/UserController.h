@@ -5,29 +5,34 @@
 
 #include "BaseController.h"
 #include "service/UserService.h"
-#include "WorkThreadPool.h"
 
 
 class UserController : public BaseController {
 public:
-    UserController(UserService* userService, WorkThreadPool* threadPool);
+    UserController(std::shared_ptr<UserService> userService);
     ~UserController() = default;
 
-    void login(const HttpRequest& request,
+    void handleLogin(const HttpRequest& request,
         HttpServer::AsyncDone done,
         const std::map<std::string, std::string>& params);
 
-    void registerUser(const HttpRequest& request,
+    void handleRegisterUser(const HttpRequest& request,
         HttpServer::AsyncDone done,
         const std::map<std::string, std::string>& params);
 
-    void resetPassword(const HttpRequest& request,
+    void handleResetPassword(const HttpRequest& request,
         HttpServer::AsyncDone done,
         const std::map<std::string, std::string>& params);
 
 private:
-    UserService* m_userService;
-    WorkThreadPool* m_threadPool;
+    void onHandleLoginDone(HttpServer::AsyncDone done, const LoginResult& result);
+
+    void onHandleRegisterUserDone(HttpServer::AsyncDone done, const LoginResult& result);
+
+    void onHandleResetPasswordDone(HttpServer::AsyncDone done, const LoginResult& result);
+
+private:
+    std::shared_ptr<UserService> m_spUserService;
 };
 
 #endif // GATESERVER_CONTROLLER_USERCONTROLLER_H_

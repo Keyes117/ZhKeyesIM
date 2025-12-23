@@ -13,7 +13,7 @@ struct LoginResult {
     ServerStatus::ErrorCodes code;
     std::string token;
 
-    static LoginResult createSuccss(const UserInfo& user, 
+    static LoginResult createSuccess(const UserInfo& user, 
         const std::string& token)
     {
         LoginResult result;

@@ -9,7 +9,7 @@ VerifyService::VerifyService(std::shared_ptr<VerifyGrpcClient> grpcClient,
 {
 }
  
-void VerifyService::getVerifyCodeAsync(const std::string& email, AsyncCallback callback)
+void VerifyService::getVerifyCodeAsync(const std::string& email, VerifyCallback callback)
 {
     LOG_INFO("VerifyService: Processing verify code request for %s", email.c_str());
     VerifyCodeResult result;
@@ -49,7 +49,7 @@ bool VerifyService::validateEmail(const std::string& email)
     return std::regex_match(email, emailPattern);
 }
 
-void VerifyService::onGetVerifyCodeAsyncDone(AsyncCallback callback, const message::GetVerifyResponse& grpcResponse)
+void VerifyService::onGetVerifyCodeAsyncDone(VerifyCallback callback, const message::GetVerifyResponse& grpcResponse)
 {
     VerifyCodeResult result;
     ServerStatus::GrpcErrors grpcStatus =

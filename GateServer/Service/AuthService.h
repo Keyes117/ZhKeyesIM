@@ -16,10 +16,6 @@ public:
     // Token相关
     std::string generateToken(int uid);
     bool validateToken(const std::string& token, int& outUid);
-    
-    // 验证码相关
-    bool verifyEmailCode(const std::string& email, const std::string& code);
-    bool saveVerifyCode(const std::string& email, const std::string& code);
 
 private:
     std::shared_ptr<RedisRepository> m_redisRepository;

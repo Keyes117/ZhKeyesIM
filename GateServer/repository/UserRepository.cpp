@@ -9,7 +9,8 @@ std::optional<UserInfo> UserRepository::findByUsername(const std::string& userna
 {
     return std::optional<UserInfo>();
     UserInfo userInfo;
-    //bool isValid = m_spMySql->checkPassword(username,)
+    m_spMySql->checkPassword()
+    
 }
 
 std::optional<UserInfo> UserRepository::findByEmail(const std::string& email)
@@ -44,7 +45,7 @@ bool UserRepository::updatePassword(const std::string& username, const std::stri
 
 bool UserRepository::checkPassword(const std::string& username, const std::string& password, UserInfo& outUserInfo)
 {
-    return false;
+    return m_spMySql->checkPassword(username, password, outUserInfo);
 }
 
 bool UserRepository::checkEmail(const std::string& username, const std::string& email)

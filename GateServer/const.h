@@ -15,16 +15,17 @@ namespace ServerStatus
         VarifyExpired = 1003, //验证码过期
         VarifyCodeErr = 1004, //验证码错误
         UserExist = 1005,       //用户已经存在
-        PasswdErr = 1006,    //密码错误
-        EmailNotMatch = 1007,  //邮箱不匹配
-        PasswdUpFailed = 1008,  //更新密码失败
-        PasswdInvalid = 1009,   //密码更新失败
-        TokenInvalid = 1010,   //Token失效
-        UidInvalid = 1011,  //uid无效
+        PasswdInValid = 1006,
+        PasswdErr = 1007,    //密码错误
+        EmailNotMatch = 1008,  //邮箱不匹配
+        PasswdUpFailed = 1009,  //更新密码失败
+        PasswdInvalid = 1010,   //密码更新失败
+        TokenInvalid = 1011,   //Token失效
+        UidInvalid = 1012,  //uid无效
 
       
-        InternalError = 1012,    //Http 内部错误
-        ParamError = 1013        //参数错误
+        InternalError = 1013,    //Http 内部错误
+        ParamError = 1014        //参数错误
     };
 
     enum class GrpcErrors

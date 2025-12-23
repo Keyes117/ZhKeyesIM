@@ -4,6 +4,9 @@ using namespace ZhKeyesIMHttp;
 using namespace nlohmann;
 //using namespace message;
 
+#include  "model/User.h"
+
+
 GateServer::GateServer():
     m_spGrpcVerifyClient(std::make_shared<VerifyGrpcClient>()),
     m_spRedisManager(std::make_shared<RedisManager>()),
@@ -62,10 +65,13 @@ bool GateServer::init(ConfigManager& config)
         //    return false;
         //}
 
+        // ================== Repository ==================
         m_spRedisRepository = std::make_shared<RedisRepository>(m_spRedisManager);
 
+        // ================== Service ==================
         m_spVerifyService = std::make_shared<VerifyService>(m_spGrpcVerifyClient, m_spRedisRepository);
 
+        // ================== Controller ==================
         m_spVerifyController = std::make_unique<VerifyController>(m_spVerifyService);
 
 
@@ -80,6 +86,7 @@ bool GateServer::init(ConfigManager& config)
     }
     catch (std::exception& e)
     {
+        LOG_ERROR("GateServer: 初始化时出错,%s",e.what());
         return false;
     }
 
@@ -597,7 +604,6 @@ void GateServer::handleUserResetPassAsync(const ZhKeyesIMHttp::HttpRequest& requ
         done(std::move(response));
     }
 }
-
 
 
 void GateServer::handleGetRoot(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response, const std::map<std::string, std::string>& params)

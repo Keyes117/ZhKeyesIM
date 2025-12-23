@@ -10,19 +10,24 @@
 
 class VerifyService {
 public:
-    using AsyncCallback = std::function<void(const VerifyCodeResult&)>;
+    using VerifyCallback = std::function<void(const VerifyCodeResult&)>;
 
     VerifyService(std::shared_ptr<VerifyGrpcClient> grpcClient, 
         std::shared_ptr<RedisRepository> redisRepo);
     ~VerifyService() = default;
 
     // 异步获取验证码
-    void getVerifyCodeAsync(const std::string& email, AsyncCallback callback);
+    void getVerifyCodeAsync(const std::string& email, 
+        VerifyCallback callback);
+
+    // 验证码相关
+    bool verifyEmailCode(const std::string& email, const std::string& code);
+    bool saveVerifyCode(const std::string& email, const std::string& code);
 
 private:
     bool validateEmail(const std::string& email);
 
-    void onGetVerifyCodeAsyncDone(AsyncCallback callback, const message::GetVerifyResponse& grpcResponse);
+    void onGetVerifyCodeAsyncDone(VerifyCallback callback, const message::GetVerifyResponse& grpcResponse);
 
 private:
     std::shared_ptr<VerifyGrpcClient> m_spGrpcClient;

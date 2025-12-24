@@ -9,13 +9,19 @@
 #include "Http/HttpRequest.h"
 #include "Http/HttpResponse.h"
 #include "Http/Router.h"
+#include "WorkThreadPool.h"
 
 #include "infrastructure/RedisManager.h"
 #include "infrastructure/MySqlManager.h"
 #include "infrastructure/VerifyGrpcClient.h"
 
 #include "service/VerifyService.h"
+#include "Service/UserService.h"
+
 #include "controller/VerifyController.h"
+#include "Controller/UserController.h"
+
+#include "repository/UserRepository.h"
 #include "repository/RedisRepository.h"
 
 #include "JsonUtil.h"
@@ -90,17 +96,24 @@ private:
     std::shared_ptr<VerifyGrpcClient>  m_spGrpcVerifyClient;
     std::shared_ptr<RedisManager>      m_spRedisManager;
     std::shared_ptr<MySqlManager>      m_spMySqlManager;
+    std::shared_ptr< WorkThreadPool>    m_spWorkThreadPool;
 
     std::unique_ptr<ZhKeyesIMHttp::HttpServer> m_spHttpServer;
 
     // =========== Controller ==================
     std::unique_ptr<VerifyController>   m_spVerifyController;
+    std::unique_ptr<UserController>     m_spUserController;
 
     // =========== Service ================
+    std::shared_ptr<AuthService>        m_spAuthService;
     std::shared_ptr<VerifyService>      m_spVerifyService;
+    std::shared_ptr<UserService>        m_spUserService;
+
 
     // =========== Repository ==================
     std::shared_ptr<RedisRepository>    m_spRedisRepository;
+    std::shared_ptr<UserRepository>     m_spUserRepository;
+
 
 private:
     GateServer(const GateServer&) = delete;

@@ -99,11 +99,16 @@ void UserController::handleRegisterUser(const HttpRequest& request, HttpServer::
                 msg);
             return;
         }
+        std::string username = *usernameOpt;
+        std::string password = *passwordOpt;
+        std::string email = *emailOpt;
+        std::string code = *codeOpt;
+
+        m_spUserService->registerUser(username, password, email, code,
+            std::bind(&UserController::onHandleRegisterUserDone, this, done, std::placeholders::_1));
 
 
-        //m_spUserService->registerUser(username, password,
-        //    std::bind(&UserController::onHandleLoginDone, this, done, std::placeholders::_1)
-        //);
+
 
     }
     catch (std::exception& e)
@@ -141,7 +146,7 @@ void UserController::onHandleLoginDone(HttpServer::AsyncDone done, const LoginRe
     }
 }
 
-void UserController::onHandleRegisterUserDone(HttpServer::AsyncDone done, const LoginResult& result)
+void UserController::onHandleRegisterUserDone(HttpServer::AsyncDone done, const RegisterResult& result)
 {
     if (result.success)
     {
@@ -153,7 +158,7 @@ void UserController::onHandleRegisterUserDone(HttpServer::AsyncDone done, const 
     }
 }
 
-void UserController::onHandleResetPasswordDone(HttpServer::AsyncDone done, const LoginResult& result)
+void UserController::onHandleResetPasswordDone(HttpServer::AsyncDone done, const ResetPasswordResult& result)
 {
     if (result.success)
     {

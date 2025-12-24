@@ -11,7 +11,8 @@ GateServer::GateServer():
     m_spGrpcVerifyClient(std::make_shared<VerifyGrpcClient>()),
     m_spRedisManager(std::make_shared<RedisManager>()),
     m_spMySqlManager(std::make_shared<MySqlManager>()),
-    m_spHttpServer( std::make_unique<ZhKeyesIMHttp::HttpServer>())
+    m_spWorkThreadPool(std::make_shared<WorkThreadPool>()),
+    m_spHttpServer(std::make_unique<ZhKeyesIMHttp::HttpServer>())
 {
 
 }
@@ -64,16 +65,21 @@ bool GateServer::init(ConfigManager& config)
         //    LOG_ERROR("GateServer: MySql 客户端 初始化失败");
         //    return false;
         //}
+        if()
 
         // ================== Repository ==================
         m_spRedisRepository = std::make_shared<RedisRepository>(m_spRedisManager);
+        m_spUserRepository = std::make_shared<UserRepository>(m_spMySqlManager);
 
         // ================== Service ==================
+        m_spAuthService = std::make_shared<AuthService>();
         m_spVerifyService = std::make_shared<VerifyService>(m_spGrpcVerifyClient, m_spRedisRepository);
+        m_spUserService = std::make_shared<UserService>(m_spUserRepository, m_spRedisRepository, m_spAuthService, m_spWorkThreadPool);
+
 
         // ================== Controller ==================
         m_spVerifyController = std::make_unique<VerifyController>(m_spVerifyService);
-
+        m_spUserController = std::make_unique<UserController>(m_spUserService);
 
         m_spHttpServer->setAsyncRequestCallBack(
             std::bind(&GateServer::onHttpRequestAsync, this,
@@ -1067,17 +1073,17 @@ void GateServer::registerRoutes()
         std::bind(&VerifyController::handleGetVerifyCode, m_spVerifyController.get(),
             std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
-    //m_router.addAsyncRoute(HttpMethod::POST, "api/user/register",
-    //    std::bind(&GateServer::handleUserRegisterAsync, this,
-    //        std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    m_router.addAsyncRoute(HttpMethod::POST, "api/user/register",
+        std::bind(&UserController::handleRegisterUser, m_spUserController.get(),
+            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
-    //m_router.addAsyncRoute(HttpMethod::POST, "api/user/resetPass",
-    //    std::bind(&GateServer::handleUserResetPassAsync, this,
-    //        std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    m_router.addAsyncRoute(HttpMethod::POST, "api/user/resetPass",
+        std::bind(&UserController::handleResetPassword, m_spUserController.get(),
+            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
-    //m_router.addAsyncRoute(HttpMethod::POST, "api/user/login",
-    //    std::bind(&GateServer::handleUserLoginAsync, this,
-    //        std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    m_router.addAsyncRoute(HttpMethod::POST, "api/user/login",
+        std::bind(&UserController::handleLogin, m_spUserController.get(),
+            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 
 
   /*  m_router.addRoute(ZhKeyesIMHttp::HttpMethod::GET, "/",

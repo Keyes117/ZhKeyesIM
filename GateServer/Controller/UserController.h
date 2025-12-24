@@ -27,9 +27,9 @@ public:
 private:
     void onHandleLoginDone(HttpServer::AsyncDone done, const LoginResult& result);
 
-    void onHandleRegisterUserDone(HttpServer::AsyncDone done, const LoginResult& result);
+    void onHandleRegisterUserDone(HttpServer::AsyncDone done, const RegisterResult& result);
 
-    void onHandleResetPasswordDone(HttpServer::AsyncDone done, const LoginResult& result);
+    void onHandleResetPasswordDone(HttpServer::AsyncDone done, const ResetPasswordResult& result);
 
 private:
     std::shared_ptr<UserService> m_spUserService;

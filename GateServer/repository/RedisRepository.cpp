@@ -1,5 +1,7 @@
 #include "RedisRepository.h"
 
+#include "const.h"
+
 RedisRepository::RedisRepository(std::shared_ptr<RedisManager> spRedis)
     :m_spRedis(spRedis)
 {
@@ -14,12 +16,22 @@ bool RedisRepository::saveVerifyCode(const std::string& email,
 
 std::optional<std::string> RedisRepository::getVerifyCode(const std::string& email)
 {
-    return std::optional<std::string>();
+    std::string key = ServerParam::code_prefix + email;
+    std::string value;
+
+    bool success = m_spRedis->get(key, value);
+    if (success && !value.empty())
+    {
+        return value;
+    }
+
+    return std::nullopt;
 }
 
 bool RedisRepository::deleteVerifyCode(const std::string& email)
 {
-    return false;
+    std::string key = ServerParam::code_prefix + email;
+    return m_spRedis->del(key);
 }
 
 bool RedisRepository::saveToken(int uid, const std::string& token, int expireSeconds)

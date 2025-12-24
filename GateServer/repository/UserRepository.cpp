@@ -1,5 +1,6 @@
 #include "UserRepository.h"
 
+#include "const.h"
 UserRepository::UserRepository(std::shared_ptr<MySqlManager> mySqlManager)
     : m_spMySql(mySqlManager)
 {
@@ -7,9 +8,40 @@ UserRepository::UserRepository(std::shared_ptr<MySqlManager> mySqlManager)
 
 std::optional<UserInfo> UserRepository::findByUsername(const std::string& username)
 {
-    return std::optional<UserInfo>();
-    UserInfo userInfo;
-    m_spMySql->checkPassword()
+    auto spConn = m_spMySql->getConnection();
+
+    ServerUtil::Defer def([this, &spConn]() {
+        m_spMySql->returnConnection(std::move(spConn));
+        });
+
+    if (!spConn)
+    {
+        LOG_ERROR("UserRepository: Failed to get database connect");
+        return std::nullopt;
+    }
+
+    try
+    {
+        auto spStmt = m_spMySql->prepareStatement(spConn,
+            "Select uid, name, email, pwd, create_time, last_login_time From user Where name = ?"
+        );
+
+        spStmt->setString(1, username);
+        std::unique_ptr<sql::ResultSet> res(spStmt->executeQuery());
+
+        if (res->next())
+        {
+            UserInfo user = parseUserInfoFromResultSet(res.get());         
+            return user;
+        }
+
+        return std::nullopt;
+    }
+    catch (sql::SQLException& e)
+    {
+        LOG_ERROR("UserRepository: findByUsername failed: %s", e.what());
+        return std::nullopt;
+    }
     
 }
 
@@ -43,17 +75,28 @@ bool UserRepository::updatePassword(const std::string& username, const std::stri
     return false;
 }
 
-bool UserRepository::checkPassword(const std::string& username, const std::string& password, UserInfo& outUserInfo)
-{
-    return m_spMySql->checkPassword(username, password, outUserInfo);
-}
 
-bool UserRepository::checkEmail(const std::string& username, const std::string& email)
-{
-    return false;
-}
 
 bool UserRepository::updateLastLoginTime(int uid)
 {
     return false;
+}
+
+UserInfo UserRepository::parseUserInfoFromResultSet(sql::ResultSet* pResultSet)
+{
+    UserInfo userInfo;
+    userInfo.uid = pResultSet->getInt("uid");
+    userInfo.username = pResultSet->getString("name");
+    userInfo.email = pResultSet->getString("email");
+    userInfo.passwordHash = pResultSet->getString("pwd");
+
+    // 处理时间字段（可能为 NULL）
+    if (!pResultSet->isNull("create_time")) {
+        userInfo.createTime = pResultSet->getInt64("create_time");
+    }
+    if (!pResultSet->isNull("last_login_time")) {
+        userInfo.lastLoginTime = pResultSet->getInt64("last_login_time");
+    }
+
+    return userInfo;
 }

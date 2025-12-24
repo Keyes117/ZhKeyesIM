@@ -28,15 +28,10 @@ public:
         const std::string& passwordHash);
     bool updatePassword(const std::string& username,
         const std::string& newPasswordHash);
-
-    bool checkPassword(const std::string& username,
-        const std::string& password,
-        UserInfo& outUserInfo);
-
-    bool checkEmail(const std::string& username,
-        const std::string& email);
-
     bool updateLastLoginTime(int uid);
+
+private:
+    UserInfo parseUserInfoFromResultSet(sql::ResultSet* pResultSet);
 private:
     std::shared_ptr<MySqlManager> m_spMySql;
 };

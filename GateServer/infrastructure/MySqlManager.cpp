@@ -1,8 +1,7 @@
 // MySqlManager.cpp
 #include "MySqlManager.h"
 #include "Logger.h"
-#include <jdbc/cppconn/prepared_statement.h>
-#include <jdbc/cppconn/resultset.h>
+
 
 MySqlManager::MySqlManager() {
 }
@@ -65,6 +64,7 @@ void MySqlManager::returnConnection(std::shared_ptr<MySqlConnection> conn) {
 std::unique_ptr<sql::PreparedStatement> MySqlManager::prepareStatement(
     std::shared_ptr<MySqlConnection> conn,
     const std::string& sql) {
+
     if (!conn || !conn->m_spConn) {
         LOG_ERROR("MySqlManager: Invalid connection");
         return nullptr;

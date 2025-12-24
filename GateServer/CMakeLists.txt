@@ -13,7 +13,6 @@ set(SERVER_SOURCES
     infrastructure/VerifyGrpcClient.cpp
     infrastructure/StatusGrpcClient.cpp
     infrastructure/MySqlConnPool.cpp
-    infrastructure/MySqlDao.cpp
     infrastructure/MySqlManager.cpp
     infrastructure/RedisManager.cpp
     infrastructure/RedisConnPool.cpp
@@ -41,7 +40,6 @@ set(SERVER_HEADERS
     infrastructure/VerifyGrpcClient.h
     infrastructure/StatusGrpcClient.h
     infrastructure/MySqlConnPool.h
-    infrastructure/MySqlDao.h
     infrastructure/MySqlManager.h
     infrastructure/RedisManager.h
     infrastructure/RedisConnPool.h

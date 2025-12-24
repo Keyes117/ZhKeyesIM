@@ -4,7 +4,6 @@
 #include <memory>
 #include <string>
 
-#include "ConfigManager.h"
 #include "MySqlConnPool.h"
 
 #include "model/User.h"
@@ -12,7 +11,6 @@
 class MySqlDao
 {
 public:
-
 
     MySqlDao();
     ~MySqlDao();
@@ -26,7 +24,7 @@ public:
     bool updatePassword(const std::string& name, const std::string& newpwd);
 
     bool checkPassword(const std::string& name, const std::string& pwd, UserInfo& userInfo);
-    bool findUserByName(const std::string& name, UserInfo& userInfo);
+
     //bool TestProcedure(const std::string& email, int& uid, std::string& name);
 
 private:

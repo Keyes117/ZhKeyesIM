@@ -8,11 +8,8 @@
 #include "ConfigManager.h"
 #include "MySqlConnPool.h"
 
-// Ç°ÏòÉùÃ÷
-namespace sql {
-    class PreparedStatement;
-    class ResultSet;
-}
+#include <jdbc/cppconn/prepared_statement.h>
+#include <jdbc/cppconn/resultset.h>
 
 class MySqlManager {
 public:

@@ -63,38 +63,9 @@ protected:
         ZhKeyesIMHttp::HttpServer::AsyncDone done,
         const std::map<std::string, std::string>& params);
 
-    virtual void handleGetVerifyCodeAsync(const ZhKeyesIMHttp::HttpRequest& request,
-        ZhKeyesIMHttp::HttpServer::AsyncDone done,
-        const std::map<std::string, std::string>& params);
-
-    virtual void handleUserLoginAsync(const ZhKeyesIMHttp::HttpRequest& request,
-        ZhKeyesIMHttp::HttpServer::AsyncDone done,
-        const std::map<std::string, std::string>& params);
-
-    virtual void handleUserRegisterAsync(const ZhKeyesIMHttp::HttpRequest& request,
-        ZhKeyesIMHttp::HttpServer::AsyncDone done,
-        const std::map<std::string, std::string>& params);
-
-    virtual void handleUserResetPassAsync(const ZhKeyesIMHttp::HttpRequest& request,
-        ZhKeyesIMHttp::HttpServer::AsyncDone done,
-        const std::map<std::string, std::string>& params);
-
-
     virtual void handleGetRoot(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response,
         const std::map<std::string, std::string>& params);
 
-
-    virtual void handleGetVerifyCode(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response,
-        const std::map<std::string, std::string>& params);
-
-    virtual void handleUserLogin(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response,
-        const std::map<std::string, std::string>& params);
-
-    virtual void handleUserRegister(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response,
-        const std::map<std::string, std::string>& params);
-
-    virtual void handleUserResetPass(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpResponse& response,
-        const std::map<std::string, std::string>& params);
 private:
     //void setJsonResponse(ZhKeyesIMHttp::HttpResponse& response,
     //    const nlohmann::json& json,

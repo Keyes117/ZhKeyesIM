@@ -1,12 +1,14 @@
 #ifndef GATESERVER_CONTROLLER_BASECONTROLLER_H_
 #define GATESERVER_CONTROLLER_BASECONTROLLER_H_
 
+#include <vector>
+
 #include "Http/HttpServer.h"
 #include "Http/HttpRequest.h"
 #include "Http/HttpResponse.h"
-#include "../const.h"
+#include "const.h"
 #include "nlohmann/json.hpp"
-#include <vector>
+
 
 namespace ZhKeyesIMHttp = ZhKeyesIM::Net::Http;
 using HttpStatusCode = ZhKeyesIM::Net::Http::HttpStatusCode;
@@ -33,6 +35,12 @@ protected:
                   ServerStatus::ErrorCodes errorCode,
                   const std::string& message = "");
     
+    virtual void sendSuccessWithData(HttpServer::AsyncDone& done,
+        HttpStatusCode httpCode,
+        ServerStatus::ErrorCodes errorCode,
+        const std::string& message = "",
+        nlohmann::json dataJson = {});
+
     // 验证必需字段
     virtual bool validateRequired(const nlohmann::json& json,
                          const std::vector<std::string>& fields,

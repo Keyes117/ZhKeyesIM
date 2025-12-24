@@ -18,8 +18,20 @@ MySqlConnection::MySqlConnection(sql::Connection* conn, int64_t lasttime)
 MySqlConnPool::MySqlConnPool(const std::string& url, const std::string& user,
     const std::string& pass, const std::string& schema, int poolSize):
     m_url(url), m_user(user), m_pass(pass), m_schema(schema), m_poolSize(poolSize)
-{
+{  
+}
 
+MySqlConnPool::~MySqlConnPool()
+{
+    std::unique_lock<std::mutex> lock(m_mutex);
+    while (!m_pool.empty())
+    {
+        m_pool.pop();
+    }
+}
+
+bool MySqlConnPool::init()
+{
     try
     {
         for (int i = 0; i < m_poolSize; i++)
@@ -41,25 +53,13 @@ MySqlConnPool::MySqlConnPool(const std::string& url, const std::string& user,
         m_poolSize = m_pool.size();
         m_checkThread = std::thread(std::bind(&MySqlConnPool::checkThreadFunc, this));
         m_checkThread.detach();
-        
+
     }
     catch (sql::SQLException& e)
     {
         LOG_ERROR("Mysql pool init failed, error is");
     }
-}
 
-MySqlConnPool::~MySqlConnPool()
-{
-    std::unique_lock<std::mutex> lock(m_mutex);
-    while (!m_pool.empty())
-    {
-        m_pool.pop();
-    }
-}
-
-bool MySqlConnPool::init()
-{
     m_bStop = true;
     return  (m_poolSize > 0);
 }

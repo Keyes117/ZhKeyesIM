@@ -1,6 +1,8 @@
 #ifndef GATESERVER_CONST_H_
 #define GATESERVER_CONST_H_
 
+#include <functional>
+
 namespace ServerParam
 {
     constexpr const char* code_prefix = "code_";
@@ -22,10 +24,11 @@ namespace ServerStatus
         PasswdInvalid = 1010,   //密码更新失败
         TokenInvalid = 1011,   //Token失效
         UidInvalid = 1012,  //uid无效
-
+   
       
         InternalError = 1013,    //Http 内部错误
-        ParamError = 1014        //参数错误
+        ParamError = 1014,        //参数错误
+        UserNotFount = 1015
     };
 
     enum class GrpcErrors
@@ -43,15 +46,15 @@ namespace ServerUtil
     class Defer {
     public:
         // 接受一个lambda表达式或者函数指针
-        Defer(std::function<void()> func) : func_(func) {}
+        Defer(std::function<void()> func) : m_func(func) {}
 
         // 析构函数中执行传入的函数
         ~Defer() {
-            func_();
+            m_func();
         }
 
     private:
-        std::function<void()> func_;
+        std::function<void()> m_func;
     };
 }
 

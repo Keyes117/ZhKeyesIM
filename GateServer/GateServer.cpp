@@ -11,7 +11,6 @@ GateServer::GateServer():
     m_spGrpcVerifyClient(std::make_shared<VerifyGrpcClient>()),
     m_spRedisManager(std::make_shared<RedisManager>()),
     m_spMySqlManager(std::make_shared<MySqlManager>()),
-    m_spWorkThreadPool(std::make_shared<WorkThreadPool>()),
     m_spHttpServer(std::make_unique<ZhKeyesIMHttp::HttpServer>())
 {
 
@@ -31,7 +30,10 @@ bool GateServer::init(ConfigManager& config)
         auto portOpt = config.getSafe<std::string>({ "GateServer", "port" });
         auto typeOpt = config.getSafe<std::string>({ "GateServer", "IOType" });
 
-        if (!threadNumOpt || !ipOpt || !portOpt || !typeOpt)
+        auto workThreadNumOpt = config.getSafe<std::string>({ "WorkThreadPool", "threadNum" });
+        auto maxQueueSize = config.getSafe<std::string>({ "WorkThreadPool", "maxQueueSize" });
+
+        if (!threadNumOpt || !ipOpt || !portOpt || !typeOpt || !workThreadNumOpt || !maxQueueSize)
         {
             LOG_ERROR("GateServer: 获取GateServer 相关配置失败");
             return false;
@@ -40,7 +42,6 @@ bool GateServer::init(ConfigManager& config)
         int threadNum = std::stoi(*threadNumOpt);
         std::string ip = *ipOpt;
         uint16_t port = static_cast<uint16_t>(std::stoi(*portOpt));
-
         IOMultiplexType type = static_cast<IOMultiplexType>(std::stoi(*typeOpt));
 
         if (!m_spHttpServer->init(threadNum, ip, port, type))
@@ -49,6 +50,12 @@ bool GateServer::init(ConfigManager& config)
             return false;
         }
 
+        // ================== WorkThreadPool ==================
+        int workThreadNum = std::stoi(*workThreadNumOpt);
+        int maxQueueSize = std::stoi(*maxQueueSize);
+
+        m_spWorkThreadPool = std::make_shared<WorkThreadPool>(workThreadNum, maxQueueSize);
+        m_spWorkThreadPool->start();
 
         //if (!m_spGrpcVerifyClient->init(config))
         //{
@@ -65,7 +72,7 @@ bool GateServer::init(ConfigManager& config)
         //    LOG_ERROR("GateServer: MySql 客户端 初始化失败");
         //    return false;
         //}
-        if()
+     
 
         // ================== Repository ==================
         m_spRedisRepository = std::make_shared<RedisRepository>(m_spRedisManager);
@@ -94,10 +101,7 @@ bool GateServer::init(ConfigManager& config)
     {
         LOG_ERROR("GateServer: 初始化时出错,%s",e.what());
         return false;
-    }
-
-
-    
+    }    
 }
 
 void GateServer::start()

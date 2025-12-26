@@ -85,8 +85,6 @@ void UserService::login(const std::string& username,
             LOG_WARN("UserService: Failed to update last login time");
         }
 
-
-        //TODO: 更新最后登录时间
         result = LoginResult::createSuccess(
             userInfo,
             token
@@ -108,6 +106,7 @@ void UserService::registerUser(const std::string& username,
     const std::string& email, const std::string& password,
     const std::string& verifyCode, RegisterCallback callback)
 {
+    
     RegisterResult result;
 
     try
@@ -209,6 +208,10 @@ void UserService::registerUser(const std::string& username,
 
 
 
+}
+
+void UserService::resetPassword(const std::string& username, const std::string& email, const std::string& newPassword, const std::string& verifyCode, ResetPasswordCallback callback)
+{
 }
 
 

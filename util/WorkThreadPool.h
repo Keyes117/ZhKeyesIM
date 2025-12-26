@@ -38,7 +38,7 @@ public:
     /**
      * @brief 启动线程池
      */
-    void start();
+    bool start();
 
     /**
      * @brief 停止线程池（等待所有任务完成）

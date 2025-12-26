@@ -35,8 +35,8 @@ VerifyGrpcClient::~VerifyGrpcClient()
 bool VerifyGrpcClient::init(const ConfigManager& config)
 {
 
-    auto hostOpt = config.getSafe<std::string>({ "rpcServer","host" });
-    auto portOpt = config.getSafe<std::string>({ "rpcServer","port" });
+    auto hostOpt = config.getSafe<std::string>({ "verifyServer","host" });
+    auto portOpt = config.getSafe<std::string>({ "verifyServer","port" });
 
     if (!hostOpt || !portOpt)
     {

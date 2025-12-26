@@ -35,8 +35,8 @@ StatusGrpcClient::~StatusGrpcClient()
 bool StatusGrpcClient::init(const ConfigManager& config)
 {
 
-    auto hostOpt = config.getSafe<std::string>({ "rpcServer","host" });
-    auto portOpt = config.getSafe<std::string>({ "rpcServer","port" });
+    auto hostOpt = config.getSafe<std::string>({ "statusServer","host" });
+    auto portOpt = config.getSafe<std::string>({ "statusServer","port" });
 
     if (!hostOpt || !portOpt)
     {

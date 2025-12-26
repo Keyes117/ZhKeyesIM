@@ -26,11 +26,11 @@ WorkThreadPool::~WorkThreadPool()
     stop();
 }
 
-void WorkThreadPool::start()
+bool WorkThreadPool::start()
 {
     if (m_running.load()) {
         LOG_WARN("WorkThreadPool: already running");
-        return;
+        return false;
     }
     
     m_running.store(true);
@@ -44,12 +44,14 @@ void WorkThreadPool::start()
             m_workers.emplace_back(&WorkThreadPool::workerThread, this);
         }
         
+        return true;
         LOG_INFO("WorkThreadPool started with %zu threads", m_threadNum);
     }
     catch (const std::exception& e) {
         LOG_ERROR("WorkThreadPool: failed to start threads: %s", e.what());
         m_running.store(false);
-        throw;
+        return false;
+   
     }
 }
 

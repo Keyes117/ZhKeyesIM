@@ -113,14 +113,18 @@ void UserController::handleRegisterUser(const HttpRequest& request, HttpServer::
     }
     catch (std::exception& e)
     {
-
+        LOG_ERROR("UserController: Exception : [ %s ]", e.what());
+        msg = "Exception Occured " + std::string(e.what());
+        sendError(done, HttpStatusCode::InternalServerError,
+            ServerStatus::ErrorCodes::InternalError, msg);
+        return;
     }
-
 
 }
 
 void UserController::handleResetPassword(const HttpRequest& request, HttpServer::AsyncDone done, const std::map<std::string, std::string>& params)
 {
+
 }
 
 void UserController::onHandleLoginDone(HttpServer::AsyncDone done, const LoginResult& result)

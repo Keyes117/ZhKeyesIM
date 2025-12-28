@@ -41,31 +41,17 @@ set(CLIENT_TASK_SOURCE
     Task/Task.h
     Task/TaskHandler.cpp
     Task/TaskHandler.h
-    
-    Task/GetVerifyCodeTask.cpp
-    Task/GetVerifyCodeTask.h
-    Task/RecvVerifyCodeTask.cpp
-    Task/RecvVerifyCodeTask.h
 
-    Task/SendRegisterTask.cpp
-    Task/SendRegisterTask.h
-    Task/RecvRegisterTask.cpp
-    Task/RecvRegisterTask.h
 
-    Task/SendResetPassTask.cpp
-    Task/SendResetPassTask.h
-    Task/RecvResetPassTask.cpp
-    Task/RecvResetPassTask.h
+    Task/VerifyCodeTask.h
+    Task/VerifyCodeTask.cpp
+    Task/RegisterTask.h
+    Task/RegisterTask.cpp
+    Task/ResetPasswordTask.h
+    Task/ResetPasswordTask.cpp
+    Task/UserLoginTask.h
+    Task/UserLoginTask.cpp
 
-    Task/SendUserLoginTask.cpp
-    Task/SendUserLoginTask.h
-    Task/RecvUserLoginTask.cpp
-    Task/RecvUserLoginTask.h
-
-    Task/ReportErrorTask.cpp
-    Task/ReportErrorTask.h
-    Task/ReportSuccessTask.cpp
-    Task/ReportSuccessTask.h
 )
 
 # Qt配置

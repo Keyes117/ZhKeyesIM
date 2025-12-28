@@ -3,6 +3,7 @@
 
 #include <QtWidgets/QDialog>
 
+#include "Task/UserLoginTask.h"
 #include "ui_LoginDlg.h"
 
 #include "IMClient.h"
@@ -17,9 +18,13 @@ private:
     bool isLineEditEmpty();
     bool isAccountAndPassWordRight();
 
+    void onLoginSuccess(const UserData& userData);
+    void onLoginError(const QString& error);
+
 signals:
     void switchRegisterDlg();
     void switchResetDlg();
+    void loginSuccess();
 
 private slots:
     void onLoginButtonClicked();

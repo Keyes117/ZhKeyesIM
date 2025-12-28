@@ -8,6 +8,16 @@
 
 
 /**
+ * 登录数据结构
+ */
+struct UserData {
+    int uid = 0;
+    std::string username;
+    std::string email;
+    std::string token;
+};
+
+/**
  * @brief repolish 潩潩?潩qss
  */
 

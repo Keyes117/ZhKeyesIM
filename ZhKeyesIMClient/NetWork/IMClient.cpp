@@ -8,10 +8,6 @@
 #include "JsonUtil.h"
 #include "fmt/format.h"
 
-#include "ReportErrorTask.h"
-#include "ReportSuccessTask.h"
-
-
 IMClient::IMClient()
 {
 
@@ -74,7 +70,9 @@ bool IMClient::connect()
     return m_spTcpClient->connect();
 }
 
-void IMClient::requestVerificationCode(const std::string& email)
+void IMClient::requestVerificationCode(SuccessCallback onSuccess,
+    ErrorCallback onError,
+    const std::string& email)
 {
     nlohmann::json requestJson;
     requestJson["email"] = email;
@@ -83,11 +81,16 @@ void IMClient::requestVerificationCode(const std::string& email)
     std::string url = fmt::format("http://{}{}", m_httpBaseUrl.c_str(), ApiRoutes::API_VERIFY_GETCODE);
     m_spHttpClient->postJson(url,
         requestJson.dump(),
-        std::bind(&IMClient::onResponseVerificationCode, this, std::placeholders::_1),
-        std::bind(&IMClient::onErrorVerificationCode, this, std::placeholders::_1));
+        std::bind(&IMClient::onResponseVerificationCode, this, onSuccess, onError, std::placeholders::_1),
+        std::bind(&IMClient::onErrorVerificationCode, this, onError, std::placeholders::_1));
 }
 
-void IMClient::requestRegister(const std::string& username, const std::string& email, const std::string& password, const std::string& verificationCode)
+void IMClient::requestRegister(DataCallback<int> onSuccess,
+    ErrorCallback onError,
+    const std::string& username,
+    const std::string& email, 
+    const std::string& password, 
+    const std::string& verificationCode)
 {
     nlohmann::json requestJson;
     requestJson["username"] = username;
@@ -98,14 +101,17 @@ void IMClient::requestRegister(const std::string& username, const std::string& e
     std::string url = fmt::format("http://{}{}", m_httpBaseUrl.c_str(), ApiRoutes::API_USER_REGISTER);
     m_spHttpClient->postJson(url,
         requestJson.dump(),
-        std::bind(&IMClient::onResponseRegister, this, std::placeholders::_1),
-        std::bind(&IMClient::onErrorRegister, this, std::placeholders::_1));
+        std::bind(&IMClient::onResponseRegister, this, onSuccess, onError, std::placeholders::_1),
+        std::bind(&IMClient::onErrorRegister, this, onError, std::placeholders::_1));
 }
 
-void IMClient::requestResetPassword(const std::string& username, const std::string& email, const std::string& password, const std::string& verificationCode)
+void IMClient::requestResetPassword(SuccessCallback onSuccess,
+    ErrorCallback onError,
+    const std::string& email, 
+    const std::string& password, 
+    const std::string& verificationCode )
 {
     nlohmann::json requestJson;
-    requestJson["username"] = username;
     requestJson["password"] = password;
     requestJson["email"] = email;
     requestJson["code"] = verificationCode;
@@ -113,11 +119,15 @@ void IMClient::requestResetPassword(const std::string& username, const std::stri
     std::string url = fmt::format("http://{}{}", m_httpBaseUrl.c_str(), ApiRoutes::API_USER_RESETPASS);
     m_spHttpClient->postJson(url,
         requestJson.dump(),
-        std::bind(&IMClient::onResponseResetPassword, this, std::placeholders::_1),
-        std::bind(&IMClient::onErrorResetPassword, this, std::placeholders::_1));
+        std::bind(&IMClient::onResponseResetPassword, this,onSuccess,onError, std::placeholders::_1),
+        std::bind(&IMClient::onErrorResetPassword, this, onError, std::placeholders::_1));
 }
 
-void IMClient::requestUserLogin(const std::string& username, const std::string password)
+void IMClient::requestUserLogin(
+    DataCallback<UserData> onSuccess,
+    ErrorCallback onError,
+    const std::string& username, 
+    const std::string password)
 {
     nlohmann::json requestJson;
     requestJson["username"] = username;
@@ -126,8 +136,8 @@ void IMClient::requestUserLogin(const std::string& username, const std::string p
     std::string url = fmt::format("http://{}{}", m_httpBaseUrl.c_str(), ApiRoutes::API_USER_RESETPASS);
     m_spHttpClient->postJson(url,
         requestJson.dump(),
-        std::bind(&IMClient::onResponseUserLogin, this, std::placeholders::_1),
-        std::bind(&IMClient::onErrorUserLogin, this, std::placeholders::_1));
+        std::bind(&IMClient::onResponseUserLogin, this,onSuccess,onError, std::placeholders::_1),
+        std::bind(&IMClient::onErrorUserLogin, this,onError, std::placeholders::_1));
 }
 
 void IMClient::networkThreadFunc()
@@ -139,23 +149,25 @@ void IMClient::networkThreadFunc()
 
 void IMClient::reportErrorMsg(const std::string& msg)
 {
-    auto reportErrorTask = std::make_shared<ReportErrorTask>(msg);
-    TaskHandler::getInstance().registerUITask(std::move(reportErrorTask));
+ /*   auto reportErrorTask = std::make_shared<ReportErrorTask>(msg);
+    TaskHandler::getInstance().registerUITask(std::move(reportErrorTask));*/
 }
 
 void IMClient::reportSuccessMsg(const std::string& msg)
 {
-    auto reportSuccessTask = std::make_shared<ReportSuccessTask>(msg);
-    TaskHandler::getInstance().registerUITask(std::move(reportSuccessTask));
+ /*   auto reportSuccessTask = std::make_shared<ReportSuccessTask>(msg);
+    TaskHandler::getInstance().registerUITask(std::move(reportSuccessTask));*/
 }
 
 
-void IMClient::onResponseVerificationCode(const ZhKeyesIM::Net::Http::HttpResponse& response)
+void IMClient::onResponseVerificationCode( SuccessCallback onSuccess,
+    ErrorCallback onError,
+    const ZhKeyesIM::Net::Http::HttpResponse& response)
 {
     auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(response.getBody());
     if (!requestJsonOpt)
     {
-        onErrorVerificationCode("验证码接收错误");
+        onError("验证码接收错误");
         LOG_ERROR("IMClient:onResponseVerificationCode:接收返回值格式错误：不是正常的Json格式");
         return;
     }
@@ -164,7 +176,7 @@ void IMClient::onResponseVerificationCode(const ZhKeyesIM::Net::Http::HttpRespon
     auto successOpt = ZhKeyes::Util::JsonUtil::getSafe<int>(requestJson,  "success" );
     if (!successOpt)
     {
-        onErrorVerificationCode("验证码接收错误");
+        onError("验证码接收错误");
         LOG_ERROR("IMClient:onResponseVerificationCode:接收返回值格式错误：不是正常的Json格式");
         return;
     }
@@ -172,7 +184,7 @@ void IMClient::onResponseVerificationCode(const ZhKeyesIM::Net::Http::HttpRespon
     int success = *successOpt;
     if (success == 0)
     {
-        onErrorVerificationCode("验证码服务出错");
+        onError("验证码服务出错");
         LOG_ERROR("IMClient:onResponseVerificationCode:未成功发送验证吗");
         return;
     }
@@ -180,12 +192,14 @@ void IMClient::onResponseVerificationCode(const ZhKeyesIM::Net::Http::HttpRespon
 
 }
 
-void IMClient::onResponseRegister(const ZhKeyesIM::Net::Http::HttpResponse& response)
+void IMClient::onResponseRegister(DataCallback<int> onSuccess,
+    ErrorCallback onError,
+    const ZhKeyesIM::Net::Http::HttpResponse& response)
 {
     auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(response.getBody());
     if (!requestJsonOpt)
     {
-        onErrorRegister("注册功能返回信息错误");
+        onError("注册功能返回信息错误");
         LOG_ERROR("IMClient:onResponseVerificationCode:接收返回值格式错误：不是正常的Json格式");
         return;
     }
@@ -195,7 +209,7 @@ void IMClient::onResponseRegister(const ZhKeyesIM::Net::Http::HttpResponse& resp
     auto msgOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(requestJson, "msg");
     if (!successOpt || !msgOpt)
     {
-        onErrorRegister("注册功能返回信息错误");
+        onError("注册功能返回信息错误");
         LOG_ERROR("IMClient:onResponseVerificationCode:接收返回值格式错误：不是正常的Json格式");
         return;
     }
@@ -204,7 +218,7 @@ void IMClient::onResponseRegister(const ZhKeyesIM::Net::Http::HttpResponse& resp
     std::string msg = *msgOpt;
     if (success == 0)
     {
-        onErrorRegister(msg);
+        onError(msg);
         LOG_ERROR("IMClient:onResponseVerificationCode:未成功注册用户");
         return;
     }
@@ -214,12 +228,13 @@ void IMClient::onResponseRegister(const ZhKeyesIM::Net::Http::HttpResponse& resp
     }
 }
 
-void IMClient::onResponseResetPassword(const ZhKeyesIM::Net::Http::HttpResponse& response)
+void IMClient::onResponseResetPassword(SuccessCallback onSuccess,
+    ErrorCallback onError,const ZhKeyesIM::Net::Http::HttpResponse& response)
 {
     auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(response.getBody());
     if (!requestJsonOpt)
     {
-        onErrorRegister("重置密码功能返回信息错误");
+        onError("重置密码功能返回信息错误");
         LOG_ERROR("IMClient:onResponseResetPassword:接收返回值格式错误：不是正常的Json格式");
         return;
     }
@@ -229,7 +244,7 @@ void IMClient::onResponseResetPassword(const ZhKeyesIM::Net::Http::HttpResponse&
     auto msgOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(requestJson, "msg");
     if (!successOpt || !msgOpt)
     {
-        onErrorRegister("重置密码功能返回信息错误");
+        onError("重置密码功能返回信息错误");
         LOG_ERROR("IMClient:onResponseResetPassword:接收返回值格式错误：不是正常的Json格式");
         return;
     }
@@ -238,7 +253,7 @@ void IMClient::onResponseResetPassword(const ZhKeyesIM::Net::Http::HttpResponse&
     std::string msg = *msgOpt;
     if (success == 0)
     {
-        onErrorRegister(msg);
+        onError(msg);
         LOG_ERROR("IMClient:onResponseResetPassword:未成功重置密码");
     }
     else if (success == 1)
@@ -248,12 +263,14 @@ void IMClient::onResponseResetPassword(const ZhKeyesIM::Net::Http::HttpResponse&
     return;
 }
 
-void IMClient::onResponseUserLogin(const ZhKeyesIM::Net::Http::HttpResponse& response)
+void IMClient::onResponseUserLogin(DataCallback<UserData> onSuccess,
+    ErrorCallback onError,const ZhKeyesIM::Net::Http::HttpResponse& response
+)
 {
     auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(response.getBody());
     if (!requestJsonOpt)
     {
-        onErrorRegister("登录功能返回信息错误");
+        onErrorRegister(onError,"登录功能返回信息错误");
         LOG_ERROR("IMClient:onResponseResetPassword:接收返回值格式错误：不是正常的Json格式");
         return;
     }
@@ -263,7 +280,7 @@ void IMClient::onResponseUserLogin(const ZhKeyesIM::Net::Http::HttpResponse& res
     auto msgOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(requestJson, "msg");
     if (!successOpt || !msgOpt)
     {
-        onErrorRegister("登录功能返回信息错误");
+        onErrorRegister(onError,"登录功能返回信息错误");
         LOG_ERROR("IMClient:onResponseResetPassword:接收返回值格式错误：不是正常的Json格式");
         return;
     }
@@ -272,7 +289,7 @@ void IMClient::onResponseUserLogin(const ZhKeyesIM::Net::Http::HttpResponse& res
     std::string msg = *msgOpt;
     if (success == 0)
     {
-        onErrorRegister(msg);
+        onErrorRegister(onError,msg);
         LOG_ERROR("IMClient:onResponseResetPassword:登录失败");
     }
     else if (success == 1)
@@ -282,22 +299,26 @@ void IMClient::onResponseUserLogin(const ZhKeyesIM::Net::Http::HttpResponse& res
     return;
 }
 
-void IMClient::onErrorVerificationCode(const std::string& errorMsg)
+void IMClient::onErrorVerificationCode(ErrorCallback onError,
+    const std::string& errorMsg)
 {
     reportErrorMsg(errorMsg);
 }
 
-void IMClient::onErrorRegister(const std::string& errorMsg)
+void IMClient::onErrorRegister(ErrorCallback onError,
+    const std::string& errorMsg)
 {
     reportErrorMsg(errorMsg);
 }
 
-void IMClient::onErrorResetPassword(const std::string& errorMsg)
+void IMClient::onErrorResetPassword(ErrorCallback onError,
+    const std::string& errorMsg)
 {
     reportErrorMsg(errorMsg);
 }
 
-void IMClient::onErrorUserLogin(const std::string& errorMsg)
+void IMClient::onErrorUserLogin(ErrorCallback onError,
+    const std::string& errorMsg)
 {
     reportErrorMsg(errorMsg);
 }

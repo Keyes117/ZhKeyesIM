@@ -6,9 +6,17 @@
 #include "Http/HttpClient.h"
 #include "TCPClient.h"
 #include "ConfigManager.h"
+#include "global.h"
 
 class IMClient
 {
+public:
+    using SuccessCallback = std::function<void()>;
+    using ErrorCallback = std::function<void(const std::string&)>;
+
+    template<typename T>
+    using DataCallback = std::function<void(const T&)>;
+
 public:
     IMClient();
     ~IMClient();
@@ -16,20 +24,29 @@ public:
     bool init(const ConfigManager& config);
     bool connect();
 
-    void requestVerificationCode(const std::string& email);
+    void requestVerificationCode(SuccessCallback onSuccess,
+        ErrorCallback onError,
+        const std::string& email);
 
-    void requestRegister(const std::string& username,
+    void requestRegister(DataCallback<int> onSuccess,
+        ErrorCallback onError,
+        const std::string& username,
         const std::string& email,
         const std::string& password,
         const std::string& verificationCode);
 
-    void requestResetPassword(const std::string& username,
+    void requestResetPassword(SuccessCallback onSuccess,
+        ErrorCallback onError,
         const std::string& email,
         const std::string& password,
-        const std::string& verificationCode);
+        const std::string& verificationCode
+   );
 
-    void requestUserLogin(const std::string& username,
-        const std::string password);
+    void requestUserLogin(DataCallback<UserData> onSuccess,
+        ErrorCallback onError,
+        const std::string& username,
+        const std::string password
+ );
 
 private:
     void networkThreadFunc();
@@ -38,17 +55,36 @@ private:
 
 //onResponse
 private:
-    void onResponseVerificationCode(const ZhKeyesIM::Net::Http::HttpResponse& response);
-    void onResponseRegister(const ZhKeyesIM::Net::Http::HttpResponse& response);
-    void onResponseResetPassword(const ZhKeyesIM::Net::Http::HttpResponse& response);
-    void onResponseUserLogin(const ZhKeyesIM::Net::Http::HttpResponse& response);
+    void onResponseVerificationCode(SuccessCallback onSuccess,
+        ErrorCallback onError,
+        const ZhKeyesIM::Net::Http::HttpResponse& response);
+
+    void onResponseRegister(DataCallback<int> onSuccess,
+        ErrorCallback onError,
+        const ZhKeyesIM::Net::Http::HttpResponse& response);
+
+    void onResponseUserLogin(DataCallback<UserData> onSuccess,
+        ErrorCallback onError,
+        const ZhKeyesIM::Net::Http::HttpResponse& response);
+
+    void onResponseResetPassword(SuccessCallback onSuccess,
+        ErrorCallback onError,
+        const ZhKeyesIM::Net::Http::HttpResponse& response);
+
 
 //onError
 private:
-    void onErrorVerificationCode(const std::string& errorMsg);
-    void onErrorRegister(const std::string& errorMsg);
-    void onErrorResetPassword(const std::string& errorMsg);
-    void onErrorUserLogin(const std::string& errorMsg);
+    void onErrorVerificationCode(ErrorCallback onError,
+        const std::string& errorMsg);
+
+    void onErrorRegister(ErrorCallback onError,
+        const std::string& errorMsg);
+
+    void onErrorResetPassword(ErrorCallback onError,
+        const std::string& errorMsg);
+
+    void onErrorUserLogin(ErrorCallback onError,
+        const std::string& errorMsg);
 
 private:
 

@@ -33,7 +33,7 @@ bool RedisManager::init(const ConfigManager& config)
     return true;
 }
 
-bool RedisManager::get(const std::string& key, std::string& value)
+bool RedisManager::Get(const std::string& key, std::string& value)
 {
     if (!m_inited)
         return false;
@@ -81,7 +81,7 @@ bool RedisManager::get(const std::string& key, std::string& value)
 
 }
 
-bool RedisManager::set(const std::string& key, const std::string& value)
+bool RedisManager::Set(const std::string& key, const std::string& value)
 {
     if (!m_inited)
         return false;
@@ -124,7 +124,7 @@ bool RedisManager::set(const std::string& key, const std::string& value)
     return true;
 }
 
-bool RedisManager::auth( const std::string& password)
+bool RedisManager::Auth( const std::string& password)
 {
     if (!m_inited)
         return false;

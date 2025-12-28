@@ -45,6 +45,7 @@ struct RegisterResult {
     {
         RegisterResult result;
         result.success = true;
+        result.code = ServerStatus::ErrorCodes::Success;
         result.message = "Register successful";
         result.uid = uid;
         return result;
@@ -56,6 +57,7 @@ struct RegisterResult {
     {
         RegisterResult result;
         result.success = false;
+        result.code = code;
         result.message = msg;
         return result;
     }    
@@ -69,6 +71,7 @@ struct ResetPasswordResult {
     static ResetPasswordResult createSuccess() {
         ResetPasswordResult result;
         result.success = true;
+        result.code = ServerStatus::ErrorCodes::Success;
         result.message = "Password reset successful";
         return result;
     }

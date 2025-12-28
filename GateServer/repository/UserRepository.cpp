@@ -47,7 +47,40 @@ std::optional<UserInfo> UserRepository::findByUsername(const std::string& userna
 
 std::optional<UserInfo> UserRepository::findByEmail(const std::string& email)
 {
-    return std::optional<UserInfo>();
+    auto spConn = m_spMySql->getConnection();
+
+    ServerUtil::Defer def([this, &spConn]() {
+        m_spMySql->returnConnection(std::move(spConn));
+        });
+
+    if (!spConn)
+    {
+        LOG_ERROR("UserRepository: Failed to get database connect");
+        return std::nullopt;
+    }
+
+    try
+    {
+        auto spStmt = m_spMySql->prepareStatement(spConn,
+            "Select uid, name, email, pwd, create_time, last_login_time From user Where email = ?"
+        );
+
+        spStmt->setString(1, email);
+        std::unique_ptr<sql::ResultSet> res(spStmt->executeQuery());
+
+        if (res->next())
+        {
+            UserInfo user = parseUserInfoFromResultSet(res.get());
+            return user;
+        }
+
+        return std::nullopt;
+    }
+    catch (sql::SQLException& e)
+    {
+        LOG_ERROR("UserRepository: findByUsername failed: %s", e.what());
+        return std::nullopt;
+    }
 }
 
 std::optional<UserInfo> UserRepository::findByUid(int uid)
@@ -208,7 +241,7 @@ int UserRepository::create(const std::string& username, const std::string& email
     }
 }
 
-bool UserRepository::updatePassword(const std::string& username, const std::string& newPasswordHash)
+bool UserRepository::updatePassword(const std::string& email, const std::string& newPasswordHash)
 {
     return false;
 }

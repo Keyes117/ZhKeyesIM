@@ -5,9 +5,13 @@
         "password":"123456",
         "connNumber":10
     },
-    "rpcServer": {
+    "verifyServer": {
         "host":"127.0.0.1",
         "port":"50051"
+    },
+    "statusServer":{
+        "host":"127.0.0.1",
+        "port":"50052"
     },
     "GateServer":{
         "threadNum":"4",
@@ -18,10 +22,14 @@
     "mysql":{
         "host":"172.25.224.240",
         "port":"3306",
-        "user":"root",
-        "schema":"ZhkeyesMysql",
+        "user":"ZhKeyes",
+        "schema":"ZhKeyesMysql",
         "password":"123456",
         "connNumber":10
+    },
+    "WorkThreadPool":{
+        "threadNum" : "4",
+        "maxQueueSize" : "1000"
     },
     "log":{
         "level":"debug",

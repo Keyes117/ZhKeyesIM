@@ -26,10 +26,10 @@ void UserController::handleLogin(const HttpRequest& request,
             return;
         }
 
-        auto userOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "user");
+        auto emailOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "email");
         auto passwordOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "password");
 
-        if(!userOpt || !passwordOpt)
+        if(!emailOpt || !passwordOpt)
         {
             msg = "Error Json Param";
             LOG_WARN("UserController: param error : [ %s ]", msg);
@@ -40,10 +40,10 @@ void UserController::handleLogin(const HttpRequest& request,
             return;
         }
 
-        std::string username = *userOpt;
+        std::string email = *emailOpt;
         std::string password = *passwordOpt;
 
-        m_spUserService->login(username, password,
+        m_spUserService->login(email, password,
             std::bind(&UserController::onHandleLoginDone, this, done, std::placeholders::_1)
         );
     }
@@ -59,15 +59,15 @@ void UserController::handleLogin(const HttpRequest& request,
 
 void UserController::handleRegisterUser(const HttpRequest& request, HttpServer::AsyncDone done, const std::map<std::string, std::string>& params)
 {
-//    /*
-//    * 请求格式：
-//    * {
-//    *   "username":"xxx",
-//    *   "email" : "xxxx@xxx.com",
-//    *   "password" : "xxxx",
-//    *   "code"  : "123456"
-//    * }
-//    */
+    /*
+    * 请求格式：
+    * {
+    *   "username":"xxx",
+    *   "email" : "xxxx@xxx.com",
+    *   "password" : "xxxx",
+    *   "code"  : "123456"
+    * }
+    */
 
     std::string msg = "";
     try
@@ -104,7 +104,7 @@ void UserController::handleRegisterUser(const HttpRequest& request, HttpServer::
         std::string email = *emailOpt;
         std::string code = *codeOpt;
 
-        m_spUserService->registerUser(username, password, email, code,
+        m_spUserService->registerUser(username, email, password,  code,
             std::bind(&UserController::onHandleRegisterUserDone, this, done, std::placeholders::_1));
 
 
@@ -124,7 +124,62 @@ void UserController::handleRegisterUser(const HttpRequest& request, HttpServer::
 
 void UserController::handleResetPassword(const HttpRequest& request, HttpServer::AsyncDone done, const std::map<std::string, std::string>& params)
 {
+    /*
+    * 请求格式：
+    * {
+    *   
+    *   "email" : "xxxx@xxx.com",
+    *   "newPassword" : "xxxx",
+    *   "code"  : "123456"
+    * }
+    */
 
+    std::string msg = "";
+    try
+    {
+        auto jsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(request.getBody());
+        if (!jsonOpt)
+        {
+            msg = "Invalid JSON format";
+            LOG_WARN("UserController: request error : [ %s ]", msg);
+
+            sendError(done, HttpStatusCode::BadRequest,
+                ServerStatus::ErrorCodes::InternalError,
+                msg);
+            return;
+        }
+
+        auto newOasswordOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "newPassword");
+        auto emailOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "email");
+        auto codeOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(*jsonOpt, "code");
+
+        if ( !newOasswordOpt || !emailOpt || !codeOpt)
+        {
+            msg = "Error Json Param";
+            LOG_WARN("UserController: param error : [ %s ]", msg);
+
+            sendError(done, HttpStatusCode::BadRequest,
+                ServerStatus::ErrorCodes::InternalError,
+                msg);
+            return;
+        }
+
+        std::string newPassword = *newOasswordOpt;
+        std::string email = *emailOpt;
+        std::string code = *codeOpt;
+
+        m_spUserService->resetPassword(email, newPassword, code,
+            std::bind(&UserController::onHandleResetPasswordDone, this, done, std::placeholders::_1));
+
+    }
+    catch (std::exception& e)
+    {
+        LOG_ERROR("UserController: Exception : [ %s ]", e.what());
+        msg = "Exception Occured " + std::string(e.what());
+        sendError(done, HttpStatusCode::InternalServerError,
+            ServerStatus::ErrorCodes::InternalError, msg);
+        return;
+    }
 }
 
 void UserController::onHandleLoginDone(HttpServer::AsyncDone done, const LoginResult& result)

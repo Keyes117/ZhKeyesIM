@@ -35,6 +35,20 @@ bool LoginDlg::isAccountAndPassWordRight()
     return false;
 }
 
+void LoginDlg::onLoginSuccess(const UserData& userData)
+{
+    //m_ui.button_login->setEnabled(true);
+
+    QMessageBox::information(this, "成功",
+        QString("欢迎回来，%1！").arg(QString::fromStdString(userData.username)));
+
+    // 保存token等信息
+    // StateManager::getInstance().setLoginData(data);
+
+    //emit loginSuccess();
+
+}
+
 void LoginDlg::onLoginButtonClicked()
 {
     if (isLineEditEmpty())

@@ -20,15 +20,16 @@ namespace ServerStatus
         PasswdInValid = 1006,
         PasswdErr = 1007,    //密码错误
         EmailNotMatch = 1008,  //邮箱不匹配
-        PasswdUpFailed = 1009,  //更新密码失败
-        PasswdInvalid = 1010,   //密码更新失败
+        ResetPassFailed = 1009,  //更新密码失败
+        NewPassIsSame = 1010,   // 两次密码相同
         TokenInvalid = 1011,   //Token失效
         UidInvalid = 1012,  //uid无效
    
       
-        InternalError = 1013,    //Http 内部错误
-        ParamError = 1014,        //参数错误
-        UserNotFount = 1015
+        InternalError = 1101,    //Http 内部错误
+        ParamError = 1102,        //参数错误
+        UserNotFound = 1015,
+
     };
 
     enum class GrpcErrors

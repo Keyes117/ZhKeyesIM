@@ -27,7 +27,7 @@ public:
     int create(const std::string& username,
         const std::string& email,
         const std::string& passwordHash);
-    bool updatePassword(const std::string& username,
+    bool updatePassword(const std::string& email,
         const std::string& newPasswordHash);
     bool updateLastLoginTime(int uid);
 

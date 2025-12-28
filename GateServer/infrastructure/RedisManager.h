@@ -18,9 +18,9 @@ public:
 
     bool init(const ConfigManager& config);
 
-    bool get(const std::string& key, std::string& value);
-    bool set(const std::string& key, const std::string& value);
-    bool auth(const std::string& password);
+    bool Get(const std::string& key, std::string& value);
+    bool Set(const std::string& key, const std::string& value);
+    bool Auth(const std::string& password);
     bool LPush(const std::string& key, const std::string& value);
     bool LPop(const std::string& key,  std::string& value);
     bool RPush(const std::string& key, const std::string& value);

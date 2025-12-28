@@ -3,8 +3,8 @@
 #include <QRegularExpression>
 
 #include "global.h"
-#include "SendResetPassTask.h"
-#include "GetVerifyCodeTask.h"
+#include "Task/ResetPasswordTask.h"
+#include "Task/VerifyCodeTask.h"
 #include "TaskHandler.h"
 
 ResetDlg::ResetDlg(std::shared_ptr<IMClient> spClient, QWidget *parent)
@@ -238,7 +238,7 @@ void ResetDlg::onConfirmButtonClicked()
     QString code = m_ui.lineEdit_code->text();
     QString password = m_ui.lineEdit_password->text();
 
-    auto resetTask = std::make_shared<SendResetPassTask>(m_spClient, user.toStdString(),
+    auto resetTask = std::make_shared<ResetPasswordTask>(m_spClient, user.toStdString(),
         email.toStdString(), code.toStdString(), password.toStdString()
     );
 

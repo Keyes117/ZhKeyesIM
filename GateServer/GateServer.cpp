@@ -31,9 +31,9 @@ bool GateServer::init(ConfigManager& config)
         auto typeOpt = config.getSafe<std::string>({ "GateServer", "IOType" });
 
         auto workThreadNumOpt = config.getSafe<std::string>({ "WorkThreadPool", "threadNum" });
-        auto maxQueueSize = config.getSafe<std::string>({ "WorkThreadPool", "maxQueueSize" });
+        auto maxQueueSizeOpt = config.getSafe<std::string>({ "WorkThreadPool", "maxQueueSize" });
 
-        if (!threadNumOpt || !ipOpt || !portOpt || !typeOpt || !workThreadNumOpt || !maxQueueSize)
+        if (!threadNumOpt || !ipOpt || !portOpt || !typeOpt || !workThreadNumOpt || !maxQueueSizeOpt)
         {
             LOG_ERROR("GateServer: 获取GateServer 相关配置失败");
             return false;
@@ -52,26 +52,26 @@ bool GateServer::init(ConfigManager& config)
 
         // ================== WorkThreadPool ==================
         int workThreadNum = std::stoi(*workThreadNumOpt);
-        int maxQueueSize = std::stoi(*maxQueueSize);
+        int maxQueueSize = std::stoi(*maxQueueSizeOpt);
 
         m_spWorkThreadPool = std::make_shared<WorkThreadPool>(workThreadNum, maxQueueSize);
         m_spWorkThreadPool->start();
 
-        //if (!m_spGrpcVerifyClient->init(config))
-        //{
-        //    LOG_ERROR("GateServer: gprc 客户端 初始化失败");
-        //    return false;
-        //}
-        //if (!m_spRedisManager->init(config))
-        //{
-        //    LOG_ERROR("GateServer: redis 客户端 初始化失败");
-        //    return false;
-        //}
-        //if (!m_spMySqlManager->init(config))
-        //{
-        //    LOG_ERROR("GateServer: MySql 客户端 初始化失败");
-        //    return false;
-        //}
+        if (!m_spGrpcVerifyClient->init(config))
+        {
+            LOG_ERROR("GateServer: gprc 客户端 初始化失败");
+            return false;
+        }
+        if (!m_spRedisManager->init(config))
+        {
+            LOG_ERROR("GateServer: redis 客户端 初始化失败");
+            return false;
+        }
+        if (!m_spMySqlManager->init(config))
+        {
+            LOG_ERROR("GateServer: MySql 客户端 初始化失败");
+            return false;
+        }
      
 
         // ================== Repository ==================

@@ -47,20 +47,22 @@ bool MySqlConnPool::init()
             auto currentTime = std::chrono::system_clock::now().time_since_epoch();
             //将时间戳转换为 秒
             long long timestamp = std::chrono::duration_cast<std::chrono::seconds>(currentTime).count();
-            m_pool.push(std::make_unique<MySqlConnection>(conn, timestamp));
+            m_pool.push(std::make_shared<MySqlConnection>(conn, timestamp));
         }
 
-        m_poolSize = m_pool.size();
+ 
         m_checkThread = std::thread(std::bind(&MySqlConnPool::checkThreadFunc, this));
         m_checkThread.detach();
 
     }
     catch (sql::SQLException& e)
     {
-        LOG_ERROR("Mysql pool init failed, error is");
+        LOG_ERROR("Mysql pool init failed: %s | MySQL error code: %d | SQLState: %s",
+            e.what(), e.getErrorCode(), e.getSQLState().c_str());
     }
 
-    m_bStop = true;
+    m_bStop = false;
+    m_poolSize = m_pool.size();
     return  (m_poolSize > 0);
 }
 
@@ -98,7 +100,7 @@ void MySqlConnPool::checkConnectionPro()
             if (m_pool.empty())
                 break;
 
-            auto conn = std::move(m_pool.front());
+            conn = std::move(m_pool.front());
             m_pool.pop();
         }
 
@@ -166,7 +168,7 @@ bool MySqlConnPool::reconnect(long long timestamp)
     }
     catch (sql::SQLException& e)
     {
-        LOG_ERROR("MySQL reconnect failed, error is %d", e.what());
+        LOG_ERROR("MySQL reconnect failed, error is %s", e.what());
         return false;
     }
 }

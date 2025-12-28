@@ -27,7 +27,7 @@ public:
 
     bool init(const ConfigManager& config);
 
-    message::GetVerifyResponse  (std::string email);
+    message::GetVerifyResponse  GetVerifyCode(std::string email);
 
     void GetVerifyCodeAsync(const std::string& email, GetVerifyCodeCallback&& callback);
 

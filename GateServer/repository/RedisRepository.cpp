@@ -19,7 +19,7 @@ std::optional<std::string> RedisRepository::getVerifyCode(const std::string& ema
     std::string key = ServerParam::code_prefix + email;
     std::string value;
 
-    bool success = m_spRedis->get(key, value);
+    bool success = m_spRedis->Get(key, value);
     if (success && !value.empty())
     {
         return value;

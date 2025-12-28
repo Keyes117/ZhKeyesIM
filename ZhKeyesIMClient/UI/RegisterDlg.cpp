@@ -1,14 +1,14 @@
 #include "RegisterDlg.h"
 
 
-
+#include <QMessageBox>
 #include <QRegularExpression>
 #include <QTimer>
 
 #include "global.h"
 #include "TaskHandler.h"
-#include "SendRegisterTask.h"
-#include "GetVerifyCodeTask.h"
+#include "Task/RegisterTask.h"
+#include "Task/VerifyCodeTask.h"
 
 RegisterDlg::RegisterDlg(std::shared_ptr<IMClient> spClient, QWidget* parent)
     : QDialog(parent),
@@ -71,7 +71,7 @@ void RegisterDlg::setUpSignals()
     connect(m_ui.label_pass_visible, &ClickedLabel::clicked, this, &RegisterDlg::switchLabelPassVisible);
     connect(m_ui.label_confirm_visible, &ClickedLabel::clicked, this, &RegisterDlg::switchLabelConfirmVisible);
 
-    connect(&TaskHandler::getInstance(), &TaskHandler::verifyCodeRecevied, this, &RegisterDlg::onVerifyCodeReceived);
+    //connect(&TaskHandler::getInstance(), &TaskHandler::verifyCodeRecevied, this, &RegisterDlg::onVerifyCodeReceived);
 }
 
 void RegisterDlg::startCountdown()
@@ -112,6 +112,49 @@ void RegisterDlg::hideFieldError(const QString& fieldName)
     }
 }
 
+void RegisterDlg::onRegisterSuccess(int uid)
+{
+    //showLoading(false);
+
+    QMessageBox::information(this,
+        "注册成功",
+        QString("欢迎！您的ID是：%1").arg(uid));
+
+    emit registerSuccess(uid);
+    emit switchLoginDlg();
+}
+
+void RegisterDlg::onRegisterError(const std::string& error)
+{
+    //showLoading(false);
+
+    QMessageBox::warning(this,
+        "注册失败",
+        QString::fromStdString(error));
+}
+
+void RegisterDlg::onVerifyCodeSuccess()
+{
+    m_ui.button_code->setEnabled(true);
+    m_ui.button_code->setText("获取验证码");
+
+    QMessageBox::information(this,
+        "成功",
+        "验证码已发送到您的邮箱，请注意查收");
+
+    startCountdown();
+}
+
+void RegisterDlg::onVerifyCodeError(const std::string& error) 
+{
+    m_ui.button_code->setEnabled(true);
+    m_ui.button_code->setText("获取验证码");
+
+    QMessageBox::warning(this,
+        "错误",
+        QString::fromStdString(error));
+}
+
 
 void RegisterDlg::onCancelButtonClicked()
 {
@@ -150,8 +193,13 @@ void RegisterDlg::onRegisterButtonClicked()
     QString strPassword = m_ui.lineEdit_password->text();
     QString strCode = m_ui.lineEdit_code->text();
 
-    auto regiserTask = std::make_shared<SendRegisterTask>(
-        m_spClient,strUser.toStdString(), strEmail.toStdString(), strPassword.toStdString(), strCode.toStdString()
+    auto regiserTask = std::make_shared<RegisterTask>(
+        m_spClient, strUser.toStdString(),
+        strEmail.toStdString(),
+        strPassword.toStdString(),
+        strCode.toStdString(),
+        std::bind(&RegisterDlg::onRegisterSuccess, this, std::placeholders::_1),
+        std::bind(&RegisterDlg::onRegisterError, this, std::placeholders::_1)
     );
 
     TaskHandler::getInstance().registerNetTask(std::move(regiserTask));
@@ -165,21 +213,13 @@ void RegisterDlg::onCodeButtonClicked()
     if (match)
     {
         //发送验证码
-        auto verifyCodeTask = std::make_shared<GetVerifyCodeTask>(m_spClient, email.toStdString());
+        auto verifyCodeTask = std::make_shared<GetVerifyCodeTask>(m_spClient, email.toStdString(),
+            std::bind(&RegisterDlg::onVerifyCodeSuccess,this,std::placeholders::_1),
+            std::bind(&RegisterDlg::onVerifyCodeError,this,std::placeholders::_1));
+
+
         TaskHandler::getInstance().registerNetTask(std::move(verifyCodeTask));
     }
-}
-
-void RegisterDlg::onVerifyCodeReceived(bool success, QString message, int errorCode)
-{
-    //if (success)
-    //{
-    //    showTip("验证码已发送到您的邮箱，请查收", false);
-    //}
-    //else
-    //{
-    //    showTip("验证码发送失败: " + message, true);
-    //}
 }
 
 void RegisterDlg::onUserTextChanged(const QString& text)

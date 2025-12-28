@@ -4,9 +4,6 @@
 
 int main()
 {
-    
-
-
     Logger::instance().setLogLevel(LogLevel::INFO);
 
     //Logger::instance().setLogFile("server.log");

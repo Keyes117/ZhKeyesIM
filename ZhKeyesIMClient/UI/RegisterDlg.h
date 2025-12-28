@@ -30,14 +30,21 @@ private:
     void showFieldError(const QString& fieldName, const QString& errorMsg);
     void hideFieldError(const QString& fieldName);
 
+
+    void onRegisterSuccess(int uid);
+    void onRegisterError(const std::string& error);
+         
+    void onVerifyCodeSuccess();
+    void onVerifyCodeError(const std::string& error);
+
 signals:
     void switchLoginDlg();
+    void registerSuccess(int uid);
 
 private slots:
     void onCancelButtonClicked();
     void onRegisterButtonClicked();
     void onCodeButtonClicked();
-    void onVerifyCodeReceived(bool success, QString message, int errorCode);
 
     void onUserTextChanged(const QString& text);
     void onEmailTextChanged(const QString& text);

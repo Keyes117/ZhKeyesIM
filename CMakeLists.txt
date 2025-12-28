@@ -386,6 +386,38 @@ function(copy_mysql_dlls_to_target target_name)
                     COMMENT "Copying ${DLL_NAME} to ${target_name} output directory"
                 )
             endforeach()
+
+          # 2. 复制 plugin 目录（包含认证插件如 mysql_native_password.dll）
+            set(MYSQL_PLUGIN_DIR "${MYSQL_CONNECTOR_DIR}/../plugin")
+            if(EXISTS "${MYSQL_PLUGIN_DIR}")
+                add_custom_command(TARGET ${target_name} POST_BUILD
+                    # 1. 创建 plugin 目录
+                    COMMAND ${CMAKE_COMMAND} -E make_directory
+                        "$<TARGET_FILE_DIR:${target_name}>/plugin"
+                    # 2. 复制所有 plugin DLL
+                    COMMAND ${CMAKE_COMMAND} -E copy_directory
+                        "${MYSQL_PLUGIN_DIR}"
+                        "$<TARGET_FILE_DIR:${target_name}>/plugin"
+                    COMMENT "Copying MySQL authentication plugins to ${target_name} output directory"
+                )
+            endif()
+
+            # 3. 复制 bin 目录下的依赖DLL（Kerberos、SASL等）
+            set(MYSQL_BIN_DIR "${CMAKE_SOURCE_DIR}/third_party/mysql-connector/Debug/bin")
+            if(EXISTS "${MYSQL_BIN_DIR}")
+                file(GLOB MYSQL_BIN_DLLS "${MYSQL_BIN_DIR}/*.dll")
+                foreach(DLL_FILE ${MYSQL_BIN_DLLS})
+                    get_filename_component(DLL_NAME ${DLL_FILE} NAME)
+                    add_custom_command(TARGET ${target_name} POST_BUILD
+                        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                        "${DLL_FILE}"
+                        "$<TARGET_FILE_DIR:${target_name}>/${DLL_NAME}"
+                        COMMENT "Copying ${DLL_NAME} to ${target_name} output directory"
+                    )
+                endforeach()
+            endif()
+
+
         endif()
     endif()
 endfunction()

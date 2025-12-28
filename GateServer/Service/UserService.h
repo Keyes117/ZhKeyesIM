@@ -26,7 +26,7 @@ public:
     ~UserService() = default;
 
     // 用户业务逻辑
-    void login(const std::string& username, 
+    void login(const std::string& email, 
                     const std::string& password,
                     LoginCallback callback
     );
@@ -38,11 +38,10 @@ public:
                                RegisterCallback callback
     );
     
-    void resetPassword(const std::string& username,
-                                     const std::string& email,
-                                     const std::string& newPassword,
-                                     const std::string& verifyCode,
-                                     ResetPasswordCallback callback    
+    void resetPassword(const std::string& email,
+                               const std::string& newPassword,
+                               const std::string& verifyCode,
+                               ResetPasswordCallback callback    
     );
 
 private:

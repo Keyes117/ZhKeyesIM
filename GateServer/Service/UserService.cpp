@@ -7,13 +7,14 @@ UserService::UserService(std::shared_ptr<UserRepository> userRepo,
     std::shared_ptr<AuthService> authService,
     std::shared_ptr<WorkThreadPool> threadPool)
     :m_spUserRepo(userRepo),
+    m_spRedisRepo(redisRepo),
     m_spAuthService(authService),
     m_spWorkThreadPool(threadPool)
 {
 
 }
 
-void UserService::login(const std::string& username, 
+void UserService::login(const std::string& email, 
     const std::string& password, LoginCallback callback)
 {
     LOG_INFO("UserService: Processing login");
@@ -26,7 +27,7 @@ void UserService::login(const std::string& username,
 
     try
     {
-        if (username.empty() || password.empty())
+        if (email.empty() || password.empty())
         {
             result = LoginResult::createFailure(
                 "Username or password cannot be empty",
@@ -37,7 +38,7 @@ void UserService::login(const std::string& username,
             return;
         }
 
-        auto userInfoOpt = m_spUserRepo->findByUsername(username);
+        auto userInfoOpt = m_spUserRepo->findByEmail(email);
         if (!userInfoOpt)
         {
             result = LoginResult::createFailure(
@@ -55,7 +56,7 @@ void UserService::login(const std::string& username,
 
         if (!passwordValid)
         {
-            LOG_WARN("UserService: Invalid password for user: %s", username.c_str());
+            LOG_WARN("UserService: Invalid password for email: %s", email.c_str());
             result = LoginResult::createFailure(
                 "Invalid password",
                 ServerStatus::ErrorCodes::PasswdErr
@@ -69,7 +70,7 @@ void UserService::login(const std::string& username,
 
         if (token.empty())
         {
-            LOG_ERROR("UserService: Failed to generate token for user: %s", username.c_str());
+            LOG_ERROR("UserService: Failed to generate token for email: %s", email.c_str());
             result = LoginResult::createFailure(
                 "Failed to generate authentication token",
                 ServerStatus::ErrorCodes::InternalError
@@ -192,7 +193,6 @@ void UserService::registerUser(const std::string& username,
         // 9. 注册成功
         LOG_INFO("UserService: User registered successfully - uid: %d, username: %s", uid, username.c_str());
         result = RegisterResult::createSuccess(uid);
-        result.code = ServerStatus::ErrorCodes::Success;
         callback(result);
 
     }
@@ -205,13 +205,128 @@ void UserService::registerUser(const std::string& username,
         );
         callback(result);
     }
-
-
-
 }
 
-void UserService::resetPassword(const std::string& username, const std::string& email, const std::string& newPassword, const std::string& verifyCode, ResetPasswordCallback callback)
+void UserService::resetPassword(const std::string& email, 
+    const std::string& newPassword,
+    const std::string& verifyCode, 
+    ResetPasswordCallback callback)
 {
+    //1 从Redis获取验证码
+    //2 验证验证码
+    //3 从Mysql查询Email
+    //4 用户存在、修改密码， 用户不存在则返回
+
+    ResetPasswordResult result;
+
+    ServerUtil::Defer def([this, callback, &result]() {
+        callback(result);
+        });
+
+    try
+    {
+        // 1. 参数验证
+        if (email.empty() || newPassword.empty() ||  verifyCode.empty())
+        {
+            result = ResetPasswordResult::createFailure(
+                "All fields are required",
+                ServerStatus::ErrorCodes::ParamError
+            );
+            return;
+        }
+
+        // 2. 从Redis获取验证码
+        auto storedCodeOpt = m_spRedisRepo->getVerifyCode(email);
+        if (!storedCodeOpt)
+        {
+            LOG_WARN("UserService: Verification code expired or not found for email: %s", email.c_str());
+            result = ResetPasswordResult::createFailure(
+                "Verification code expired or not found",
+                ServerStatus::ErrorCodes::VarifyExpired
+            );
+            return;
+        }
+
+        // 3. 验证验证码是否正确
+        std::string storedCode = *storedCodeOpt;
+        if (verifyCode != storedCode)
+        {
+            LOG_WARN("UserService: Invalid verification code for email: %s", email.c_str());
+            result = ResetPasswordResult::createFailure(
+                "Invalid verification code",
+                ServerStatus::ErrorCodes::VarifyCodeErr
+            );
+            return;
+        }
+
+
+        auto userInfoOpt = m_spUserRepo->findByEmail(email);
+        // 5. 检查用户是否注册
+        if (!userInfoOpt)
+        {
+            LOG_WARN("UserService: user is not exists: %s", email.c_str());
+            result = ResetPasswordResult::createFailure(
+                "The User is not Registered",
+                ServerStatus::ErrorCodes::UserNotFound
+            );
+            return;
+        }
+
+        UserInfo userInfo = *userInfoOpt;
+        
+
+        if (m_spAuthService->verifyPassword(newPassword, userInfo.passwordHash))
+        {
+            LOG_WARN("UserService: newPass is the same as previous", email.c_str());
+            result = ResetPasswordResult::createFailure(
+                "newPass is the same as previous",
+                ServerStatus::ErrorCodes::NewPassIsSame
+            );
+            return;
+        }
+
+        std::string newPassHash = m_spAuthService->hashPassword(newPassHash);
+
+        if (newPassHash.empty())
+        {
+            LOG_WARN("UserService: resetPassword failed ");
+            result = ResetPasswordResult::createFailure(
+                "resetPassword failed",
+                ServerStatus::ErrorCodes::ResetPassFailed
+            );
+            callback(result);
+            return;
+        }
+
+        if (!m_spUserRepo->updatePassword(email, newPassHash))
+        {
+            LOG_WARN("UserService: resetPassword failed ");
+            result = ResetPasswordResult::createFailure(
+                "resetPassword failed",
+                ServerStatus::ErrorCodes::ResetPassFailed
+            );
+            callback(result);
+            return;
+        }
+
+        // 8. 删除已使用的验证码
+        m_spRedisRepo->deleteVerifyCode(email);
+
+        // 9. 注册成功
+        LOG_INFO("UserService: User resetPass successfully - email: %s", email);
+        result = ResetPasswordResult::createSuccess();
+        callback(result);
+
+    }
+    catch (const std::exception& e)
+    {
+        LOG_ERROR("UserService: Exception during registration: %s", e.what());
+        result = ResetPasswordResult::createFailure(
+            "Internal server error",
+            ServerStatus::ErrorCodes::InternalError
+        );
+    }
+
 }
 
 

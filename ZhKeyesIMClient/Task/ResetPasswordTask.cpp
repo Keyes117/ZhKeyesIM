@@ -24,9 +24,11 @@ ResetPasswordTask::ResetPasswordTask(
 void ResetPasswordTask::doTask() {
     LOG_INFO("ResetPasswordTask: Resetting password for: %s", m_email.c_str());
 
+    auto selfTask = std::static_pointer_cast<ResetPasswordTask>(shared_from_this());
+
     m_client->requestResetPassword(
-        std::bind(&ResetPasswordTask::onSuccess, this),
-        std::bind(&ResetPasswordTask::onError, this, std::placeholders::_1),
+        std::bind(&ResetPasswordTask::onSuccess, selfTask),
+        std::bind(&ResetPasswordTask::onError, selfTask, std::placeholders::_1),
         m_email, m_newPassword, m_code        
     );
 }

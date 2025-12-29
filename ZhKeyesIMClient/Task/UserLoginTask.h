@@ -14,7 +14,8 @@
 /**
  * 用户登录任务
  */
-class UserLoginTask : public Task {
+class UserLoginTask : public Task
+{
 public:
     UserLoginTask(std::shared_ptr<IMClient> client,
         std::string email,

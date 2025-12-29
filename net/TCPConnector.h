@@ -14,7 +14,7 @@
 using ConnectCallback = std::function<void(SOCKET fd)>;
 using ConnectFailedCallback = std::function<void()>;
 
-class TCPConnector : EventDispatcher
+class TCPConnector : public EventDispatcher, public std::enable_shared_from_this<TCPConnector>
 {
 public:
     TCPConnector(const std::shared_ptr<EventLoop>& spEventLoop);

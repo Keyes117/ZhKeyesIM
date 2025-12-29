@@ -15,6 +15,12 @@ public:
     ~ResetDlg();
 
 
+    void onResetPasswordSuccess();
+    void onResetPasswordError(const std::string& error);
+
+    void onVerifyCodeSuccess();
+    void onVerifyCodeError(const std::string& error);
+
 private:
     // ÉèÖÃÊäÈë¿ò´íÎó×´Ì¬
     void setLineEditError(QLineEdit* lineEdit, bool hasError);

@@ -161,7 +161,7 @@ namespace ZhKeyesIM {
                 std::shared_ptr<EventLoop> m_eventLoop;
 
                 // 连接管理
-                std::unique_ptr<TCPConnector> m_connector;
+                std::shared_ptr<TCPConnector> m_connector;
                 std::shared_ptr<TCPConnection> m_spConnection;
        
                 // HTTP 协议

@@ -20,8 +20,10 @@ GetVerifyCodeTask::GetVerifyCodeTask(
 void GetVerifyCodeTask::doTask() {
     LOG_INFO("GetVerifyCodeTask: Sending verify code to: %s", m_email.c_str());
 
-    m_spClient->requestVerificationCode(std::bind(&GetVerifyCodeTask::onSuccess, this),
-        std::bind(&GetVerifyCodeTask::onError, this, std::placeholders::_1),
+    auto selfTask = std::static_pointer_cast<GetVerifyCodeTask>(shared_from_this());
+
+    m_spClient->requestVerificationCode(std::bind(&GetVerifyCodeTask::onSuccess, selfTask),
+        std::bind(&GetVerifyCodeTask::onError, selfTask, std::placeholders::_1),
         m_email
     );
 }

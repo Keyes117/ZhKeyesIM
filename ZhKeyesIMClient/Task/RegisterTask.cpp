@@ -26,10 +26,12 @@ RegisterTask::RegisterTask(
 void RegisterTask::doTask() {
     LOG_INFO("RegisterTask: Executing register for user: %s", m_username.c_str());
 
+    auto selfTask = std::static_pointer_cast<RegisterTask>(shared_from_this());
+
     // 在网络线程调用IMClient
     m_client->requestRegister(
-        std::bind(&RegisterTask::onSuccess, this, std::placeholders::_1),
-        std::bind(&RegisterTask::onError, this, std::placeholders::_1),
+        std::bind(&RegisterTask::onSuccess, selfTask, std::placeholders::_1),
+        std::bind(&RegisterTask::onError, selfTask, std::placeholders::_1),
         m_username, m_email, m_password, m_code     
     );
 }

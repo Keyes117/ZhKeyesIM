@@ -22,9 +22,11 @@ UserLoginTask::UserLoginTask(
 void UserLoginTask::doTask() {
     LOG_INFO("LoginTask: Executing login for email: %s", m_email.c_str());
 
+    auto selfTask = std::static_pointer_cast<UserLoginTask>(shared_from_this());
+
     m_client->requestUserLogin(
-        std::bind(&UserLoginTask::handleSuccess, this, std::placeholders::_1),
-        std::bind(&UserLoginTask::handleError, this, std::placeholders::_1),
+        std::bind(&UserLoginTask::handleSuccess, selfTask, std::placeholders::_1),
+        std::bind(&UserLoginTask::handleError, selfTask, std::placeholders::_1),
         m_email, m_password
     );
 }

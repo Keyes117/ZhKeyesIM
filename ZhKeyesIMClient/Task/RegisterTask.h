@@ -15,7 +15,8 @@
  * 用户注册任务
  * 负责处理用户注册的网络请求
  */
-class RegisterTask : public Task {
+class RegisterTask : public Task
+{
 public:
     /**
      * 构造函数

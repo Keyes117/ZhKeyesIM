@@ -76,7 +76,8 @@ void TaskHandler::sendThreadProc()
 
         pTask->doTask();
         m_netTasks.pop_front();
-        pTask.reset();
+        
+        //pTask.reset();
     }
 }
 
@@ -102,6 +103,6 @@ void TaskHandler::recvThreadProc()
 
         pTask->doTask();
         m_UITasks.pop_front();
-        pTask.reset();
+        //pTask.reset();
     }
 }

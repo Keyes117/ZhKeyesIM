@@ -48,7 +48,7 @@ void BaseController::sendError(HttpServer::AsyncDone& done,
     try
     {
         nlohmann::json responseJson = {
-            {"success", 1},
+            {"success", 0},
             {"code" , static_cast<int>(errorCode)},
             {"msg", message},
             {"timestamp", std::time(nullptr)}

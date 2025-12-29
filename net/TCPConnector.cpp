@@ -184,11 +184,15 @@ bool TCPConnector::connect()
             m_connectStartTime = std::chrono::steady_clock::now();
             m_spEventLoop->registerWriteEvent(m_socket, this);
 
+
+            auto self = shared_from_this();
             m_timeOutTimerId = m_spEventLoop->addTimer(
                 m_connectTimeoutMs,
                 1,
-                std::bind(&TCPConnector::onConnectionTimeout, this)
-            );
+                [self](int64_t timerId) {
+                    if (self)
+                        self->onConnectionTimeout();
+                });
 
             return true;
         }
@@ -272,17 +276,18 @@ void TCPConnector::checkConnectResult()
     {
         LOG_INFO("connection successful");
            
+        m_isConnecting.store(false);
         // 【修复】在移交 socket 前先注销写事件
         if (m_socket != INVALID_SOCKET && m_spEventLoop)
         {
             m_spEventLoop->unregisterWriteEvent(m_socket, this);
         }
 
-        if (m_timeOutTimerId > 0 && m_spEventLoop)
-        {
-            m_spEventLoop->removeTimer(m_timeOutTimerId);
-            m_timeOutTimerId = -1;
-        }
+        //if (m_timeOutTimerId > 0 && m_spEventLoop)
+        //{
+        //    m_spEventLoop->removeTimer(m_timeOutTimerId);
+        //    m_timeOutTimerId = -1;
+        //}
 
         if (m_connectCallback)
         {
@@ -293,7 +298,7 @@ void TCPConnector::checkConnectResult()
     }
     else
     {
-        m_isConnecting.store(false);
+  
 
         if (m_connectFailedCallback)
             m_connectFailedCallback();
@@ -322,8 +327,7 @@ void TCPConnector::onConnectionTimeout()
 {
     if (m_isConnecting.load())
     {
-        if (m_connectFailedCallback)
-            m_connectFailedCallback();
+        checkConnectResult();
     }
 
 }

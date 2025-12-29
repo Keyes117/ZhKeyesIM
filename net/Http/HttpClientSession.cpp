@@ -127,7 +127,7 @@ void ZhKeyesIM::Net::Http::HttpClientSession::checkTimeout()
 void HttpClientSession::startConnect()
 {
     m_isConnecting = true;
-    m_connector = std::make_unique<TCPConnector>(m_eventLoop);
+    m_connector = std::make_shared<TCPConnector>(m_eventLoop);
 
     // 设置连接成功回调
     m_connector->setConnectCallback(

@@ -6,7 +6,9 @@
 #ifndef ZHKEYESIMCLIENT_TASK_TASK_H_
 #define ZHKEYESIMCLIENT_TASK_TASK_H_
 
-class Task
+#include <memory>
+
+class Task : public std::enable_shared_from_this<Task>
 {
 public:
     Task() = default;

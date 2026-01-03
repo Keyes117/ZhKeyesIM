@@ -8,6 +8,7 @@ using namespace nlohmann;
 
 
 GateServer::GateServer():
+    m_spGrpcStatusClient(std::make_shared<StatusGrpcClient>()),
     m_spGrpcVerifyClient(std::make_shared<VerifyGrpcClient>()),
     m_spRedisManager(std::make_shared<RedisManager>()),
     m_spMySqlManager(std::make_shared<MySqlManager>()),
@@ -57,9 +58,15 @@ bool GateServer::init(ConfigManager& config)
         m_spWorkThreadPool = std::make_shared<WorkThreadPool>(workThreadNum, maxQueueSize);
         m_spWorkThreadPool->start();
 
+        if (!m_spGrpcStatusClient->init(config))
+        {
+            LOG_ERROR("GateServer: StatusServer gprc 客户端 初始化失败");
+            return false;
+        }
+
         if (!m_spGrpcVerifyClient->init(config))
         {
-            LOG_ERROR("GateServer: gprc 客户端 初始化失败");
+            LOG_ERROR("GateServer: VerifyServer gprc 客户端 初始化失败");
             return false;
         }
         if (!m_spRedisManager->init(config))
@@ -81,7 +88,8 @@ bool GateServer::init(ConfigManager& config)
         // ================== Service ==================
         m_spAuthService = std::make_shared<AuthService>();
         m_spVerifyService = std::make_shared<VerifyService>(m_spGrpcVerifyClient, m_spRedisRepository);
-        m_spUserService = std::make_shared<UserService>(m_spUserRepository, m_spRedisRepository, m_spAuthService, m_spWorkThreadPool);
+        m_spUserService = std::make_shared<UserService>(m_spUserRepository,
+            m_spRedisRepository, m_spAuthService,m_spGrpcStatusClient, m_spWorkThreadPool);
 
 
         // ================== Controller ==================

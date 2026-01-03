@@ -59,27 +59,9 @@ bool VerifyGrpcClient::init(const ConfigManager& config)
 }
 
 
-GetVerifyResponse VerifyGrpcClient::GetVerifyCode(std::string email)
-{
-    ClientContext context;
-    GetVerifyResponse response;
-    GetVerifyRequest request;
-    request.set_email(email);
 
-    Status status = m_stub->GetVerifyCode(&context, request, &response);
 
-    if (status.ok())
-    {
-        return response;
-    }
-    else
-    {
-        response.set_error(static_cast<int32_t>(ErrorCodes::RPCFailed));
-        return response;
-    }
-}
-
-void VerifyGrpcClient::GetVerifyCodeAsync(const std::string& email, GetVerifyCodeCallback&& callback)
+void VerifyGrpcClient::GetVerifyCode(const std::string& email, GetVerifyCodeCallback&& callback)
 {
     //这里在 processCQ 中delete;
     auto call = new AsyncClientCall;
@@ -118,7 +100,7 @@ void VerifyGrpcClient::processCQ()
         // 2. 检查 RPC 状态
         if (!call->status.ok()) {
             // RPC 调用失败
-            LOG_ERROR("Async GRPC call failed: code=%d, message=%s",
+            LOG_ERROR("VerifyClient GRPC call failed: code=%d, message=%s",
                 call->status.error_code(),
                 call->status.error_message().c_str());
 
@@ -127,7 +109,7 @@ void VerifyGrpcClient::processCQ()
         }
         else {
             // RPC 调用成功
-            LOG_DEBUG("Async GRPC call succeeded, error code in response: %d",
+            LOG_DEBUG("VerifyClient GRPC call succeeded, error code in response: %d",
                 call->response.error());
         }
 

@@ -21,7 +21,7 @@ public:
         std::string email,
         std::string password,
         QObject* uiReceiver,
-        std::function<void(const UserData&)> onSuccess,
+        std::function<void(const User&)> onSuccess,
         std::function<void(const std::string&)> onError);
 
     ~UserLoginTask() override = default;
@@ -29,7 +29,7 @@ public:
     void doTask() override;
 
 private:
-    void handleSuccess(const UserData& data);
+    void handleSuccess(const User& data);
     void handleError(const std::string& error);
 
 private:
@@ -37,7 +37,7 @@ private:
     std::string m_email;
     std::string m_password;
     QObject* m_uiReceiver;
-    std::function<void(const UserData&)> m_onSuccess;
+    std::function<void(const User&)> m_onSuccess;
     std::function<void(const std::string&)> m_onError;
 };
 

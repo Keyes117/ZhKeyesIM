@@ -33,6 +33,11 @@ public:
     bool existsKey(const std::string& key);
     void close();
 
+    std::vector<std::string> LRange(const std::string& key, int start = 0, int end = -1);
+
+    bool HINCRBY(const std::string& key, const std::string& field, int increment);
+
+    //std::map<std::string, std::string> HGetAll(const std::string& key);
 
 private:
     bool    m_inited = false;
@@ -45,4 +50,4 @@ private:
 
 };
 
-#endif // !GATESERVER_REDISMANAGER_H_
+#endif // !STATUSSERVER_REDISMANAGER_H_

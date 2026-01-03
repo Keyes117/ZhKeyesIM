@@ -23,7 +23,7 @@ void VerifyService::getVerifyCodeAsync(const std::string& email, VerifyCallback 
             return;
         }
 
-        m_spGrpcClient->GetVerifyCodeAsync(email,
+        m_spGrpcClient->GetVerifyCode(email,
             std::bind(&VerifyService::onGetVerifyCodeAsyncDone,
                 this, std::move(callback), std::placeholders::_1)
         );

@@ -17,8 +17,9 @@ bool RedisManager::init(const ConfigManager& config)
     auto hostOpt = config.getSafe<std::string>({ "redis","host" });
     auto portOpt = config.getSafe<std::string>({ "redis","port" });
     auto passwordOpt = config.getSafe<std::string>({ "redis","password" });
+    auto connNumberOpt = config.getSafe<int>({ "redis","connNumber" });
 
-    if (!hostOpt || !portOpt || !passwordOpt)
+    if (!hostOpt || !portOpt || !passwordOpt || !connNumberOpt)
     {
         return false;
     }
@@ -26,7 +27,8 @@ bool RedisManager::init(const ConfigManager& config)
     std::string host = *hostOpt;
     std::string port = *portOpt;
     std::string password = *passwordOpt;
-    m_spConnPool = std::make_unique<RedisConnPool>(10, host.c_str(),
+    int connNumber = *connNumberOpt;
+    m_spConnPool = std::make_unique<RedisConnPool>(connNumber, host.c_str(),
         std::atoi(port.c_str()), password.c_str());
     m_inited = true;
 
@@ -499,4 +501,81 @@ void RedisManager::close()
 {
     m_spConnPool->close();
 
+}
+
+std::vector<std::string> RedisManager::LRange(const std::string& key, int start, int end)
+{
+    std::vector<std::string> result;
+
+    if (!m_inited)
+        return result;
+
+    redisContext* pConnection = m_spConnPool->getConnection();
+    if (pConnection == nullptr)
+    {
+        LOG_ERROR("Redis: Failed to get redis Connection");
+        m_spConnPool->returnConnection(pConnection);
+        return result;
+    }
+
+    redisReply* pReply = static_cast<redisReply*>(
+        redisCommand(pConnection,"LRANGE %s %d %d",key.c_str(), start, end)
+        );
+
+    if (!pReply || pReply->type != REDIS_REPLY_ARRAY)
+    {
+        LOG_ERROR("Redis: Failed to execute [ LARNGE %s ]", key.c_str());
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return result;
+    }
+
+    for (size_t i = 0; i < pReply->elements; ++i)
+    {
+        if (pReply->element[i]->type == REDIS_REPLY_STRING)
+        {
+            result.push_back(pReply->element[i]->str);
+        }
+    }
+
+    freeReplyObject(pReply);
+    m_spConnPool->returnConnection(pConnection);
+    LOG_INFO("Redis: succeed to execute [ LRANGE %s ], got %zu elements",
+        key.c_str(), result.size());
+    return result;
+}
+
+bool RedisManager::HINCRBY(const std::string& key, const std::string& field, int increment)
+{
+    if (!m_inited)
+        return false;
+
+    redisContext* pConnection = m_spConnPool->getConnection();
+    if (pConnection == nullptr)
+    {
+        LOG_ERROR("Redis: Failed to get redis Connection");
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    redisReply* pReply = static_cast<redisReply*>(
+        redisCommand(pConnection, "HINCRBY %s %s %d",
+            key.c_str(), field.c_str(), increment)
+        );
+
+    if (!pReply || pReply->type != REDIS_REPLY_INTEGER)
+    {
+        LOG_ERROR("Redis: failed to execute [ HINCRBY %s %s %d ]",
+            key.c_str(), field.c_str(), increment);
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    LOG_INFO("Redis: succeed to execute [ HINCRBY %s %s %d ], new value: %lld",
+        key.c_str(), field.c_str(), increment, pReply->integer);
+    freeReplyObject(pReply);
+    m_spConnPool->returnConnection(pConnection);
+    return true;
+    
 }

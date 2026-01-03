@@ -7,7 +7,7 @@
 #include "model/ServiceResult.h"
 #include "repository/UserRepository.h"
 #include "service/AuthService.h"
-
+#include "infrastructure/StatusGrpcClient.h"
 
 #include "WorkThreadPool.h"
 
@@ -21,6 +21,7 @@ public:
     UserService(std::shared_ptr<UserRepository> userRepo,
         std::shared_ptr<RedisRepository> redisRepo,
         std::shared_ptr<AuthService> authService,
+        std::shared_ptr<StatusGrpcClient> grpcStatusClient,
         std::shared_ptr<WorkThreadPool> threadPool);
 
     ~UserService() = default;
@@ -45,10 +46,11 @@ public:
     );
 
 private:
-    std::shared_ptr<UserRepository> m_spUserRepo;
-    std::shared_ptr<RedisRepository> m_spRedisRepo;
-    std::shared_ptr<AuthService> m_spAuthService;
-    std::shared_ptr< WorkThreadPool> m_spWorkThreadPool;
+    std::shared_ptr<UserRepository>         m_spUserRepo;
+    std::shared_ptr<RedisRepository>        m_spRedisRepo;
+    std::shared_ptr<AuthService>            m_spAuthService;
+    std::shared_ptr<StatusGrpcClient>       m_spGrpcStatusClient;
+    std::shared_ptr< WorkThreadPool>        m_spWorkThreadPool;
 };
 
 #endif // GATESERVER_SERVICE_USERSERVICE_H_

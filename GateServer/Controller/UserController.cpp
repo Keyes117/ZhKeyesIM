@@ -107,9 +107,6 @@ void UserController::handleRegisterUser(const HttpRequest& request, HttpServer::
         m_spUserService->registerUser(username, email, password,  code,
             std::bind(&UserController::onHandleRegisterUserDone, this, done, std::placeholders::_1));
 
-
-
-
     }
     catch (std::exception& e)
     {
@@ -182,7 +179,8 @@ void UserController::handleResetPassword(const HttpRequest& request, HttpServer:
     }
 }
 
-void UserController::onHandleLoginDone(HttpServer::AsyncDone done, const LoginResult& result)
+void UserController::onHandleLoginDone(HttpServer::AsyncDone done, 
+    const LoginResult& result)
 {
     if (result.success)
     {
@@ -190,7 +188,9 @@ void UserController::onHandleLoginDone(HttpServer::AsyncDone done, const LoginRe
            {"token", result.token},
            {"uid", result.userInfo.uid},
            {"username", result.userInfo.username},
-           {"email", result.userInfo.email}
+           {"email", result.userInfo.email},
+           {"ip",result.ip},
+           {"port",result.port}
         };
 
         sendSuccessWithData(done,

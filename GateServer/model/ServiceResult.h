@@ -7,20 +7,24 @@
 #include "model/User.h"
 
 struct LoginResult {
-    bool success;
+    bool success = false;
     std::string message;
     UserInfo userInfo;
+    std::string ip;
+    int    port;
     ServerStatus::ErrorCodes code;
     std::string token;
 
     static LoginResult createSuccess(const UserInfo& user, 
-        const std::string& token)
+        const std::string& token, std::string ip, int    port)
     {
         LoginResult result;
         result.success = true;
         result.message = "Login successful";
         result.userInfo = user;
         result.token = token;
+        result.ip = ip;
+        result.port = port;
         return result;
     }
 
@@ -35,7 +39,7 @@ struct LoginResult {
 };
 
 struct RegisterResult {
-    bool success;
+    bool success = false;
     std::string message;
     ServerStatus::ErrorCodes code;
     int uid = -1;
@@ -64,7 +68,7 @@ struct RegisterResult {
 };
 
 struct ResetPasswordResult {
-    bool success;
+    bool success = false;
     ServerStatus::ErrorCodes code;
     std::string message;
 

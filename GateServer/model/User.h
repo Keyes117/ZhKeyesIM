@@ -5,7 +5,7 @@
 #include <cstdint>
 
 struct UserInfo {
-    int uid = -1;
+    int64_t uid = -1;
     std::string username;
     std::string email;
     std::string passwordHash;

@@ -2,6 +2,13 @@ set(CLIENT_NETWORK_SOURCE
     NetWork/IMClient.cpp
     NetWork/IMClient.h
     NetWork/ApiRoutes.h
+
+    NetWork/HttpManager.h
+    NetWork/HttpManager.cpp
+
+    NetWork/ChatProtocol.h
+    NetWork/TcpManager.h
+    NetWork/TcpManager.cpp
 )
 
 set(CLIENT_UI_SOURCE

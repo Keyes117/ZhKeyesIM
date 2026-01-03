@@ -15,11 +15,15 @@ public:
     ~LoginDlg();
 
 private:
-    bool isLineEditEmpty();
-    bool isAccountAndPassWordRight();
 
-    void onLoginSuccess(const UserData& userData);
-    void onLoginError(const QString& error);
+    void onLoginSuccess(const User& userData);
+    void onLoginError(const std::string& error);
+
+    // …Ë÷√ ‰»ÎøÚ¥ÌŒÛ◊¥Ã¨
+    void setLineEditError(QLineEdit* lineEdit, bool hasError);
+    // œ‘ æ/“˛≤ÿ¥ÌŒÛÃ· æ
+    void showFieldError(const QString& fieldName, const QString& errorMsg);
+    void hideFieldError(const QString& fieldName);
 
 signals:
     void switchRegisterDlg();
@@ -30,11 +34,21 @@ private slots:
     void onLoginButtonClicked();
     void onRegisterButtonClicked();
     void onForgotPasswordLabelClicked();
+
+
+    void onEmailTextChanged(const QString& text);
+    void onPasswordTextChanged(const QString& text);
+
+
+    bool checkEmailValid();
+    bool checkPassValid();
+
 private:
 
     void setUpSignals();
     std::shared_ptr<IMClient> m_spClient;
 
+    QMap<QString, QLabel*> m_errorLabels;
     Ui::LoginDlgClass m_ui;
 };
 

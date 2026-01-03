@@ -486,6 +486,7 @@ if(WIN32)
 endif()
 add_subdirectory(ZhkeyesIMServer)
 add_subdirectory(GateServer)
+add_subdirectory(StatusServer)
 
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
     add_subdirectory(tests)

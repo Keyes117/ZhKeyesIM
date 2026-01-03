@@ -42,21 +42,4 @@ namespace ServerStatus
     };
 }
 
-namespace ServerUtil
-{
-    class Defer {
-    public:
-        // 接受一个lambda表达式或者函数指针
-        Defer(std::function<void()> func) : m_func(func) {}
-
-        // 析构函数中执行传入的函数
-        ~Defer() {
-            m_func();
-        }
-
-    private:
-        std::function<void()> m_func;
-    };
-}
-
 #endif

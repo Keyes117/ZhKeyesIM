@@ -3,7 +3,7 @@
 #include "Logger.h"
 
 
-TCPClient::TCPClient(const std::shared_ptr<EventLoop>& eventLoop)
+TCPClient::TCPClient(std::shared_ptr<EventLoop> eventLoop)
     :m_spEventLoop(eventLoop)
 {
 }

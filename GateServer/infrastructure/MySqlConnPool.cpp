@@ -2,8 +2,8 @@
 
 #include <chrono>
 
+#include "Defer.h"
 #include "Logger.h"
-
 #include "const.h"
 
 // ==================== MySqlConnection ===============
@@ -188,7 +188,7 @@ void MySqlConnPool::checkConnection()
         auto spConn = std::move(m_pool.front());
         m_pool.pop();
 
-        ServerUtil::Defer def([this, &spConn]() {
+        Defer def([this, &spConn]() {
             m_pool.push(std::move(spConn));
             });
 

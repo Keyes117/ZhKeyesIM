@@ -8,7 +8,7 @@ UserLoginTask::UserLoginTask(
     std::string email,
     std::string password,
     QObject* uiReceiver,
-    std::function<void(const UserData&)> onSuccess,
+    std::function<void(const User&)> onSuccess,
     std::function<void(const std::string&)> onError)
     : m_client(std::move(client)),
     m_email(std::move(email)),
@@ -31,7 +31,7 @@ void UserLoginTask::doTask() {
     );
 }
 
-void UserLoginTask::handleSuccess(const UserData& data) {
+void UserLoginTask::handleSuccess(const User& data) {
     LOG_INFO("LoginTask: Login succeeded, uid=%d", data.uid);
 
     if (m_onSuccess && m_uiReceiver) {

@@ -103,7 +103,7 @@ void RegisterDlg::showFieldError(const QString& fieldName, const QString& errorM
 
 void RegisterDlg::hideFieldError(const QString& fieldName)
 {
-        QLabel* errorLabel = m_errorLabels.value(fieldName, nullptr);
+    QLabel* errorLabel = m_errorLabels.value(fieldName, nullptr);
     if (errorLabel) {
         errorLabel->clear();
         errorLabel->setProperty("error", false);
@@ -142,7 +142,7 @@ void RegisterDlg::onVerifyCodeSuccess()
         "成功",
         "验证码已发送到您的邮箱，请注意查收");
 
-    startCountdown();
+    //startCountdown();
 }
 
 void RegisterDlg::onVerifyCodeError(const std::string& error) 

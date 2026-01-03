@@ -10,8 +10,8 @@
 /**
  * 登录数据结构
  */
-struct UserData {
-    int uid = 0;
+struct User {
+    int64_t uid = 0;
     std::string username;
     std::string email;
     std::string token;

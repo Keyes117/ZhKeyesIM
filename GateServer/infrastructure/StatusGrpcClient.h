@@ -14,7 +14,7 @@
 #include "message.grpc.pb.h"
 
 
-using GetStatusCallback = std::function<void(const message::GetVerifyResponse&)>;
+using GetStatusCallback = std::function<void(const message::GetChatServerResponse&)>;
 
 class StatusGrpcClient
 {
@@ -25,9 +25,7 @@ public:
 
     bool init(const ConfigManager& config);
 
-    message::GetVerifyResponse GetChatStatus(int uid);
-
-    void GetStatusAsync(const std::string& email, GetStatusCallback&& callback);
+    void GetChatStatus(int uid, GetStatusCallback&& callback);
 
 private:
 
@@ -43,6 +41,8 @@ private:
         GetStatusCallback callback;
         std::unique_ptr<grpc::ClientAsyncResponseReader<message::GetChatServerResponse>> rpc;
     };
+
+
 
     std::unique_ptr<message::StatusService::Stub> m_stub;
     std::unique_ptr<grpc::CompletionQueue> m_cq;

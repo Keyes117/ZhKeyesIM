@@ -14,6 +14,7 @@
 #include "infrastructure/RedisManager.h"
 #include "infrastructure/MySqlManager.h"
 #include "infrastructure/VerifyGrpcClient.h"
+#include "infrastructure/StatusGrpcClient.h"
 
 #include "service/VerifyService.h"
 #include "Service/UserService.h"
@@ -92,10 +93,10 @@ private:
 private:
     ZhKeyesIMHttp::Router m_router;
 
-
-    std::shared_ptr<VerifyGrpcClient>  m_spGrpcVerifyClient;
-    std::shared_ptr<RedisManager>      m_spRedisManager;
-    std::shared_ptr<MySqlManager>      m_spMySqlManager;
+    std::shared_ptr<StatusGrpcClient>   m_spGrpcStatusClient;
+    std::shared_ptr<VerifyGrpcClient>   m_spGrpcVerifyClient;
+    std::shared_ptr<RedisManager>       m_spRedisManager;
+    std::shared_ptr<MySqlManager>       m_spMySqlManager;
     std::shared_ptr< WorkThreadPool>    m_spWorkThreadPool;
 
     std::unique_ptr<ZhKeyesIMHttp::HttpServer> m_spHttpServer;

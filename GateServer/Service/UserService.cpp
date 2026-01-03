@@ -1,14 +1,17 @@
 #include "UserService.h"
 
 #include "const.h"
+#include "Defer.h"
 
 UserService::UserService(std::shared_ptr<UserRepository> userRepo,
     std::shared_ptr<RedisRepository> redisRepo,
     std::shared_ptr<AuthService> authService,
+    std::shared_ptr<StatusGrpcClient> grpcStatusClient,
     std::shared_ptr<WorkThreadPool> threadPool)
     :m_spUserRepo(userRepo),
     m_spRedisRepo(redisRepo),
     m_spAuthService(authService),
+    m_spGrpcStatusClient(grpcStatusClient),
     m_spWorkThreadPool(threadPool)
 {
 
@@ -19,88 +22,141 @@ void UserService::login(const std::string& email,
 {
     LOG_INFO("UserService: Processing login");
 
-    LoginResult result;
+    m_spWorkThreadPool->enqueue([this, email, password, callback]() {
 
-    ServerUtil::Defer def([this, callback, &result]() {
-        callback(result);
-        });
+        LoginResult result;
 
-    try
-    {
-        if (email.empty() || password.empty())
+        try
         {
-            result = LoginResult::createFailure(
-                "Username or password cannot be empty",
-                ServerStatus::ErrorCodes::ParamError
+            // 1. å‚æ•°éªŒè¯
+            if (email.empty() || password.empty())
+            {
+                result = LoginResult::createFailure(
+                    "Username or password cannot be empty",
+                    ServerStatus::ErrorCodes::ParamError
+                );
+                callback(result);
+                return;
+            }
+
+            // 2. æŸ¥è¯¢ç”¨æˆ·ï¼ˆæ•°æ®åº“æ“ä½œï¼Œåœ¨å·¥ä½œçº¿ç¨‹ä¸­æ‰§è¡Œï¼‰
+            auto userInfoOpt = m_spUserRepo->findByEmail(email);
+            if (!userInfoOpt)
+            {
+                result = LoginResult::createFailure(
+                    "User not Found",
+                    ServerStatus::ErrorCodes::UserNotFound
+                );
+                callback(result);
+                return;
+            }
+
+            UserInfo userInfo = *userInfoOpt;
+
+            // 3. éªŒè¯å¯†ç ï¼ˆCPUå¯†é›†å‹æ“ä½œï¼‰
+            bool passwordValid = m_spAuthService->verifyPassword(
+                password,
+                userInfo.passwordHash
             );
 
-            //callback(result);
-            return;
-        }
+            if (!passwordValid)
+            {
+                LOG_WARN("UserService: Invalid password for email: %s", email.c_str());
+                result = LoginResult::createFailure(
+                    "Invalid password",
+                    ServerStatus::ErrorCodes::PasswdErr
+                );
+                callback(result);
+                return;
+            }
 
-        auto userInfoOpt = m_spUserRepo->findByEmail(email);
-        if (!userInfoOpt)
-        {
-            result = LoginResult::createFailure(
-                "User not Fount", ServerStatus::ErrorCodes::UserExist
+            // 4. ç”ŸæˆToken
+            std::string token = m_spAuthService->generateToken(userInfo.uid);
+            if (token.empty())
+            {
+                LOG_ERROR("UserService: Failed to generate token for email: %s", email.c_str());
+                result = LoginResult::createFailure(
+                    "Failed to generate authentication token",
+                    ServerStatus::ErrorCodes::InternalError
+                );
+                callback(result);
+                return;
+            }
+
+            m_spRedisRepo->saveToken(userInfo.uid, token);
+
+            // 5. æ›´æ–°ç™»å½•æ—¶é—´ï¼ˆå¼‚æ­¥æ‰§è¡Œï¼Œä¸é˜»å¡ä¸»æµç¨‹ï¼‰
+            bool timeUpdated = m_spUserRepo->updateLastLoginTime(userInfo.uid);
+            if (!timeUpdated)
+            {
+                LOG_WARN("UserService: Failed to update last login time");
+                result = LoginResult::createFailure(
+                    "UserService: Failed to update last login time",
+                    ServerStatus::ErrorCodes::InternalError
+                );
+                callback(result);
+            }
+
+            // 6. å¼‚æ­¥è·å–èŠå¤©æœåŠ¡å™¨åœ°å€
+            // æ³¨æ„ï¼šè¿™é‡Œä»å·¥ä½œçº¿ç¨‹æ± çš„çº¿ç¨‹ä¸­å‘èµ·gRPCå¼‚æ­¥è°ƒç”¨
+            m_spGrpcStatusClient->GetChatStatus(userInfo.uid,
+                [callback, userInfo, token](const message::GetChatServerResponse& response) {
+
+                    LoginResult finalResult;
+
+                    // æ£€æŸ¥gRPCå“åº”
+                    if (response.error() != 0) {
+                        LOG_ERROR("UserService: Failed to get chat server, error: %d",
+                            response.error());
+                        finalResult = LoginResult::createFailure(
+                            "Failed to get chat server address",
+                            static_cast<ServerStatus::ErrorCodes>(response.error())
+                        );
+                        callback(finalResult);
+                        return;
+                    }
+
+                    // è§£æèŠå¤©æœåŠ¡å™¨åœ°å€
+                    std::string chatServerIp = response.host();
+                    int chatServerPort = 0;
+                    try {
+                        chatServerPort = std::stoi(response.port());
+                    }
+                    catch (...) {
+                        LOG_ERROR("UserService: Invalid port in response");
+                        finalResult = LoginResult::createFailure(
+                            "Invalid chat server port",
+                            ServerStatus::ErrorCodes::InternalError
+                        );
+                        callback(finalResult);
+                        return;
+                    }
+
+                    LOG_INFO("UserService: Login successful - uid: %d, chat: %s:%d",
+                        userInfo.uid, chatServerIp.c_str(), chatServerPort);
+
+                    // åˆ›å»ºæˆåŠŸç»“æœ
+                    finalResult = LoginResult::createSuccess(
+                        userInfo,
+                        token,
+                        chatServerIp,
+                        chatServerPort
+                    );
+
+                    callback(finalResult);
+                }
             );
         }
-
-        UserInfo userInfo = *userInfoOpt;
-
-        // ÑéÖ¤ÃÜÂëÊÇ·ñÕıÈ·
-        bool passwordValid = m_spAuthService->verifyPassword(
-            password,
-            userInfo.passwordHash
-        );
-
-        if (!passwordValid)
+        catch (const std::exception& e)
         {
-            LOG_WARN("UserService: Invalid password for email: %s", email.c_str());
-            result = LoginResult::createFailure(
-                "Invalid password",
-                ServerStatus::ErrorCodes::PasswdErr
-            );
-            //callback(result);
-            return;
-        }
-
-        //Éú³ÉToken
-        std::string token = m_spAuthService->generateToken(userInfo.uid);
-
-        if (token.empty())
-        {
-            LOG_ERROR("UserService: Failed to generate token for email: %s", email.c_str());
-            result = LoginResult::createFailure(
-                "Failed to generate authentication token",
+            LOG_ERROR("UserService: Exception during login: %s", e.what());
+            LoginResult result = LoginResult::createFailure(
+                "Internal server error",
                 ServerStatus::ErrorCodes::InternalError
             );
-            //callback(result);
-            return;
+            callback(result);
         }
-
-        //ĞŞ¸Ä ×î½üÒ»´ÎµÇÂ¼Ê±¼ä 
-        bool timeUpdated = m_spUserRepo->updateLastLoginTime(userInfo.uid);
-        if (!timeUpdated)
-        {
-            LOG_WARN("UserService: Failed to update last login time");
-        }
-
-        result = LoginResult::createSuccess(
-            userInfo,
-            token
-        );
-        //callback(result);
-       
-    }
-    catch (const std::exception& e)
-    {
-        result = LoginResult::createFailure("unexcepted error ",
-            ServerStatus::ErrorCodes::ParamError);
-
-        //callback(result);
-        return;
-    }
+        });
 }
 
 void UserService::registerUser(const std::string& username, 
@@ -112,7 +168,7 @@ void UserService::registerUser(const std::string& username,
 
     try
     {
-        // 1. ²ÎÊıÑéÖ¤
+        // 1. å‚æ•°éªŒè¯
         if (username.empty() || password.empty() || email.empty() || verifyCode.empty())
         {
             result = RegisterResult::createFailure(
@@ -123,7 +179,7 @@ void UserService::registerUser(const std::string& username,
             return;
         }
 
-        // 2. ´ÓRedis»ñÈ¡ÑéÖ¤Âë
+        // 2. ä»Redisè·å–éªŒè¯ç 
         auto storedCodeOpt = m_spRedisRepo->getVerifyCode(email);
         if (!storedCodeOpt)
         {
@@ -136,7 +192,7 @@ void UserService::registerUser(const std::string& username,
             return;
         }
 
-        // 3. ÑéÖ¤ÑéÖ¤ÂëÊÇ·ñÕıÈ·
+        // 3. éªŒè¯éªŒè¯ç æ˜¯å¦æ­£ç¡®
         std::string storedCode = *storedCodeOpt;
         if (verifyCode != storedCode)
         {
@@ -149,7 +205,7 @@ void UserService::registerUser(const std::string& username,
             return;
         }
 
-        // 5. ¼ì²éÓÊÏäÊÇ·ñÒÑ´æÔÚ
+        // 5. æ£€æŸ¥é‚®ç®±æ˜¯å¦å·²å­˜åœ¨
         if (m_spUserRepo->exsitsByEmail(email))
         {
             LOG_WARN("UserService: Email already exists: %s", email.c_str());
@@ -161,7 +217,7 @@ void UserService::registerUser(const std::string& username,
             return;
         }
 
-        // 6. ¶ÔÃÜÂë½øĞĞ¹şÏ£´¦Àí
+        // 6. å¯¹å¯†ç è¿›è¡Œå“ˆå¸Œå¤„ç†
         std::string passwordHash = m_spAuthService->hashPassword(password);
         if (passwordHash.empty())
         {
@@ -174,7 +230,7 @@ void UserService::registerUser(const std::string& username,
             return;
         }
 
-        // 7. ´´½¨ÓÃ»§
+        // 7. åˆ›å»ºç”¨æˆ·
         int uid = m_spUserRepo->create(username, email, passwordHash);
         if (uid <= 0)
         {
@@ -187,10 +243,10 @@ void UserService::registerUser(const std::string& username,
             return;
         }
 
-        // 8. É¾³ıÒÑÊ¹ÓÃµÄÑéÖ¤Âë
+        // 8. åˆ é™¤å·²ä½¿ç”¨çš„éªŒè¯ç 
         m_spRedisRepo->deleteVerifyCode(email);
 
-        // 9. ×¢²á³É¹¦
+        // 9. æ³¨å†ŒæˆåŠŸ
         LOG_INFO("UserService: User registered successfully - uid: %d, username: %s", uid, username.c_str());
         result = RegisterResult::createSuccess(uid);
         callback(result);
@@ -212,20 +268,20 @@ void UserService::resetPassword(const std::string& email,
     const std::string& verifyCode, 
     ResetPasswordCallback callback)
 {
-    //1 ´ÓRedis»ñÈ¡ÑéÖ¤Âë
-    //2 ÑéÖ¤ÑéÖ¤Âë
-    //3 ´ÓMysql²éÑ¯Email
-    //4 ÓÃ»§´æÔÚ¡¢ĞŞ¸ÄÃÜÂë£¬ ÓÃ»§²»´æÔÚÔò·µ»Ø
+    //1 ä»Redisè·å–éªŒè¯ç 
+    //2 éªŒè¯éªŒè¯ç 
+    //3 ä»MysqlæŸ¥è¯¢Email
+    //4 ç”¨æˆ·å­˜åœ¨ã€ä¿®æ”¹å¯†ç ï¼Œ ç”¨æˆ·ä¸å­˜åœ¨åˆ™è¿”å›
 
     ResetPasswordResult result;
 
-    ServerUtil::Defer def([this, callback, &result]() {
+    Defer def([this, callback, &result]() {
         callback(result);
         });
 
     try
     {
-        // 1. ²ÎÊıÑéÖ¤
+        // 1. å‚æ•°éªŒè¯
         if (email.empty() || newPassword.empty() ||  verifyCode.empty())
         {
             result = ResetPasswordResult::createFailure(
@@ -235,7 +291,7 @@ void UserService::resetPassword(const std::string& email,
             return;
         }
 
-        // 2. ´ÓRedis»ñÈ¡ÑéÖ¤Âë
+        // 2. ä»Redisè·å–éªŒè¯ç 
         auto storedCodeOpt = m_spRedisRepo->getVerifyCode(email);
         if (!storedCodeOpt)
         {
@@ -247,7 +303,7 @@ void UserService::resetPassword(const std::string& email,
             return;
         }
 
-        // 3. ÑéÖ¤ÑéÖ¤ÂëÊÇ·ñÕıÈ·
+        // 3. éªŒè¯éªŒè¯ç æ˜¯å¦æ­£ç¡®
         std::string storedCode = *storedCodeOpt;
         if (verifyCode != storedCode)
         {
@@ -261,7 +317,7 @@ void UserService::resetPassword(const std::string& email,
 
 
         auto userInfoOpt = m_spUserRepo->findByEmail(email);
-        // 5. ¼ì²éÓÃ»§ÊÇ·ñ×¢²á
+        // 5. æ£€æŸ¥ç”¨æˆ·æ˜¯å¦æ³¨å†Œ
         if (!userInfoOpt)
         {
             LOG_WARN("UserService: user is not exists: %s", email.c_str());
@@ -285,7 +341,7 @@ void UserService::resetPassword(const std::string& email,
             return;
         }
 
-        std::string newPassHash = m_spAuthService->hashPassword(newPassHash);
+        std::string newPassHash = m_spAuthService->hashPassword(newPassword);
 
         if (newPassHash.empty())
         {
@@ -309,10 +365,10 @@ void UserService::resetPassword(const std::string& email,
             return;
         }
 
-        // 8. É¾³ıÒÑÊ¹ÓÃµÄÑéÖ¤Âë
+        // 8. åˆ é™¤å·²ä½¿ç”¨çš„éªŒè¯ç 
         m_spRedisRepo->deleteVerifyCode(email);
 
-        // 9. ×¢²á³É¹¦
+        // 9. æ³¨å†ŒæˆåŠŸ
         LOG_INFO("UserService: User resetPass successfully - email: %s", email);
         result = ResetPasswordResult::createSuccess();
         callback(result);

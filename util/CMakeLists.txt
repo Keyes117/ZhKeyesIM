@@ -1,5 +1,6 @@
 
 set(UTIL_SOURCES
+    Defer.cpp
     Util.cpp
     JsonUtil.cpp
     ConfigManager.cpp
@@ -7,6 +8,7 @@ set(UTIL_SOURCES
 )
 
 set(UTIL_HEADERS
+    Defer.h
     Util.h
     JsonUtil.h
     ConfigManager.h

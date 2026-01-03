@@ -23,7 +23,7 @@ using ClientDisconnectionCallback = std::function<void()>;
 class NET_API TCPClient
 {
 public:
-    explicit TCPClient(const std::shared_ptr<EventLoop>& eventLoop);
+    explicit TCPClient(std::shared_ptr<EventLoop> eventLoop);
     ~TCPClient();
 
     bool init(const std::string& serverIP, uint16_t serverPort,

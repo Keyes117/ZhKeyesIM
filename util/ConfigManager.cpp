@@ -7,6 +7,10 @@
 
 #include "Logger.h"
 
+namespace ZhKeyes{
+    namespace Util{
+
+
 ConfigManager::ConfigManager()
 {
 }
@@ -21,7 +25,7 @@ bool ConfigManager::load(const std::string& filename)
         return false;
     }
 
-    // Ê¹ÓÃ JsonUtil ½âÎöÎÄ¼þ
+    // Ê¹ï¿½ï¿½ JsonUtil ï¿½ï¿½ï¿½ï¿½ï¿½Ä¼ï¿½
     auto jsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(file);
     if (jsonOpt)
     {
@@ -51,4 +55,7 @@ bool ConfigManager::hasKey(const std::string& key) const
 bool ConfigManager::isLoaded() const
 {
     return m_loaded;
+}
+
+}
 }

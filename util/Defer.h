@@ -5,6 +5,8 @@
 
 #include "util_export.h"
 
+namespace ZhKeyes{
+    namespace Util{
 class Util_API Defer
 {
 public:
@@ -16,4 +18,6 @@ public:
 private:
     std::function<void()> m_func;
 };
+
+    }}
 #endif

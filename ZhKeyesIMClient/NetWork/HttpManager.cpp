@@ -2,6 +2,10 @@
 
 #include "fmt/format.h"
 #include "NetWork/ApiRoutes.h"
+#include "Task/HttpResponseTask.h"
+#include "Task/TaskHandler.h"
+
+using namespace ZhKeyes::Util;
 
 HttpManager::HttpManager(std::shared_ptr<EventLoop> eventLoop):
     m_spEventLoop(eventLoop)
@@ -15,7 +19,7 @@ bool HttpManager::init(const ConfigManager& config)
 
     if (!baseUrlOpt || !typeOpt)
     {
-        LOG_ERROR("HttpManager: »ñÈ¡HttpManager Ïà¹ØÅäÖÃÊ§°Ü");
+        LOG_ERROR("HttpManager: è·å–HttpManager ç›¸å…³é…ç½®å¤±è´¥");
         return false;
     }
 
@@ -96,151 +100,197 @@ void HttpManager::requestUserLogin(DataCallback<User> onSuccess, ErrorCallback o
 
 void HttpManager::onResponseVerificationCode(SuccessCallback onSuccess, ErrorCallback onError, const ZhKeyesIM::Net::Http::HttpResponse& response)
 {
-    auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(response.getBody());
-    if (!requestJsonOpt)
-    {
-        onError("ÑéÖ¤Âë½ÓÊÕ´íÎó");
-        LOG_ERROR("IMClient:onResponseVerificationCode:½ÓÊÕ·µ»ØÖµ¸ñÊ½´íÎó£º²»ÊÇÕı³£µÄJson¸ñÊ½");
-        return;
-    }
+    std::string responseBody = response.getBody();
 
-    nlohmann::json requestJson = *requestJsonOpt;
-    auto successOpt = ZhKeyes::Util::JsonUtil::getSafe<int>(requestJson, "success");
-    if (!successOpt)
-    {
-        onError("ÑéÖ¤Âë½ÓÊÕ´íÎó");
-        LOG_ERROR("IMClient:onResponseVerificationCode:½ÓÊÕ·µ»ØÖµ¸ñÊ½´íÎó£º²»ÊÇÕı³£µÄJson¸ñÊ½");
-        return;
-    }
+    auto responseFunc = [onSuccess, onError](const std::string& responseBody)
+        {
+            auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(responseBody);
+            if (!requestJsonOpt)
+            {
+                onError("éªŒè¯ç æ¥æ”¶é”™è¯¯");
+                LOG_ERROR("IMClient:onResponseVerificationCode:æ¥æ”¶è¿”å›å€¼æ ¼å¼é”™è¯¯ï¼šä¸æ˜¯æ­£å¸¸çš„Jsonæ ¼å¼");
+                return;
+            }
 
-    int success = *successOpt;
-    if (success == 0)
-    {
-        onError("ÑéÖ¤Âë·şÎñ³ö´í");
-        LOG_ERROR("IMClient:onResponseVerificationCode:Î´³É¹¦·¢ËÍÑéÖ¤Âğ");
-        return;
-    }
+            nlohmann::json requestJson = *requestJsonOpt;
+            auto successOpt = ZhKeyes::Util::JsonUtil::getSafe<int>(requestJson, "success");
+            if (!successOpt)
+            {
+                onError("éªŒè¯ç æ¥æ”¶é”™è¯¯");
+                LOG_ERROR("IMClient:onResponseVerificationCode:æ¥æ”¶è¿”å›å€¼æ ¼å¼é”™è¯¯ï¼šä¸æ˜¯æ­£å¸¸çš„Jsonæ ¼å¼");
+                return;
+            }
 
+            int success = *successOpt;
+            if (success == 0)
+            {
+                onError("éªŒè¯ç æœåŠ¡å‡ºé”™");
+                LOG_ERROR("IMClient:onResponseVerificationCode:æœªæˆåŠŸå‘é€éªŒè¯å—");
+                return;
+            }
+
+            onSuccess();
+        };  
+
+
+    auto responseTask = std::make_shared<HttpResponseTask>(responseBody, responseFunc);
+    TaskHandler::getInstance().registerUITask(std::move(responseTask));
 }
 
 void HttpManager::onResponseRegister(DataCallback<int> onSuccess, ErrorCallback onError, const ZhKeyesIM::Net::Http::HttpResponse& response)
 {
-    auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(response.getBody());
-    if (!requestJsonOpt)
-    {
-        onError("×¢²á¹¦ÄÜ·µ»ØĞÅÏ¢´íÎó");
-        LOG_WARN("IMClient:onResponseVerificationCode:½ÓÊÕ·µ»ØÖµ¸ñÊ½´íÎó£º²»ÊÇÕı³£µÄJson¸ñÊ½");
-        return;
-    }
 
-    nlohmann::json requestJson = *requestJsonOpt;
-    auto successOpt = ZhKeyes::Util::JsonUtil::getSafe<int>(requestJson, "success");
-    auto msgOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(requestJson, "msg");
-    if (!successOpt || !msgOpt)
-    {
-        onError("×¢²á¹¦ÄÜ·µ»ØĞÅÏ¢´íÎó");
-        LOG_WARN("IMClient:onResponseVerificationCode:½ÓÊÕ·µ»ØÖµ¸ñÊ½´íÎó£º²»ÊÇÕı³£µÄJson¸ñÊ½");
-        return;
-    }
+    std::string responseBody = response.getBody();
 
-    int success = *successOpt;
-    std::string msg = *msgOpt;
-    if (success == 0)
-    {
-        onError(msg);
-        LOG_WARN("IMClient:onResponseVerificationCode:Î´³É¹¦×¢²áÓÃ»§");
-        return;
-    }
-    else if (success == 1)
-    {
-        onSuccess(1);
-    }
+    auto responseFunc = [onSuccess, onError](const std::string& responseBody)
+        {
+            auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(responseBody);
+            if (!requestJsonOpt)
+            {
+                onError("æ³¨å†ŒåŠŸèƒ½è¿”å›ä¿¡æ¯é”™è¯¯");
+                LOG_WARN("IMClient:onResponseVerificationCode:æ¥æ”¶è¿”å›å€¼æ ¼å¼é”™è¯¯ï¼šä¸æ˜¯æ­£å¸¸çš„Jsonæ ¼å¼");
+                return;
+            }
+
+            nlohmann::json requestJson = *requestJsonOpt;
+            auto successOpt = ZhKeyes::Util::JsonUtil::getSafe<int>(requestJson, "success");
+            auto msgOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(requestJson, "msg");
+            if (!successOpt || !msgOpt)
+            {
+                onError("æ³¨å†ŒåŠŸèƒ½è¿”å›ä¿¡æ¯é”™è¯¯");
+                LOG_WARN("IMClient:onResponseVerificationCode:æ¥æ”¶è¿”å›å€¼æ ¼å¼é”™è¯¯ï¼šä¸æ˜¯æ­£å¸¸çš„Jsonæ ¼å¼");
+                return;
+            }
+
+            int success = *successOpt;
+            std::string msg = *msgOpt;
+            if (success == 0)
+            {
+                onError(msg);
+                LOG_WARN("IMClient:onResponseVerificationCode:æœªæˆåŠŸæ³¨å†Œç”¨æˆ·");
+                return;
+            }
+            else if (success == 1)
+            {
+                onSuccess(1);
+            }
+        };
+
+
+    auto responseTask = std::make_shared<HttpResponseTask>(responseBody, responseFunc);
+    TaskHandler::getInstance().registerUITask(std::move(responseTask));
+
+
 }
 
 void HttpManager::onResponseUserLogin(DataCallback<User> onSuccess, ErrorCallback onError, const ZhKeyesIM::Net::Http::HttpResponse& response)
 {
-    auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(response.getBody());
-    if (!requestJsonOpt)
-    {
-        onError("µÇÂ¼¹¦ÄÜ·µ»ØĞÅÏ¢´íÎó");
-        LOG_WARN("IMClient:onResponseResetPassword:½ÓÊÕ·µ»ØÖµ¸ñÊ½´íÎó£º²»ÊÇÕı³£µÄJson¸ñÊ½");
-        return;
-    }
 
-    nlohmann::json requestJson = *requestJsonOpt;
-    auto successOpt = ZhKeyes::Util::JsonUtil::getSafe<int>(requestJson, "success");
-    auto msgOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(requestJson, "msg");
-    auto dataOpt = ZhKeyes::Util::JsonUtil::getSafe<nlohmann::json>(requestJson, "data");
-    if (!successOpt || !msgOpt || !dataOpt)
-    {
-        onError("µÇÂ¼¹¦ÄÜ·µ»ØĞÅÏ¢´íÎó");
-        LOG_WARN("IMClient:onResponseUserLogin:½ÓÊÕ·µ»ØÖµ¸ñÊ½´íÎó£º²»ÊÇÕı³£µÄJson¸ñÊ½");
-        return;
-    }
+    std::string responseBody = response.getBody();
 
-    int success = *successOpt;
-    std::string msg = *msgOpt;
-    nlohmann::json dataJson = *dataOpt;
-    if (success == 0)
-    {
-        onError(msg);
-        LOG_WARN("IMClient:onResponseUserLogin:µÇÂ¼Ê§°Ü");
-    }
-    else if (success == 1)
-    {
-        auto tokenOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(dataJson, "token");
-        auto uidOpt = ZhKeyes::Util::JsonUtil::getSafe<int64_t>(dataJson, "uid");
-        auto usernameOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(dataJson, "username");
-        auto emailOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(dataJson, "email");
-
-        if (!tokenOpt || !uidOpt || !usernameOpt || !emailOpt)
+    auto responseFunc = [onSuccess, onError](const std::string& responseBody)
         {
-            LOG_WARN("IMClient:onResponseUserLogin:·şÎñ¶Ë·µ»ØĞÅÏ¢Òì³£");
-            onError("·şÎñ¶Ë·µ»ØĞÅÏ¢Òì³£");
-        }
+            auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(responseBody);
+            if (!requestJsonOpt)
+            {
+                onError("ç™»å½•åŠŸèƒ½è¿”å›ä¿¡æ¯é”™è¯¯");
+                LOG_WARN("IMClient:onResponseResetPassword:æ¥æ”¶è¿”å›å€¼æ ¼å¼é”™è¯¯ï¼šä¸æ˜¯æ­£å¸¸çš„Jsonæ ¼å¼");
+                return;
+            }
 
-        User data;
-        data.token = *tokenOpt;
-        data.uid = *uidOpt;
-        data.username = *usernameOpt;
-        data.email = *emailOpt;
+            nlohmann::json requestJson = *requestJsonOpt;
+            auto successOpt = ZhKeyes::Util::JsonUtil::getSafe<int>(requestJson, "success");
+            auto msgOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(requestJson, "msg");
+            auto dataOpt = ZhKeyes::Util::JsonUtil::getSafe<nlohmann::json>(requestJson, "data");
+            if (!successOpt || !msgOpt || !dataOpt)
+            {
+                onError("ç™»å½•åŠŸèƒ½è¿”å›ä¿¡æ¯é”™è¯¯");
+                LOG_WARN("IMClient:onResponseUserLogin:æ¥æ”¶è¿”å›å€¼æ ¼å¼é”™è¯¯ï¼šä¸æ˜¯æ­£å¸¸çš„Jsonæ ¼å¼");
+                return;
+            }
 
-        onSuccess(data);
-    }
-    return;
+            int success = *successOpt;
+            std::string msg = *msgOpt;
+            nlohmann::json dataJson = *dataOpt;
+            if (success == 0)
+            {
+                onError(msg);
+                LOG_WARN("IMClient:onResponseUserLogin:ç™»å½•å¤±è´¥");
+            }
+            else if (success == 1)
+            {
+                auto tokenOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(dataJson, "token");
+                auto uidOpt = ZhKeyes::Util::JsonUtil::getSafe<int64_t>(dataJson, "uid");
+                auto usernameOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(dataJson, "username");
+                auto emailOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(dataJson, "email");
+
+                if (!tokenOpt || !uidOpt || !usernameOpt || !emailOpt)
+                {
+                    LOG_WARN("IMClient:onResponseUserLogin:æœåŠ¡ç«¯è¿”å›ä¿¡æ¯å¼‚å¸¸");
+                    onError("æœåŠ¡ç«¯è¿”å›ä¿¡æ¯å¼‚å¸¸");
+                }
+
+                User data;
+                data.token = *tokenOpt;
+                data.uid = *uidOpt;
+                data.username = *usernameOpt;
+                data.email = *emailOpt;
+
+                onSuccess(data);
+            }
+            return;
+        };
+
+
+    auto responseTask = std::make_shared<HttpResponseTask>(responseBody, responseFunc);
+    TaskHandler::getInstance().registerUITask(std::move(responseTask));
+
+
+   
 }
 
 void HttpManager::onResponseResetPassword(SuccessCallback onSuccess, ErrorCallback onError, const ZhKeyesIM::Net::Http::HttpResponse& response)
 {
-    auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(response.getBody());
-    if (!requestJsonOpt)
-    {
-        onError("ÖØÖÃÃÜÂë¹¦ÄÜ·µ»ØĞÅÏ¢´íÎó");
-        LOG_ERROR("IMClient:onResponseResetPassword:½ÓÊÕ·µ»ØÖµ¸ñÊ½´íÎó£º²»ÊÇÕı³£µÄJson¸ñÊ½");
-        return;
-    }
 
-    nlohmann::json requestJson = *requestJsonOpt;
-    auto successOpt = ZhKeyes::Util::JsonUtil::getSafe<int>(requestJson, "success");
-    auto msgOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(requestJson, "msg");
-    if (!successOpt || !msgOpt)
-    {
-        onError("ÖØÖÃÃÜÂë¹¦ÄÜ·µ»ØĞÅÏ¢´íÎó");
-        LOG_ERROR("IMClient:onResponseResetPassword:½ÓÊÕ·µ»ØÖµ¸ñÊ½´íÎó£º²»ÊÇÕı³£µÄJson¸ñÊ½");
-        return;
-    }
+    std::string responseBody = response.getBody();
 
-    int success = *successOpt;
-    std::string msg = *msgOpt;
-    if (success == 0)
-    {
-        onError(msg);
-        LOG_ERROR("IMClient:onResponseResetPassword:Î´³É¹¦ÖØÖÃÃÜÂë");
-    }
-    else if (success == 1)
-    {
-        onSuccess();
-    }
-    return;
+    auto responseFunc = [onSuccess, onError](const std::string& responseBody)
+        {
+            auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(responseBody);
+            if (!requestJsonOpt)
+            {
+                onError("é‡ç½®å¯†ç åŠŸèƒ½è¿”å›ä¿¡æ¯é”™è¯¯");
+                LOG_ERROR("IMClient:onResponseResetPassword:æ¥æ”¶è¿”å›å€¼æ ¼å¼é”™è¯¯ï¼šä¸æ˜¯æ­£å¸¸çš„Jsonæ ¼å¼");
+                return;
+            }
+
+            nlohmann::json requestJson = *requestJsonOpt;
+            auto successOpt = ZhKeyes::Util::JsonUtil::getSafe<int>(requestJson, "success");
+            auto msgOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(requestJson, "msg");
+            if (!successOpt || !msgOpt)
+            {
+                onError("é‡ç½®å¯†ç åŠŸèƒ½è¿”å›ä¿¡æ¯é”™è¯¯");
+                LOG_ERROR("IMClient:onResponseResetPassword:æ¥æ”¶è¿”å›å€¼æ ¼å¼é”™è¯¯ï¼šä¸æ˜¯æ­£å¸¸çš„Jsonæ ¼å¼");
+                return;
+            }
+
+            int success = *successOpt;
+            std::string msg = *msgOpt;
+            if (success == 0)
+            {
+                onError(msg);
+                LOG_ERROR("IMClient:onResponseResetPassword:æœªæˆåŠŸé‡ç½®å¯†ç ");
+            }
+            else if (success == 1)
+            {
+                onSuccess();
+            }
+            return;
+
+        };
+
+
+    auto responseTask = std::make_shared<HttpResponseTask>(responseBody, responseFunc);
+    TaskHandler::getInstance().registerUITask(std::move(responseTask));
 }
 

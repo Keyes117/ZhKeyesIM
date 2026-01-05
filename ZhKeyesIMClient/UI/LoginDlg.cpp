@@ -3,6 +3,7 @@
 #include <QPushButton>
 #include <QMessageBox>
 #include <QSizePolicy>
+#include <QLineEdit>
 #include <QRegularExpression>
 
 #include "ClickedLabel.h"

@@ -21,7 +21,7 @@ public:
     ~HttpManager() = default;
 
 
-    bool init(const ConfigManager& config);
+    bool init(const ZhKeyes::Util::ConfigManager& config);
 
 
     void requestVerificationCode(SuccessCallback onSuccess,

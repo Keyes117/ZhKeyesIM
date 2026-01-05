@@ -1,3 +1,14 @@
+set(CLIENT_IMPROTOCOL_SOURCE
+    IMProtocol/IMProtocol.h
+    IMProtocol/IMMessage.h
+    IMProtocol/IMMessage.cpp
+    IMProtocol/BinaryWriter.h
+    IMProtocol/BinaryWriter.cpp
+    IMProtocol/BinaryReader.h
+    IMProtocol/BinaryReader.cpp
+
+)
+
 set(CLIENT_NETWORK_SOURCE
     NetWork/IMClient.cpp
     NetWork/IMClient.h
@@ -6,7 +17,6 @@ set(CLIENT_NETWORK_SOURCE
     NetWork/HttpManager.h
     NetWork/HttpManager.cpp
 
-    NetWork/ChatProtocol.h
     NetWork/TcpManager.h
     NetWork/TcpManager.cpp
 )
@@ -50,6 +60,8 @@ set(CLIENT_TASK_SOURCE
     Task/TaskHandler.h
 
 
+    Task/HttpResponseTask.h
+    Task/HttpResponseTask.cpp
     Task/VerifyCodeTask.h
     Task/VerifyCodeTask.cpp
     Task/RegisterTask.h
@@ -80,6 +92,7 @@ add_executable(ZhKeyesIMClient
     ${CLIENT_NETWORK_SOURCE} 
     ${CLIENT_UI_SOURCE}
     ${CLIENT_TASK_SOURCE}
+    ${CLIENT_IMPROTOCOL_SOURCE}
 )
 
 configure_target_output(ZhKeyesIMClient "ZhKeyesIMClient")
@@ -113,7 +126,7 @@ set_target_properties(ZhKeyesIMClient PROPERTIES
 
 source_group(
   TREE ${CMAKE_CURRENT_SOURCE_DIR}
-  FILES ${CLIENT_NETWORK_SOURCE} ${CLIENT_UI_SOURCE} ${CLIENT_TASK_SOURCE} main.cpp
+  FILES ${CLIENT_NETWORK_SOURCE} ${CLIENT_UI_SOURCE} ${CLIENT_TASK_SOURCE} ${CLIENT_IMPROTOCOL_SOURCE} main.cpp
 )
 
 set_target_properties(ZhKeyesIMClient PROPERTIES AUTOGEN_SOURCE_GROUP "Generated")
@@ -121,9 +134,6 @@ set_target_properties(ZhKeyesIMClient PROPERTIES AUTOGEN_SOURCE_GROUP "Generated
 # 包含目录
 target_include_directories(ZhKeyesIMClient PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/UI
-    ${CMAKE_CURRENT_SOURCE_DIR}/Task
-    ${CMAKE_CURRENT_SOURCE_DIR}/NetWork
     ${CMAKE_SOURCE_DIR}/net
     ${CMAKE_SOURCE_DIR}/util
     ${CMAKE_SOURCE_DIR}/Log

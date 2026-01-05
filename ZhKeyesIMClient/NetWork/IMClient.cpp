@@ -14,7 +14,7 @@ IMClient::IMClient()
 }
 IMClient::~IMClient()
 {
-    m_spTcpClient->disconnect();
+
     m_spMainEventLoop->stop();
     if (m_networkThread && m_networkThread->joinable())
         m_networkThread->join();
@@ -22,7 +22,7 @@ IMClient::~IMClient()
 
 }
 
-bool IMClient::init(const ConfigManager& config)
+bool IMClient::init(const ZhKeyes::Util::ConfigManager& config)
 {
     auto typeOpt = config.getSafe<std::string>({ "IOType", "type" });
 
@@ -40,7 +40,6 @@ bool IMClient::init(const ConfigManager& config)
         LOG_ERROR("IMClient: 初始化 EventLoop 失败");
         return false;
     }
-    m_spTcpClient = std::make_unique<TCPClient>(m_spMainEventLoop);
    
     m_spHttpManager = std::make_unique<HttpManager>(m_spMainEventLoop);
     if (!m_spHttpManager->init(config));

@@ -23,12 +23,12 @@ public:
     StatusServer();
     ~StatusServer();
 
-    bool init(ConfigManager& config);
+    bool init(ZhKeyes::Util::ConfigManager& config);
     void start();
     void shutdown();
 
 private:
-    bool initChatServers(ConfigManager& config);
+    bool initChatServers(ZhKeyes::Util::ConfigManager& config);
 
 protected:
 

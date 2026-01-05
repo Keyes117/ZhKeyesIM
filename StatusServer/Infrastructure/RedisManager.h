@@ -16,7 +16,7 @@ public:
 
     ~RedisManager();
 
-    bool init(const ConfigManager& config);
+    bool init(const ZhKeyes::Util::ConfigManager& config);
 
     bool Get(const std::string& key, std::string& value);
     bool Set(const std::string& key, const std::string& value);

@@ -21,7 +21,7 @@ GateServer::~GateServer()
 {
 }
 
-bool GateServer::init(ConfigManager& config)
+bool GateServer::init(ZhKeyes::Util::ConfigManager& config)
 {
     try
     {

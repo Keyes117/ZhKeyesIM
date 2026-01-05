@@ -5,7 +5,7 @@
 
 #include "ConfigManager.h"
 #include "EventLoop.h"
-#include "global.h"
+#include "UI/global.h"
 #include "Http/HttpClient.h"
 
 class HttpManager 

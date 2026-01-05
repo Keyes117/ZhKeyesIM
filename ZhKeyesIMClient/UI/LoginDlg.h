@@ -2,11 +2,12 @@
 #define UI_LOGINDLG_H_
 
 #include <QtWidgets/QDialog>
+#include <QLineEdit>
 
 #include "Task/UserLoginTask.h"
 #include "ui_LoginDlg.h"
 
-#include "IMClient.h"
+#include "NetWork/IMClient.h"
 class LoginDlg : public QDialog
 {
     Q_OBJECT

@@ -275,7 +275,7 @@ void UserService::resetPassword(const std::string& email,
 
     ResetPasswordResult result;
 
-    Defer def([this, callback, &result]() {
+    ZhKeyes::Util::Defer def([this, callback, &result]() {
         callback(result);
         });
 

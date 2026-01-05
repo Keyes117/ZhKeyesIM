@@ -25,7 +25,7 @@ public:
 
     ~VerifyGrpcClient();
 
-    bool init(const ConfigManager& config);
+    bool init(const ZhKeyes::Util::ConfigManager& config);
 
     void GetVerifyCode(const std::string& email, GetVerifyCodeCallback&& callback);
 

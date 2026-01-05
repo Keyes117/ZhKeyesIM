@@ -57,6 +57,11 @@ bool IMClient::init(const ZhKeyes::Util::ConfigManager& config)
     return true;
 }
 
+bool IMClient::connect(const std::string& ip, uint16_t port)
+{
+    return m_spTcpManager->connect(ip, port);
+}
+
 void IMClient::requestVerificationCode(SuccessCallback onSuccess,
     ErrorCallback onError,
     const std::string& email)

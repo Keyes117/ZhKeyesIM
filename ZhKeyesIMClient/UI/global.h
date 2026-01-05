@@ -15,6 +15,9 @@ struct User {
     std::string username;
     std::string email;
     std::string token;
+
+    std::string chatServerHost;
+    uint16_t chatSevrerPort;
 };
 
 /**

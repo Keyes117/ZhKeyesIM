@@ -23,7 +23,7 @@ public:
 
     ~StatusGrpcClient();
 
-    bool init(const ConfigManager& config);
+    bool init(const ZhKeyes::Util::ConfigManager& config);
 
     void GetChatStatus(int uid, GetStatusCallback&& callback);
 

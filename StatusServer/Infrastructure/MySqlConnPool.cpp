@@ -187,7 +187,7 @@ void MySqlConnPool::checkConnection()
         auto spConn = std::move(m_pool.front());
         m_pool.pop();
 
-        Defer def([this, &spConn]() {
+        ZhKeyes::Util::Defer def([this, &spConn]() {
             m_pool.push(std::move(spConn));
             });
 

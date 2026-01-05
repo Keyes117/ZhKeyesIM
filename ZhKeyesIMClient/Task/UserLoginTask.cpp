@@ -34,6 +34,11 @@ void UserLoginTask::doTask() {
 void UserLoginTask::handleSuccess(const User& data) {
     LOG_INFO("LoginTask: Login succeeded, uid=%d", data.uid);
 
+    if (m_client->connect(data.chatServerHost, data.chatSevrerPort));
+    {
+        m_onError("连接服务器失败");
+    }
+
     if (m_onSuccess && m_uiReceiver) {
         QMetaObject::invokeMethod(m_uiReceiver,
             [callback = m_onSuccess, data]() {

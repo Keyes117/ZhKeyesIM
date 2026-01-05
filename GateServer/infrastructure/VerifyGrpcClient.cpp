@@ -32,7 +32,7 @@ VerifyGrpcClient::~VerifyGrpcClient()
     }
 }
 
-bool VerifyGrpcClient::init(const ConfigManager& config)
+bool VerifyGrpcClient::init(const ZhKeyes::Util::ConfigManager& config)
 {
 
     auto hostOpt = config.getSafe<std::string>({ "verifyServer","host" });

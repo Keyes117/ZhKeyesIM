@@ -1,8 +1,15 @@
 # ==================== 服务端配置 ====================
 
+
+
 # 定义服务端源文件
 set(SERVER_SOURCES
     main.cpp          # 主程序入口
+
+    IMServer.cpp
+    IMServer.h
+    IMSession.h
+    IMSession.cpp
 )
 
 # ==================== 创建可执行文件 ====================

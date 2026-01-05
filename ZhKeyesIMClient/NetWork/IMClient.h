@@ -7,7 +7,9 @@
 #include "TcpManager.h"
 #include "ConfigManager.h"
 
-#include "global.h"
+#include "UI/global.h"
+#include <cstdint>
+#include <cstdint>
 
 class IMClient
 {
@@ -22,7 +24,9 @@ public:
     IMClient();
     ~IMClient();
 
-    bool init(const ConfigManager& config);
+    bool init(const ZhKeyes::Util::ConfigManager& config);
+
+    bool connect(const std::string& ip, uint16_t port);
 
     void requestVerificationCode(SuccessCallback onSuccess,
         ErrorCallback onError,

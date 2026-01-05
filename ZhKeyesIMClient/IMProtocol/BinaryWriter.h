@@ -5,7 +5,7 @@
 #include <vector>
 #include <cstring>
 
-#include "util/ByteOrder.h"
+#include "ByteOrder.h"
 
 class BinaryWriter
 {

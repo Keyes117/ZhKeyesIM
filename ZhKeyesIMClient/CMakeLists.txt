@@ -9,6 +9,11 @@ set(CLIENT_IMPROTOCOL_SOURCE
 
 )
 
+set(CLIENT_BASE_SOURCE
+    Base/UserSession.h
+    Base/UserSession.cpp
+)
+
 set(CLIENT_NETWORK_SOURCE
     NetWork/IMClient.cpp
     NetWork/IMClient.h
@@ -90,6 +95,7 @@ set(CMAKE_AUTORCC ON)
 add_executable(ZhKeyesIMClient 
     main.cpp   
     ${CLIENT_NETWORK_SOURCE} 
+    ${CLIENT_BASE_SOURCE}
     ${CLIENT_UI_SOURCE}
     ${CLIENT_TASK_SOURCE}
     ${CLIENT_IMPROTOCOL_SOURCE}
@@ -126,7 +132,7 @@ set_target_properties(ZhKeyesIMClient PROPERTIES
 
 source_group(
   TREE ${CMAKE_CURRENT_SOURCE_DIR}
-  FILES ${CLIENT_NETWORK_SOURCE} ${CLIENT_UI_SOURCE} ${CLIENT_TASK_SOURCE} ${CLIENT_IMPROTOCOL_SOURCE} main.cpp
+  FILES ${CLIENT_NETWORK_SOURCE} ${CLIENT_UI_SOURCE} ${CLIENT_TASK_SOURCE} ${CLIENT_IMPROTOCOL_SOURCE} ${CLIENT_BASE_SOURCE} main.cpp
 )
 
 set_target_properties(ZhKeyesIMClient PROPERTIES AUTOGEN_SOURCE_GROUP "Generated")

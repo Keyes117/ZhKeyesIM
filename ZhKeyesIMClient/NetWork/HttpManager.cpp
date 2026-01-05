@@ -4,6 +4,7 @@
 #include "NetWork/ApiRoutes.h"
 #include "Task/HttpResponseTask.h"
 #include "Task/TaskHandler.h"
+#include <UI/global.h>
 
 using namespace ZhKeyes::Util;
 
@@ -223,8 +224,11 @@ void HttpManager::onResponseUserLogin(DataCallback<User> onSuccess, ErrorCallbac
                 auto uidOpt = ZhKeyes::Util::JsonUtil::getSafe<int64_t>(dataJson, "uid");
                 auto usernameOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(dataJson, "username");
                 auto emailOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(dataJson, "email");
+                auto hostOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(dataJson, "host");
+                auto portOpt = ZhKeyes::Util::JsonUtil::getSafe<int>(dataJson, "port");
 
-                if (!tokenOpt || !uidOpt || !usernameOpt || !emailOpt)
+
+                if (!tokenOpt || !uidOpt || !usernameOpt || !emailOpt || !hostOpt || !portOpt)
                 {
                     LOG_WARN("IMClient:onResponseUserLogin:服务端返回信息异常");
                     onError("服务端返回信息异常");
@@ -235,6 +239,8 @@ void HttpManager::onResponseUserLogin(DataCallback<User> onSuccess, ErrorCallbac
                 data.uid = *uidOpt;
                 data.username = *usernameOpt;
                 data.email = *emailOpt;
+                data.chatServerHost = *hostOpt;
+                data.chatSevrerPort = static_cast<uint16_t>(*portOpt);
 
                 onSuccess(data);
             }

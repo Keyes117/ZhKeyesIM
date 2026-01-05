@@ -32,7 +32,7 @@ StatusGrpcClient::~StatusGrpcClient()
     }
 }
 
-bool StatusGrpcClient::init(const ConfigManager& config)
+bool StatusGrpcClient::init(const ZhKeyes::Util::ConfigManager& config)
 {
 
     auto hostOpt = config.getSafe<std::string>({ "statusServer","host" });

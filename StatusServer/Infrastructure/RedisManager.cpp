@@ -12,7 +12,7 @@ RedisManager::~RedisManager()
     close();
 }
 
-bool RedisManager::init(const ConfigManager& config)
+bool RedisManager::init(const ZhKeyes::Util::ConfigManager& config)
 {
     auto hostOpt = config.getSafe<std::string>({ "redis","host" });
     auto portOpt = config.getSafe<std::string>({ "redis","port" });

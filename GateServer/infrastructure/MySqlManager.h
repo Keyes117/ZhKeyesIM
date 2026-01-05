@@ -17,7 +17,7 @@ public:
     ~MySqlManager();
 
     // 初始化
-    bool init(const ConfigManager& config);
+    bool init(const ZhKeyes::Util::ConfigManager& config);
 
     // ===== 连接管理 =====
     std::shared_ptr<MySqlConnection> getConnection();

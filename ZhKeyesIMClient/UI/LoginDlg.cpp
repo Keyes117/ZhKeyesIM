@@ -6,7 +6,9 @@
 #include <QLineEdit>
 #include <QRegularExpression>
 
-#include "ClickedLabel.h"
+
+#include "UI/ClickedLabel.h"
+#include "Base/UserSession.h"
 #include "Task/TaskHandler.h"
 #include "Task/UserLoginTask.h"
 #include "global.h"
@@ -53,9 +55,7 @@ void LoginDlg::onLoginSuccess(const User& userData)
     QMessageBox::information(this, "成功",
         QString("欢迎回来，%1！").arg(QString::fromStdString(userData.username)));
 
-    // 保存token等信息
-    // StateManager::getInstance().setLoginData(data);
-
+    UserSession::getInstance().setUser(userData);
 
     emit loginSuccess();
 

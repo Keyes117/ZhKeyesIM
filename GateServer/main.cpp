@@ -16,7 +16,7 @@ int main()
     }
 #endif // _WIN32
 
-    ConfigManager config;
+    ZhKeyes::Util::ConfigManager config;
     if (!config.load("config.json"))
     {
         LOG_ERROR("配置文件读取失败...");

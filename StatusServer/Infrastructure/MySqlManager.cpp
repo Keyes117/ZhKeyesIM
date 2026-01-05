@@ -12,7 +12,7 @@ MySqlManager::~MySqlManager() {
     }
 }
 
-bool MySqlManager::init(const ConfigManager& config) {
+bool MySqlManager::init(const ZhKeyes::Util::ConfigManager& config) {
     auto hostOpt = config.getSafe<std::string>({ "mysql", "host" });
     auto portOpt = config.getSafe<std::string>({ "mysql", "port" });
     auto passwordOpt = config.getSafe<std::string>({ "mysql", "password" });

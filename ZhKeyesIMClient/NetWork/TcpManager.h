@@ -13,6 +13,8 @@
 class TcpManager
 {
 public:
+    
+
     TcpManager(std::shared_ptr<EventLoop> eventLoop);
     ~TcpManager() = default;
 
@@ -20,7 +22,18 @@ public:
 
     bool authenticate(const std::string& token, uint32_t uid);
 
+    void setConnectCallback(std::function<void()> onSuccess)
+    {
+        m_connectionCallback = onSuccess;
+    }
+    void setConnectFailedCallback(std::function<void(const std::string&)> onFailed)
+    {
+        m_connectFailedCallback = onFailed;
+    }
+
+
 private:
+    void releaseConnectCallback();
 
     void onTcpResponse(Buffer& recvBuf);
 
@@ -32,6 +45,7 @@ private:
 
 
     std::function<void()> m_connectionCallback;
+    std::function<void(const std::string&)> m_connectFailedCallback;
 };
 
 

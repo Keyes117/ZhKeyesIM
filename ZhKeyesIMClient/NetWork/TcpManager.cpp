@@ -17,6 +17,7 @@ bool TcpManager::connect(const std::string& ip, uint16_t port)
 
     if (!m_spTcpClient->init(ip, port))
     {
+        releaseConnectCallback();
         LOG_ERROR("TcpManager: TcpClient初始化失败");
         return false;
     }
@@ -56,6 +57,12 @@ bool TcpManager::authenticate(const std::string& token, uint32_t uid)
     }
 
     return sent;
+}
+
+void TcpManager::releaseConnectCallback()
+{
+    m_connectFailedCallback = nullptr;
+    m_connectionCallback = nullptr;
 }
 
 void TcpManager::onTcpResponse(Buffer& recvBuf)
@@ -99,19 +106,32 @@ void TcpManager::onConnected(std::shared_ptr<TCPConnection> spConn)
 
     const std::string token = UserSession::getInstance().getToken();
     int64_t uid = UserSession::getInstance().getUid();
-    if (!token.empty() || uid < 0) {
+    if (!token.empty() && uid > 0) {
         authenticate(token, uid);
     }
     else {
         LOG_ERROR("TcpManager: Token 或 UID 未设置，无法认证");
+        if(m_connectFailedCallback)
+            m_connectFailedCallback("用户信息错误，认证失败");
+        m_spTcpClient->disconnect();
+        releaseConnectCallback();
+        return;
     }
 
     // 通知外部连接成功
     if (m_connectionCallback) {
         m_connectionCallback();
+
+        releaseConnectCallback();
     }
 }
 
 void TcpManager::onConnectFailed()
 {
+    if (m_connectFailedCallback)
+    {
+        m_connectFailedCallback("连接失败");
+        releaseConnectCallback();
+    }
+   
 }

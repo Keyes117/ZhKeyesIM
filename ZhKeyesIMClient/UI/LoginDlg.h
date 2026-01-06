@@ -17,7 +17,7 @@ public:
 
 private:
 
-    void onLoginSuccess(const User& userData);
+    void onLoginSuccess();
     void onLoginError(const std::string& error);
 
     // ÉèÖÃÊäÈë¿ò´íÎó×´Ì¬

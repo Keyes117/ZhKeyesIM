@@ -75,6 +75,8 @@ set(CLIENT_TASK_SOURCE
     Task/ResetPasswordTask.cpp
     Task/UserLoginTask.h
     Task/UserLoginTask.cpp
+    Task/TcpConnectTask.h
+    Task/TcpConnectTask.cpp
 
 )
 

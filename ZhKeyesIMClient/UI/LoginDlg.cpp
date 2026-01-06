@@ -48,14 +48,11 @@ LoginDlg::~LoginDlg()
 }
 
 
-void LoginDlg::onLoginSuccess(const User& userData)
+void LoginDlg::onLoginSuccess()
 {
     //m_ui.button_login->setEnabled(true);
-
     QMessageBox::information(this, "成功",
-        QString("欢迎回来，%1！").arg(QString::fromStdString(userData.username)));
-
-    UserSession::getInstance().setUser(userData);
+        QString("欢迎回来，%1！").arg(QString::fromStdString(UserSession::getInstance().getUsername())));
 
     emit loginSuccess();
 

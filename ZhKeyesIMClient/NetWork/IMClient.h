@@ -26,7 +26,8 @@ public:
 
     bool init(const ZhKeyes::Util::ConfigManager& config);
 
-    bool connect(const std::string& ip, uint16_t port);
+    bool connect(const std::string& ip, uint16_t port, 
+        SuccessCallback onSuccess = nullptr, ErrorCallback onError = nullptr);
 
     void requestVerificationCode(SuccessCallback onSuccess,
         ErrorCallback onError,
@@ -52,6 +53,8 @@ public:
         const std::string& username,
         const std::string password
     );
+
+    
 
 private:
     void networkThreadFunc();

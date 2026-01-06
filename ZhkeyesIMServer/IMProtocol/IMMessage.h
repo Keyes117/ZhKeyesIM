@@ -9,14 +9,14 @@ namespace Protocol {
 class IMMessage
 {
 public:
-    /**
-     * @brief 构造函数
-     * @param type IMProtocol.h 定义的
-     * @param seqId 顺序
-     * @param body //应该在外面用BInaryWrite 先进行处理
-     */
-    IMMessage(MessageType type = MessageType::UNKNOWN, uint32_t seqId = INT_MAX, const std::string& body = " ");
-
+    IMMessage(MessageType type, uint32_t seqId, const std::string& body)
+        : m_header()
+        , m_body(body)
+    {
+        m_header.type = static_cast<uint16_t>(type);
+        m_header.seqId = seqId;
+        m_header.length = HEADER_SIZE + body.size();
+    }
 
     // Getter/Setter
     MessageType getType() const { return static_cast<MessageType>(m_header.type); }
@@ -35,11 +35,6 @@ public:
     }
 
     const MessageHeader& getHeader() const { return m_header; }
-
-    std::string serialize() const;
-    static bool deserialize(const std::string& data, IMMessage& out);
-    static bool deserializeFromBuffer(const char* data, size_t len, IMMessage& out);
-
 
 private:
     MessageHeader m_header;

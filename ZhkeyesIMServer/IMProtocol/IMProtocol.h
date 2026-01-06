@@ -29,11 +29,9 @@ constexpr size_t MAX_PACKET_SIZE = 1024 * 1024; // 最大包1MB
 enum class MessageType : uint16_t
 {
     //连接（1-99）
-    AUTH_REQ = 1,           // 认证请求（连接后第一个消息）
-    AUTH_RESP = 2,          // 认证响应
-    HEARTBEAT_REQ = 3,      // 心跳请求
-    HEARTBEAT_RESP = 4,     // 心跳响应
-    DISCONNECT = 5,
+    HEARTBEAT_REQ           = 1,    // 心跳请求
+    HEARTBEAT_RESP          = 2,    // 心跳响应
+    DISCONNECT              = 3,
 
 
     //单聊(100-199)

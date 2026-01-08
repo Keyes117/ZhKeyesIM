@@ -1,5 +1,5 @@
-#ifndef ZHKEYESIMCLIENT_IMPROTOCOL_BINARYWRITER_H_
-#define ZHKEYESIMCLIENT_IMPROTOCOL_BINARYWRITER_H_
+#ifndef IMPROTOCOL_BINARYWRITER_H_
+#define IMPROTOCOL_BINARYWRITER_H_
 
 #include <string>
 #include <vector>
@@ -30,7 +30,7 @@ public:
 
     void writeUInt16(uint16_t value) {
         checkCapacity(2);
-        uint16_t net = ZhKeyes::Utils::ByteOrder::hostToNetwork16(value);
+        uint16_t net = ZhKeyes::Util::ByteOrder::hostToNetwork16(value);
         size_t oldSize = m_buffer.size();
         m_buffer.resize(oldSize + 2);
         std::memcpy(m_buffer.data() + oldSize, &net, 2);
@@ -38,7 +38,7 @@ public:
 
     void writeUInt32(uint32_t value) {
         checkCapacity(4);
-        uint32_t net = ZhKeyes::Utils::ByteOrder::hostToNetwork32(value);
+        uint32_t net = ZhKeyes::Util::ByteOrder::hostToNetwork32(value);
         size_t oldSize = m_buffer.size();
         m_buffer.resize(oldSize + 4);
         std::memcpy(m_buffer.data() + oldSize, &net, 4);
@@ -46,7 +46,7 @@ public:
 
     void writeUInt64(uint64_t value) {
         checkCapacity(8);
-        uint64_t net = ZhKeyes::Utils::ByteOrder::hostToNetwork64(value);
+        uint64_t net = ZhKeyes::Util::ByteOrder::hostToNetwork64(value);
         size_t oldSize = m_buffer.size();
         m_buffer.resize(oldSize + 8);
         std::memcpy(m_buffer.data() + oldSize, &net, 8);

@@ -1,5 +1,5 @@
-#ifndef ZHKEYESIMCLIENT_NETWORK_IMPROTOCOL_H_
-#define ZHKEYESIMCLIENT_NETWORK_IMPROTOCOL_H_
+#ifndef NETWORK_IMPROTOCOL_H_
+#define NETWORK_IMPROTOCOL_H_
 
 #include <cstdint>
 #include <string>

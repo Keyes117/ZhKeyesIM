@@ -3,6 +3,7 @@
 
 #include <memory>
 
+#include "Buffer.h"
 #include "TCPConnection.h"
 
 class IMServer;
@@ -15,11 +16,14 @@ public:
     IMSession(IMServer* server, std::shared_ptr<TCPConnection> spConn);
     ~IMSession() = default;;
 
-
     SessionID getSessionId() { return m_sessionId; }
 
 private:
     static uint32_t generateID();
+
+    void onRead(Buffer& buf);
+    void onWrite();
+    void onClose();
 
 private:
     IMServer* m_pServer;

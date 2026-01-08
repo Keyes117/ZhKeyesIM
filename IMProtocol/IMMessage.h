@@ -1,5 +1,5 @@
-#ifndef ZHKEYESIMCLIENT_IMPROTOCOL_IMMESSAGE_H_
-#define ZHKEYESIMCLIENT_IMPROTOCOL_IMMESSAGE_H_
+#ifndef IMPROTOCOL_IMMESSAGE_H_
+#define IMPROTOCOL_IMMESSAGE_H_
 
 #include "IMProtocol/IMProtocol.h"
 
@@ -9,14 +9,14 @@ namespace Protocol {
 class IMMessage
 {
 public:
-    IMMessage(MessageType type, uint32_t seqId, const std::string& body)
-        : m_header()
-        , m_body(body)
-    {
-        m_header.type = static_cast<uint16_t>(type);
-        m_header.seqId = seqId;
-        m_header.length = HEADER_SIZE + body.size();
-    }
+    /**
+     * @brief ���캯��
+     * @param type IMProtocol.h �����
+     * @param seqId ˳��
+     * @param body //Ӧ����������BInaryWrite �Ƚ��д���
+     */
+    IMMessage(MessageType type = MessageType::UNKNOWN, uint32_t seqId = INT_MAX, const std::string& body = " ");
+
 
     // Getter/Setter
     MessageType getType() const { return static_cast<MessageType>(m_header.type); }
@@ -35,6 +35,11 @@ public:
     }
 
     const MessageHeader& getHeader() const { return m_header; }
+
+    std::string serialize() const;
+    static bool deserialize(const std::string& data, IMMessage& out);
+    static bool deserializeFromBuffer(const char* data, size_t len, IMMessage& out);
+
 
 private:
     MessageHeader m_header;

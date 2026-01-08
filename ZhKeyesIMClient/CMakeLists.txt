@@ -1,11 +1,11 @@
 set(CLIENT_IMPROTOCOL_SOURCE
-    IMProtocol/IMProtocol.h
-    IMProtocol/IMMessage.h
-    IMProtocol/IMMessage.cpp
-    IMProtocol/BinaryWriter.h
-    IMProtocol/BinaryWriter.cpp
-    IMProtocol/BinaryReader.h
-    IMProtocol/BinaryReader.cpp
+    ${CMAKE_SOURCE_DIR}/IMProtocol/IMProtocol.h
+    ${CMAKE_SOURCE_DIR}/IMProtocol/IMMessage.h
+    ${CMAKE_SOURCE_DIR}/IMProtocol/IMMessage.cpp
+    ${CMAKE_SOURCE_DIR}/IMProtocol/BinaryWriter.h
+    ${CMAKE_SOURCE_DIR}/IMProtocol/BinaryWriter.cpp
+    ${CMAKE_SOURCE_DIR}/IMProtocol/BinaryReader.h
+    ${CMAKE_SOURCE_DIR}/IMProtocol/BinaryReader.cpp
 
 )
 
@@ -134,13 +134,19 @@ set_target_properties(ZhKeyesIMClient PROPERTIES
 
 source_group(
   TREE ${CMAKE_CURRENT_SOURCE_DIR}
-  FILES ${CLIENT_NETWORK_SOURCE} ${CLIENT_UI_SOURCE} ${CLIENT_TASK_SOURCE} ${CLIENT_IMPROTOCOL_SOURCE} ${CLIENT_BASE_SOURCE} main.cpp
+  FILES ${CLIENT_NETWORK_SOURCE} ${CLIENT_UI_SOURCE} ${CLIENT_TASK_SOURCE}  ${CLIENT_BASE_SOURCE} main.cpp
 )
+source_group(
+  TREE ${CMAKE_SOURCE_DIR}
+  FILES ${CLIENT_IMPROTOCOL_SOURCE}
+)
+
 
 set_target_properties(ZhKeyesIMClient PROPERTIES AUTOGEN_SOURCE_GROUP "Generated")
 
 # 包含目录
 target_include_directories(ZhKeyesIMClient PRIVATE
+    ${CMAKE_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/net
     ${CMAKE_SOURCE_DIR}/util

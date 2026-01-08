@@ -36,9 +36,20 @@ bool IMServer::init(const ZhKeyes::Util::ConfigManager& config)
         return false;
     }
 
+    m_spTcpServer->setConnectionCallback(std::bind(&IMServer::onConnected, this, std::placeholders::_1));
+    m_spTcpServer->setDisConnectionCallback(std::bind(&IMServer::onDisConnected, this, std::placeholders::_1));
     m_spTcpServer->start();
 
     return true;
+}
+
+void IMServer::handleMsg(const ZhKeyesIM::Protocol::IMMessage& msg)
+{
+    ZhKeyesIM::Protocol::MessageType type = msg.getType();
+    switch (type)
+    {
+    case ZhKeyesIM::Protocol::MessageType::AUTH_REQ:
+    }
 }
 
 void IMServer::onConnected(std::shared_ptr<TCPConnection> spConn)
@@ -53,4 +64,26 @@ void IMServer::onConnected(std::shared_ptr<TCPConnection> spConn)
     }
 
 }
+
+void IMServer::onDisConnected(SOCKET socket)
+{
+    std::lock_guard<std::mutex> lock(m_sessionMutex);
+    auto socketIter = m_socketToSession.find(socket);
+
+    if (socketIter != m_socketToSession.end())
+    {
+        IMSession::SessionID sessionID = socketIter->second;
+
+        auto iter = m_sessions.find(sessionID);
+        if (iter != m_sessions.end())
+        {
+            std::shared_ptr<IMSession> spIMSession = iter->second;
+            m_pendingToDeleteSessions.emplace_back(spIMSession);
+            m_sessions.erase(iter);
+        }
+
+        m_socketToSession.erase(socketIter);
+    }
+}
+
 

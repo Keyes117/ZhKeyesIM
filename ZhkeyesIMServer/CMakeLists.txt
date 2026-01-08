@@ -4,17 +4,41 @@
 
 # 定义服务端源文件
 set(SERVER_SOURCES
-    main.cpp          # 主程序入口
-
     IMServer.cpp
     IMServer.h
     IMSession.h
     IMSession.cpp
 )
 
+set(SERVER_IMPROTOCOL_SOURCES
+    ${CMAKE_SOURCE_DIR}/IMProtocol/IMProtocol.h
+    ${CMAKE_SOURCE_DIR}/IMProtocol/IMMessage.h
+    ${CMAKE_SOURCE_DIR}/IMProtocol/IMMessage.cpp
+    ${CMAKE_SOURCE_DIR}/IMProtocol/BinaryWriter.h
+    ${CMAKE_SOURCE_DIR}/IMProtocol/BinaryWriter.cpp
+    ${CMAKE_SOURCE_DIR}/IMProtocol/BinaryReader.h
+    ${CMAKE_SOURCE_DIR}/IMProtocol/BinaryReader.cpp
+)
+
 # ==================== 创建可执行文件 ====================
 # 创建服务端可执行文件
-add_executable(ZhkeyesIMServer ${SERVER_SOURCES})
+add_executable(ZhkeyesIMServer 
+    main.cpp   
+    ${SERVER_SOURCES}
+    ${SERVER_IMPROTOCOL_SOURCES}
+)
+
+source_group(
+  TREE ${CMAKE_CURRENT_SOURCE_DIR}
+  FILES ${SERVER_SOURCES} main.cpp
+)
+# 单独处理公共 IMProtocol 文件
+source_group(
+  TREE ${CMAKE_SOURCE_DIR}
+  FILES ${SERVER_IMPROTOCOL_SOURCES}
+)
+
+set_target_properties(ZhKeyesIMClient PROPERTIES AUTOGEN_SOURCE_GROUP "Generated")
 
 configure_target_output(ZhkeyesIMServer "ZhkeyesIMServer")
 copy_mysql_dlls_to_target(ZhkeyesIMServer)
@@ -23,6 +47,7 @@ copy_fmt_dlls_to_target(ZhkeyesIMServer)
 # ==================== 包含目录设置 ====================
 # 设置包含目录
 target_include_directories(ZhkeyesIMServer PRIVATE
+    ${CMAKE_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/net   # 网络库头文件路径
     ${CMAKE_SOURCE_DIR}/util  # 工具库头文件路径
     ${CMAKE_SOURCE_DIR}/Log

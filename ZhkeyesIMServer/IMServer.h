@@ -6,6 +6,8 @@
 #include "ConfigManager.h"
 #include "IMSession.h"
 
+#include "IMProtocol/IMMessage.h"
+
 class IMServer
 {
 public:
@@ -14,12 +16,11 @@ public:
 
     bool init(const ZhKeyes::Util::ConfigManager& configManager);
 
+    void handleMsg(const ZhKeyesIM::Protocol::IMMessage& msg);
 
 private:
     void onConnected(std::shared_ptr<TCPConnection> spConn);
-    void onDisConnected(IMSession::SessionID sessionId);
-
-
+    void onDisConnected(SOCKET socket);
 
 private:
     std::unique_ptr<TCPServer> m_spTcpServer;

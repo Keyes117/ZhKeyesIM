@@ -36,7 +36,6 @@ namespace ZhKeyesIM {
 
                 void onRead(Buffer& byteBuffer);
                 void onWrite();
-                void onClose();
 
                 bool sendResponse(const HttpResponse& response);
 

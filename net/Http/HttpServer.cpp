@@ -67,8 +67,6 @@ void HttpServer::onDisConnected(SOCKET clientSocket)
 
         m_socketToSession.erase(socketIter);
     }
-
-
 }
 
 void HttpServer::handleRequest(const HttpRequest& request, HttpResponse& response)

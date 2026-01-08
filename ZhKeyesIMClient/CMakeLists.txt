@@ -1,12 +1,7 @@
-set(CLIENT_IMPROTOCOL_SOURCE
-    ${CMAKE_SOURCE_DIR}/IMProtocol/IMProtocol.h
-    ${CMAKE_SOURCE_DIR}/IMProtocol/IMMessage.h
-    ${CMAKE_SOURCE_DIR}/IMProtocol/IMMessage.cpp
-    ${CMAKE_SOURCE_DIR}/IMProtocol/BinaryWriter.h
-    ${CMAKE_SOURCE_DIR}/IMProtocol/BinaryWriter.cpp
-    ${CMAKE_SOURCE_DIR}/IMProtocol/BinaryReader.h
-    ${CMAKE_SOURCE_DIR}/IMProtocol/BinaryReader.cpp
 
+file(GLOB CLIENT_IMPROTOCOL_SOURCE
+    "${CMAKE_SOURCE_DIR}/IMProtocol/*.cpp"
+    "${CMAKE_SOURCE_DIR}/IMProtocol/*.h"
 )
 
 set(CLIENT_BASE_SOURCE

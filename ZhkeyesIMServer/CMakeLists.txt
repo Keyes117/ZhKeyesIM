@@ -10,14 +10,9 @@ set(SERVER_SOURCES
     IMSession.cpp
 )
 
-set(SERVER_IMPROTOCOL_SOURCES
-    ${CMAKE_SOURCE_DIR}/IMProtocol/IMProtocol.h
-    ${CMAKE_SOURCE_DIR}/IMProtocol/IMMessage.h
-    ${CMAKE_SOURCE_DIR}/IMProtocol/IMMessage.cpp
-    ${CMAKE_SOURCE_DIR}/IMProtocol/BinaryWriter.h
-    ${CMAKE_SOURCE_DIR}/IMProtocol/BinaryWriter.cpp
-    ${CMAKE_SOURCE_DIR}/IMProtocol/BinaryReader.h
-    ${CMAKE_SOURCE_DIR}/IMProtocol/BinaryReader.cpp
+file(GLOB SERVER_IMPROTOCOL_SOURCES
+    "${CMAKE_SOURCE_DIR}/IMProtocol/*.cpp"
+    "${CMAKE_SOURCE_DIR}/IMProtocol/*.h"
 )
 
 # ==================== 创建可执行文件 ====================

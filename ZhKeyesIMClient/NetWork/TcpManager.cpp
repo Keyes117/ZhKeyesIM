@@ -42,15 +42,15 @@ bool TcpManager::authenticate(const std::string& token, uint32_t uid)
     bodyWriter.writeUInt32(uid);           // 写入 uid
     bodyWriter.writeString(token);        // 写入 token
 
-    ZhKeyesIM::Protocol::IMMessage authMsg(
+    std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> authMsg=
+        std::make_shared<ZhKeyesIM::Protocol::IMMessage>(
         ZhKeyesIM::Protocol::MessageType::AUTH_REQ,
         0,
         bodyWriter.getData()
     );
 
-    std::string msg = authMsg.serialize();
+    bool sent = sendMessage(authMsg);
 
-    bool sent = m_spTcpClient->send(msg);
     if (sent) {
         LOG_INFO("TcpManager: 认证消息已发送, uid=%d", uid);
     }
@@ -63,7 +63,7 @@ bool TcpManager::authenticate(const std::string& token, uint32_t uid)
 
 bool TcpManager::sendMessage(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg)
 {
-    //m_spTcpClient->send()
+    m_spTcpClient->send(msg->serialize());
 }
 
 void TcpManager::releaseConnectCallback()

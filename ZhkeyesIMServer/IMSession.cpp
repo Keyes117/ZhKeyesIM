@@ -45,6 +45,7 @@ void IMSession::onRead(Buffer& buf)
         if (!ZhKeyesIM::Protocol::IMMessage::deserializeFromBuffer(data, len, msg))
             break;
 
+        auto self = std::shared_from_this();
         m_pServer->handleMsg(msg);
 
         size_t msgLen = msg.getLength();

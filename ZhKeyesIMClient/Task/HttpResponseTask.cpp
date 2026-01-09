@@ -1,7 +1,8 @@
 #include "HttpResponseTask.h"
 
 HttpResponseTask::HttpResponseTask(std::string responseBody, ResponseFunc responseFunc)
-    :m_responseBody(responseBody), m_responseFunc(responseFunc)
+    :m_responseBody(std::move(responseBody)), 
+    m_responseFunc(std::move(responseFunc))
 {
 }
 

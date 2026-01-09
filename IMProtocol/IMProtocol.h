@@ -20,51 +20,67 @@
 */
 
 namespace ZhKeyesIM {
-namespace Protocol {
+    namespace Protocol {
 
-constexpr uint32_t PROTOCOL_MAGIC = 0x5A484B59; // ZHKY
-constexpr size_t HEADER_SIZE = 16;              // 头部长度
-constexpr size_t MAX_PACKET_SIZE = 1024 * 1024; // 最大包1MB
+        constexpr uint32_t PROTOCOL_MAGIC = 0x5A484B59; // ZHKY
+        constexpr size_t HEADER_SIZE = 16;              // 头部长度
+        constexpr size_t MAX_PACKET_SIZE = 1024 * 1024; // 最大包1MB
 
-enum class MessageType : uint16_t
-{
-    //连接（1-99）
-    AUTH_REQ = 1,           // 认证请求（连接后第一个消息）
-    AUTH_RESP = 2,          // 认证响应
-    HEARTBEAT_REQ = 3,      // 心跳请求
-    HEARTBEAT_RESP = 4,     // 心跳响应
-    DISCONNECT = 5,
+        enum class MessageType : uint16_t
+        {
+            //连接（1-99）
+            AUTH_REQ = 1,           // 认证请求（连接后第一个消息）
+            AUTH_RESP = 2,          // 认证响应
+            HEARTBEAT_REQ = 3,      // 心跳请求
+            HEARTBEAT_RESP = 4,     // 心跳响应
+            DISCONNECT = 5,
 
 
-    //单聊(100-199)
-    
-    //群聊(200-299)
+            //单聊(100-199)
 
-    //好友(300-399)
+            //群聊(200-299)
 
-    //用户状态(400-499)
+            //好友(300-399)
 
-    //错误(900)
+            //用户状态(400-499)
 
-    UNKNOWN                  = 9999
-};
+            //错误(900)
+
+            UNKNOWN = 9999
+        };
 
 #pragma pack(push,1)
-struct MessageHeader
-{
-    uint32_t magic = PROTOCOL_MAGIC;
-    uint32_t length = HEADER_SIZE;
-    uint16_t type = 0;
-    uint16_t seqId = 0;
-    uint16_t reserve = 0;
-
-};
+        struct MessageHeader
+        {
+            uint32_t magic = PROTOCOL_MAGIC;
+            uint32_t length = HEADER_SIZE;
+            uint16_t type = 0;
+            uint16_t seqId = 0;
+            uint16_t reserve = 0;
+            //uint16_t
+        };
 #pragma pack(pop)
 
+    /*
+    * Auth request
+    *   {
+    *       int32_t userId
+    *       std::string token
+    *   }
+    */
 
+    /*
+    * Auth response
+    *   {
+    *       bool success
+    *       int32_t userId
+    *       std::string token
+    *   }
+    */
 
-
-}   //Protocol
+    } //Protocol
 }   //ZhKeyesIM
+  
+
 
 #endif

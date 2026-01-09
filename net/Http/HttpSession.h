@@ -42,7 +42,7 @@ namespace ZhKeyesIM {
                 HttpSession::SessionID getID() { return m_sessionID; }
 
             private:
-                void handleRequest(std::shared_ptr<HttpRequest>& spRequest);
+                void handleRequest(std::shared_ptr<HttpRequest> spRequest);
                 void handleParseError();
                 bool shouldKeepAlive() const;
                 static uint32_t generateID();

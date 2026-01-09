@@ -5,8 +5,8 @@
 #include <QRegularExpression>
 #include <QTimer>
 
-#include "global.h"
-#include "TaskHandler.h"
+#include "UI/global.h"
+#include "Task/TaskHandler.h"
 #include "Task/RegisterTask.h"
 #include "Task/VerifyCodeTask.h"
 

@@ -3,12 +3,14 @@
 
 #include <memory>
 
-#include "Buffer.h"
-#include "TCPConnection.h"
+#include "net/Buffer.h"
+#include "net/TCPConnection.h"
+#include "IMProtocol/IMMessageSender.h"
+#include "IMProtocol/IMMessage.h"
 
 class IMServer;
 
-class IMSession
+class IMSession : public ZhKeyesIM::Protocol::IMMessageSender
 {
 public:
     using SessionID = uint32_t;
@@ -18,12 +20,13 @@ public:
 
     SessionID getSessionId() { return m_sessionId; }
 
+    virtual bool sendMessage(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg) override;
+
 private:
     static uint32_t generateID();
 
     void onRead(Buffer& buf);
     void onWrite();
-    void onClose();
 
 private:
     IMServer* m_pServer;

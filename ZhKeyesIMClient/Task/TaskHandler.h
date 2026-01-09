@@ -15,8 +15,8 @@
 
 #include <QObject>
 
-#include "Logger.h"
-#include "Task.h"
+#include "log/Logger.h"
+#include "Task/Task.h"
 
 class TaskHandler final : public QObject
 {

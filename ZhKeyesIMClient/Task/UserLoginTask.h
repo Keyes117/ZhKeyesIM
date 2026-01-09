@@ -8,9 +8,10 @@
 #include <QObject>
 
 
-#include "Task/Task.h"
 #include "NetWork/IMClient.h"
+#include "Task/Task.h"
 #include "UI/global.h"
+
 /**
  * 用户登录任务
  */
@@ -33,10 +34,6 @@ private:
     void onTcpConnectSuccess();
 
     void onLoginError(const std::string& error);
-
-
-
-
 private:
     std::shared_ptr<IMClient> m_client;
     std::string m_email;

@@ -8,10 +8,10 @@
 #include "ui_MainWindow.h"
 
 
-#include "LoginDlg.h"
-#include "RegisterDlg.h"
-#include "ResetDlg.h"
-#include "IMClient.h"
+#include "UI/LoginDlg.h"
+#include "UI/RegisterDlg.h"
+#include "UI/ResetDlg.h"
+#include "NetWork/IMClient.h"
 
 class MainWindow : public QMainWindow
 {

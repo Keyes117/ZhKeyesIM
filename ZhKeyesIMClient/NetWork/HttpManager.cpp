@@ -1,10 +1,12 @@
 #include "HttpManager.h"
 
-#include "fmt/format.h"
+
 #include "NetWork/ApiRoutes.h"
 #include "Task/HttpResponseTask.h"
 #include "Task/TaskHandler.h"
-#include <UI/global.h>
+#include "UI/global.h"
+
+#include "fmt/format.h"
 
 using namespace ZhKeyes::Util;
 
@@ -43,7 +45,7 @@ void HttpManager::requestVerificationCode(SuccessCallback onSuccess,
     std::string url = fmt::format("http://{}{}", m_httpBaseUrl.c_str(), ApiRoutes::API_VERIFY_GETCODE);
     m_spHttpClient->postJson(url,
         requestJson.dump(),
-        std::bind(&HttpManager::onResponseVerificationCode, this, onSuccess, onError, std::placeholders::_1)
+        std::bind(&HttpManager::onResponseVerificationCode, this, std::move(onSuccess), std::move(onError), std::placeholders::_1)
     );
 }
 
@@ -63,7 +65,7 @@ void HttpManager::requestRegister(DataCallback<int> onSuccess,
     std::string url = fmt::format("http://{}{}", m_httpBaseUrl.c_str(), ApiRoutes::API_USER_REGISTER);
     m_spHttpClient->postJson(url,
         requestJson.dump(),
-        std::bind(&HttpManager::onResponseRegister, this, onSuccess, onError, std::placeholders::_1)
+        std::bind(&HttpManager::onResponseRegister, this, std::move(onSuccess), std::move(onError), std::placeholders::_1)
     );
 }
 
@@ -82,7 +84,7 @@ void HttpManager::requestResetPassword(SuccessCallback onSuccess,
     std::string url = fmt::format("http://{}{}", m_httpBaseUrl.c_str(), ApiRoutes::API_USER_RESETPASS);
     m_spHttpClient->postJson(url,
         requestJson.dump(),
-        std::bind(&HttpManager::onResponseResetPassword, this, onSuccess, onError, std::placeholders::_1)
+        std::bind(&HttpManager::onResponseResetPassword, this, std::move(onSuccess), std::move(onError), std::placeholders::_1)
     );
 }
 
@@ -95,7 +97,7 @@ void HttpManager::requestUserLogin(DataCallback<User> onSuccess, ErrorCallback o
     std::string url = fmt::format("http://{}{}", m_httpBaseUrl.c_str(), ApiRoutes::API_USER_RESETPASS);
     m_spHttpClient->postJson(url,
         requestJson.dump(),
-        std::bind(&HttpManager::onResponseUserLogin, this, onSuccess, onError, std::placeholders::_1)
+        std::bind(&HttpManager::onResponseUserLogin, this, std::move(onSuccess), std::move(onError), std::placeholders::_1)
     );
 }
 
@@ -103,7 +105,7 @@ void HttpManager::onResponseVerificationCode(SuccessCallback onSuccess, ErrorCal
 {
     std::string responseBody = response.getBody();
 
-    auto responseFunc = [onSuccess, onError](const std::string& responseBody)
+    auto responseFunc = [onSuccess = std::move(onSuccess), onError = std::move(onError)](const std::string& responseBody)
         {
             auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(responseBody);
             if (!requestJsonOpt)
@@ -134,7 +136,9 @@ void HttpManager::onResponseVerificationCode(SuccessCallback onSuccess, ErrorCal
         };  
 
 
-    auto responseTask = std::make_shared<HttpResponseTask>(responseBody, responseFunc);
+    auto responseTask = std::make_shared<HttpResponseTask>(
+        std::move(responseBody),      // 移动局部变量
+        std::move(responseFunc));      // 移动 lambda
     TaskHandler::getInstance().registerUITask(std::move(responseTask));
 }
 
@@ -143,7 +147,7 @@ void HttpManager::onResponseRegister(DataCallback<int> onSuccess, ErrorCallback 
 
     std::string responseBody = response.getBody();
 
-    auto responseFunc = [onSuccess, onError](const std::string& responseBody)
+    auto responseFunc = [onSuccess = std::move(onSuccess), onError = std::move(onError)](const std::string& responseBody)
         {
             auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(responseBody);
             if (!requestJsonOpt)
@@ -178,7 +182,9 @@ void HttpManager::onResponseRegister(DataCallback<int> onSuccess, ErrorCallback 
         };
 
 
-    auto responseTask = std::make_shared<HttpResponseTask>(responseBody, responseFunc);
+    auto responseTask = std::make_shared<HttpResponseTask>(
+        std::move(responseBody),      // 移动局部变量
+        std::move(responseFunc));      // 移动 lambda
     TaskHandler::getInstance().registerUITask(std::move(responseTask));
 
 
@@ -189,7 +195,7 @@ void HttpManager::onResponseUserLogin(DataCallback<User> onSuccess, ErrorCallbac
 
     std::string responseBody = response.getBody();
 
-    auto responseFunc = [onSuccess, onError](const std::string& responseBody)
+    auto responseFunc = [onSuccess = std::move(onSuccess), onError = std::move(onError)](const std::string& responseBody)
         {
             auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(responseBody);
             if (!requestJsonOpt)
@@ -248,7 +254,9 @@ void HttpManager::onResponseUserLogin(DataCallback<User> onSuccess, ErrorCallbac
         };
 
 
-    auto responseTask = std::make_shared<HttpResponseTask>(responseBody, responseFunc);
+    auto responseTask = std::make_shared<HttpResponseTask>(
+        std::move(responseBody),      // 移动局部变量
+        std::move(responseFunc));      // 移动 lambda
     TaskHandler::getInstance().registerUITask(std::move(responseTask));
 
 
@@ -260,7 +268,7 @@ void HttpManager::onResponseResetPassword(SuccessCallback onSuccess, ErrorCallba
 
     std::string responseBody = response.getBody();
 
-    auto responseFunc = [onSuccess, onError](const std::string& responseBody)
+    auto responseFunc = [onSuccess = std::move(onSuccess), onError = std::move(onError)](const std::string& responseBody)
         {
             auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(responseBody);
             if (!requestJsonOpt)
@@ -296,7 +304,9 @@ void HttpManager::onResponseResetPassword(SuccessCallback onSuccess, ErrorCallba
         };
 
 
-    auto responseTask = std::make_shared<HttpResponseTask>(responseBody, responseFunc);
+    auto responseTask = std::make_shared<HttpResponseTask>(
+        std::move(responseBody),      // 移动局部变量
+        std::move(responseFunc));      // 移动 lambda
     TaskHandler::getInstance().registerUITask(std::move(responseTask));
 }
 

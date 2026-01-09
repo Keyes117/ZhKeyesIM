@@ -3,10 +3,11 @@
 
 #include <memory>
 
-#include "ConfigManager.h"
 #include "EventLoop.h"
-#include "UI/global.h"
 #include "Http/HttpClient.h"
+#include "UI/global.h"
+#include "util/ConfigManager.h"
+
 
 class HttpManager 
 {

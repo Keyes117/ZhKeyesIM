@@ -6,12 +6,12 @@
 #include <QLineEdit>
 #include <QRegularExpression>
 
-
-#include "UI/ClickedLabel.h"
 #include "Base/UserSession.h"
+#include "UI/ClickedLabel.h"
+#include "UI/global.h"
 #include "Task/TaskHandler.h"
 #include "Task/UserLoginTask.h"
-#include "global.h"
+
 
 LoginDlg::LoginDlg(std::shared_ptr<IMClient> spClient,QWidget* parent)
     :QDialog(parent),

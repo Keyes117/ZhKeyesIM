@@ -1,11 +1,13 @@
 #include "TcpManager.h"
 
+
+#include "Base/UserSession.h"
+#include "log/Logger.h"
 #include "IMProtocol/IMProtocol.h"
 #include "IMProtocol/IMMessage.h"
 #include "IMProtocol/BinaryWriter.h"
 #include "IMProtocol/BinaryReader.h"
-#include "Base/UserSession.h"
-#include "Logger.h"
+
 TcpManager::TcpManager(std::shared_ptr<EventLoop> eventLoop):
     m_spEventLoop(eventLoop)
 {
@@ -57,6 +59,11 @@ bool TcpManager::authenticate(const std::string& token, uint32_t uid)
     }
 
     return sent;
+}
+
+bool TcpManager::sendMessage(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg)
+{
+    //m_spTcpClient->send()
 }
 
 void TcpManager::releaseConnectCallback()

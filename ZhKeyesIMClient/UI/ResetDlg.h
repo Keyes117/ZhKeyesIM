@@ -4,7 +4,7 @@
 #include <QDialog>
 #include "ui_ResetDlg.h"
 
-#include <IMClient.h>
+#include <NetWork/IMClient.h>
 
 class ResetDlg : public QDialog
 {

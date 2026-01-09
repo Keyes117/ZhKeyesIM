@@ -3,6 +3,7 @@
 
 #include "TCPServer.h"
 
+#include "IMProtocol/IMMessageDispatcher.h"
 #include "ConfigManager.h"
 #include "IMSession.h"
 
@@ -16,13 +17,17 @@ public:
 
     bool init(const ZhKeyes::Util::ConfigManager& configManager);
 
-    void handleMsg(const ZhKeyesIM::Protocol::IMMessage& msg);
+    bool handleMsg(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg,
+            std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender
+        );
 
 private:
     void onConnected(std::shared_ptr<TCPConnection> spConn);
     void onDisConnected(SOCKET socket);
 
 private:
+    ZhKeyesIM::Protocol::IMMessageDispatcher m_dispathcer;
+    
     std::unique_ptr<TCPServer> m_spTcpServer;
 
     std::unordered_map<uint32_t, std::weak_ptr<IMSession>>     m_userIdToSession;

@@ -43,13 +43,10 @@ bool IMServer::init(const ZhKeyes::Util::ConfigManager& config)
     return true;
 }
 
-void IMServer::handleMsg(const ZhKeyesIM::Protocol::IMMessage& msg)
+bool IMServer::handleMsg(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg,
+    std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender)
 {
-    ZhKeyesIM::Protocol::MessageType type = msg.getType();
-    switch (type)
-    {
-    case ZhKeyesIM::Protocol::MessageType::AUTH_REQ:
-    }
+    return m_dispathcer.dispatch(msg, sender);
 }
 
 void IMServer::onConnected(std::shared_ptr<TCPConnection> spConn)

@@ -2,10 +2,12 @@
 
 #include <QRegularExpression>
 
+
+
 #include "global.h"
 #include "Task/ResetPasswordTask.h"
 #include "Task/VerifyCodeTask.h"
-#include "TaskHandler.h"
+#include "Task/TaskHandler.h"
 
 ResetDlg::ResetDlg(std::shared_ptr<IMClient> spClient, QWidget *parent)
     : QDialog(parent),

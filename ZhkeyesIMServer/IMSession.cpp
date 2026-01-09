@@ -19,6 +19,11 @@ IMSession::IMSession(IMServer* server, std::shared_ptr<TCPConnection> spConn)
 
 }
 
+bool IMSession::sendMessage(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg)
+{
+
+}
+
 uint32_t IMSession::generateID()
 {
     static std::atomic<uint32_t> s_sessionID = 0;

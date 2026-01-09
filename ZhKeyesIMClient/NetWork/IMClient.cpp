@@ -60,8 +60,8 @@ bool IMClient::init(const ZhKeyes::Util::ConfigManager& config)
 bool IMClient::connect(const std::string& ip, uint16_t port,
     SuccessCallback onSuccess /*= nullptr */, ErrorCallback onError /*= nullptr */)
 {
-    m_spTcpManager->setConnectCallback(onSuccess);
-    m_spTcpManager->setConnectFailedCallback(onError);
+    m_spTcpManager->setConnectCallback(std::move(onSuccess));
+    m_spTcpManager->setConnectFailedCallback(std::move(onError));
 
     return m_spTcpManager->connect(ip, port);
 }

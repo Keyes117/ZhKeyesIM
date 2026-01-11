@@ -19,9 +19,10 @@ IMSession::IMSession(IMServer* server, std::shared_ptr<TCPConnection> spConn)
 
 }
 
-bool IMSession::sendMessage(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg)
+bool IMSession::sendMessage(const ZhKeyesIM::Protocol::IMMessage& msg)
 {
-
+    std::string msgData = msg.serialize();
+    return m_spConn->send(msgData);
 }
 
 uint32_t IMSession::generateID()
@@ -41,14 +42,14 @@ void IMSession::onRead(Buffer& buf)
         const char* data = buf.peek();
         size_t      len = buf.readableBytes();
 
-        ZhKeyesIM::Protocol::IMMessage msg;
-        if (!ZhKeyesIM::Protocol::IMMessage::deserializeFromBuffer(data, len, msg))
+        auto msg = ZhKeyesIM::Protocol::IMMessage::deserializeFromBuffer(data, len);
+        if (!msg)
             break;
 
-        auto self = std::shared_from_this();
-        m_pServer->handleMsg(msg);
+        auto self = shared_from_this();
+        m_pServer->handleMsg(msg,self);
 
-        size_t msgLen = msg.getLength();
+        size_t msgLen = msg->getLength();
         buf.retrieve(msgLen);
 
     }

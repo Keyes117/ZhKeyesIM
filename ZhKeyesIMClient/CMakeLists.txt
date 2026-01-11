@@ -38,6 +38,10 @@ set(CLIENT_UI_SOURCE
     UI/ResetDlg.h
     UI/ResetDlg.ui
 
+    UI/ChatDialog.cpp
+    UI/ChatDialog.h
+    UI/ChatDialog.ui
+
     UI/TimerButton.cpp
     UI/TimerButton.h
 

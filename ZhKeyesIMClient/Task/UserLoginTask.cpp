@@ -44,7 +44,7 @@ void UserLoginTask::onHttpConnectSuccess(const User& data) {
         std::bind(&UserLoginTask::onTcpConnectSuccess, selfTask),
         std::bind(&UserLoginTask::onLoginError, selfTask,std::placeholders::_1)))
     {
-        onLoginError("Á¬½Ó·şÎñÆ÷Ê§°Ü");
+        onLoginError("è¿æ¥æœåŠ¡å™¨å¤±è´¥");
     }
 }
 

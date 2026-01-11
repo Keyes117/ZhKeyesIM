@@ -10,13 +10,6 @@ set(SERVER_SOURCES
     controller/UserController.cpp
     controller/VerifyController.cpp
 
-    infrastructure/VerifyGrpcClient.cpp
-    infrastructure/StatusGrpcClient.cpp
-    infrastructure/MySqlConnPool.cpp
-    infrastructure/MySqlManager.cpp
-    infrastructure/RedisManager.cpp
-    infrastructure/RedisConnPool.cpp
-
     repository/UserRepository.cpp
     repository/RedisRepository.cpp
 
@@ -37,13 +30,6 @@ set(SERVER_HEADERS
     controller/UserController.h
     controller/VerifyController.h
 
-    infrastructure/VerifyGrpcClient.h
-    infrastructure/StatusGrpcClient.h
-    infrastructure/MySqlConnPool.h
-    infrastructure/MySqlManager.h
-    infrastructure/RedisManager.h
-    infrastructure/RedisConnPool.h
-
     model/User.h
     model/ServiceResult.h
 
@@ -55,16 +41,39 @@ set(SERVER_HEADERS
     service/VerifyService.h
 )
 
+set(infrastructure_SOURCES
+    ${CMAKE_SOURCE_DIR}/infrastructure/VerifyGrpcClient.cpp
+    ${CMAKE_SOURCE_DIR}/infrastructure/StatusGrpcClient.cpp
+    ${CMAKE_SOURCE_DIR}/infrastructure/MySqlConnPool.cpp
+    ${CMAKE_SOURCE_DIR}/infrastructure/MySqlManager.cpp
+    ${CMAKE_SOURCE_DIR}/infrastructure/RedisManager.cpp
+    ${CMAKE_SOURCE_DIR}/infrastructure/RedisConnPool.cpp
+)
+
+set(infrastructure_HEADERS
+    ${CMAKE_SOURCE_DIR}/infrastructure/VerifyGrpcClient.h
+    ${CMAKE_SOURCE_DIR}/infrastructure/StatusGrpcClient.h
+    ${CMAKE_SOURCE_DIR}/infrastructure/MySqlConnPool.h
+    ${CMAKE_SOURCE_DIR}/infrastructure/MySqlManager.h
+    ${CMAKE_SOURCE_DIR}/infrastructure/RedisManager.h
+    ${CMAKE_SOURCE_DIR}/infrastructure/RedisConnPool.h
+)
 
 
 # ==================== 创建可执行文件 ====================
 # 创建服务端可执行文件
-add_executable(GateServer ${SERVER_SOURCES} ${SERVER_HEADERS})
+add_executable(GateServer ${SERVER_SOURCES} ${SERVER_HEADERS}
+         ${infrastructure_SOURCES} ${infrastructure_HEADERS})
 
 
 source_group(
   TREE ${CMAKE_CURRENT_SOURCE_DIR}
   FILES ${SERVER_SOURCES} ${SERVER_HEADERS}
+)
+
+source_group(
+  TREE ${CMAKE_SOURCE_DIR}
+  FILES ${infrastructure_SOURCES} ${infrastructure_HEADERS}
 )
 
 set_target_properties(ZhKeyesIMClient PROPERTIES AUTOGEN_SOURCE_GROUP "Generated")
@@ -80,6 +89,7 @@ set_target_properties(GateServer PROPERTIES
 # 设置包含目录
 target_include_directories(GateServer PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/net   # 网络库头文件路径
     ${CMAKE_SOURCE_DIR}/util  # 工具库头文件路径
     ${CMAKE_SOURCE_DIR}/Log

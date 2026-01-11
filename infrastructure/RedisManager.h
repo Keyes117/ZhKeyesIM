@@ -1,5 +1,5 @@
-#ifndef GATESERVER_REDISMANAGER_H_
-#define GATESERVER_REDISMANAGER_H_
+#ifndef infrastructure_REDISMANAGER_H_
+#define infrastructure_REDISMANAGER_H_
 
 #include <string>
 #include <optional>
@@ -35,9 +35,9 @@ public:
 
     std::vector<std::string> LRange(const std::string& key, int start = 0, int end = -1);
 
-    bool HINCRBY(const std::string& key, const std::string& field, int increment);
+    bool HIncrBy(const std::string& key, const std::string& field, int increment);
 
-    //std::map<std::string, std::string> HGetAll(const std::string& key);
+    std::map<std::string, std::string> HGetAll(const std::string& key);
 
 private:
     bool    m_inited = false;

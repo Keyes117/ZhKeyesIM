@@ -20,7 +20,7 @@ bool TcpManager::connect(const std::string& ip, uint16_t port)
     if (!m_spTcpClient->init(ip, port))
     {
         releaseConnectCallback();
-        LOG_ERROR("TcpManager: TcpClient³õÊ¼»¯Ê§°Ü");
+        LOG_ERROR("TcpManager: TcpClientåˆå§‹åŒ–å¤±è´¥");
         return false;
     }
 
@@ -34,16 +34,15 @@ bool TcpManager::authenticate(const std::string& token, uint32_t uid)
 {
     if (!m_spTcpClient || !m_spTcpClient->isConnected())
     {
-        LOG_ERROR("TcpManager: Î´Á¬½Ó£¬ÎŞ·¨·¢ËÍÈÏÖ¤ÏûÏ¢");
+        LOG_ERROR("TcpManager: æœªè¿æ¥ï¼Œæ— æ³•å‘é€è®¤è¯æ¶ˆæ¯");
         return false;
     }
 
     ZhKeyesIM::Protocol::BinaryWriter bodyWriter;
-    bodyWriter.writeUInt32(uid);           // Ğ´Èë uid
-    bodyWriter.writeString(token);        // Ğ´Èë token
+    bodyWriter.writeUInt32(uid);           // å†™å…¥ uid
+    bodyWriter.writeString(token);        // å†™å…¥ token
 
-    std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> authMsg=
-        std::make_shared<ZhKeyesIM::Protocol::IMMessage>(
+    ZhKeyesIM::Protocol::IMMessage authMsg(
         ZhKeyesIM::Protocol::MessageType::AUTH_REQ,
         0,
         bodyWriter.getData()
@@ -52,18 +51,19 @@ bool TcpManager::authenticate(const std::string& token, uint32_t uid)
     bool sent = sendMessage(authMsg);
 
     if (sent) {
-        LOG_INFO("TcpManager: ÈÏÖ¤ÏûÏ¢ÒÑ·¢ËÍ, uid=%d", uid);
+        LOG_INFO("TcpManager: è®¤è¯æ¶ˆæ¯å·²å‘é€, uid=%d", uid);
     }
     else {
-        LOG_ERROR("TcpManager: ·¢ËÍÈÏÖ¤ÏûÏ¢Ê§°Ü");
+        LOG_ERROR("TcpManager: å‘é€è®¤è¯æ¶ˆæ¯å¤±è´¥");
     }
 
     return sent;
 }
 
-bool TcpManager::sendMessage(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg)
+bool TcpManager::sendMessage(const ZhKeyesIM::Protocol::IMMessage& msg)
 {
-    m_spTcpClient->send(msg->serialize());
+    return m_spTcpClient->send(msg.serialize());
+
 }
 
 void TcpManager::releaseConnectCallback()
@@ -72,36 +72,47 @@ void TcpManager::releaseConnectCallback()
     m_connectionCallback = nullptr;
 }
 
+void TcpManager::registerHandler()
+{
+    m_dispatcher.registerHandler(ZhKeyesIM::Protocol::MessageType::AUTH_RESP,
+        std::bind(&TcpManager::handleAuthResponse, this, std::placeholders::_1, std::placeholders::_2)
+    );
+}
+
+void TcpManager::handleAuthResponse(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage>, std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender>)
+{
+    int i = 0;
+}
+
 void TcpManager::onTcpResponse(Buffer& recvBuf)
 {
     while (true)
     {
 
-        // ¼ì²éÊÇ·ñ¹»Ò»¸öÍ·²¿
+        // æ£€æŸ¥æ˜¯å¦å¤Ÿä¸€ä¸ªå¤´éƒ¨
         if (recvBuf.readableBytes() < ZhKeyesIM::Protocol::HEADER_SIZE)
             break;
 
-        // Ö»peek buf,²»ÒÆ¶¯Ö¸Õë
+        // åªpeek buf,ä¸ç§»åŠ¨æŒ‡é’ˆ
         const char* data = recvBuf.peek();
         size_t      len = recvBuf.readableBytes();
 
-        ZhKeyesIM::Protocol::IMMessage msg;
-        if (!ZhKeyesIM::Protocol::IMMessage::deserializeFromBuffer(data, len, msg))
+        auto msg = ZhKeyesIM::Protocol::IMMessage::deserializeFromBuffer(data, len);
+        if (!msg)
         {
-            //ÕâÀïÁ½ÖÖÇé¿ö
-            // 1. °ë°ü 
-            // 2. ¸ñÊ½´íÎó
+            //è¿™é‡Œä¸¤ç§æƒ…å†µ
+            // 1. åŠåŒ… 
+            // 2. æ ¼å¼é”™è¯¯
             break;
         }
 
-        //´¦ÀíÒµÎñ
-        auto msgType = msg.getType();
-        switch (msgType)
-        {
-        default:
-        }
+        //å¤„ç†ä¸šåŠ¡
+        auto msgType = msg->getType();
+        auto self = shared_from_this();
+        m_dispatcher.dispatch(msg, self);
+ 
 
-        size_t msgLen = msg.getLength();
+        size_t msgLen = msg->getLength();
         recvBuf.retrieve(msgLen);
     }
 }
@@ -117,15 +128,15 @@ void TcpManager::onConnected(std::shared_ptr<TCPConnection> spConn)
         authenticate(token, uid);
     }
     else {
-        LOG_ERROR("TcpManager: Token »ò UID Î´ÉèÖÃ£¬ÎŞ·¨ÈÏÖ¤");
+        LOG_ERROR("TcpManager: Token æˆ– UID æœªè®¾ç½®ï¼Œæ— æ³•è®¤è¯");
         if(m_connectFailedCallback)
-            m_connectFailedCallback("ÓÃ»§ĞÅÏ¢´íÎó£¬ÈÏÖ¤Ê§°Ü");
+            m_connectFailedCallback("ç”¨æˆ·ä¿¡æ¯é”™è¯¯ï¼Œè®¤è¯å¤±è´¥");
         m_spTcpClient->disconnect();
         releaseConnectCallback();
         return;
     }
 
-    // Í¨ÖªÍâ²¿Á¬½Ó³É¹¦
+    // é€šçŸ¥å¤–éƒ¨è¿æ¥æˆåŠŸ
     if (m_connectionCallback) {
         m_connectionCallback();
 
@@ -137,7 +148,7 @@ void TcpManager::onConnectFailed()
 {
     if (m_connectFailedCallback)
     {
-        m_connectFailedCallback("Á¬½ÓÊ§°Ü");
+        m_connectFailedCallback("è¿æ¥å¤±è´¥");
         releaseConnectCallback();
     }
    

@@ -191,7 +191,7 @@ bool TCPClient::createConnector()
 
 
     try {
-        m_spConnector = std::make_unique<TCPConnector>(m_spEventLoop);
+        m_spConnector = std::make_shared<TCPConnector>(m_spEventLoop);
     }
     catch (const std::exception&) {
         return false;

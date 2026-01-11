@@ -20,7 +20,7 @@ public:
 
     SessionID getSessionId() { return m_sessionId; }
 
-    virtual bool sendMessage(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg) override;
+    virtual bool sendMessage(const ZhKeyesIM::Protocol::IMMessage& msg) override;
 
 private:
     static uint32_t generateID();

@@ -14,7 +14,7 @@ namespace ZhKeyesIM {
             IMMessageSender() = default;
             virtual ~IMMessageSender() = default;
 
-            virtual bool sendMessage(std::shared_ptr<IMMessage> msg) = 0;
+            virtual bool sendMessage(const IMMessage& msg) = 0;
         };
 
     }

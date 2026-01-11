@@ -1,6 +1,7 @@
 #ifndef IMPROTOCOL_IMMESSAGE_H_
 #define IMPROTOCOL_IMMESSAGE_H_
 
+#include <memory>
 #include "IMProtocol/IMProtocol.h"
 
 namespace ZhKeyesIM{
@@ -38,7 +39,7 @@ public:
 
     std::string serialize() const;
     static bool deserialize(const std::string& data, IMMessage& out);
-    static bool deserializeFromBuffer(const char* data, size_t len, IMMessage& out);
+    static std::shared_ptr<IMMessage> deserializeFromBuffer(const char* data, size_t len);
 
 
 private:

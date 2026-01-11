@@ -12,7 +12,7 @@
 
 #include "Service/StatusService.h"
 #include "Controller/StatusController.h"
-#include "Infrastructure/RedisManager.h"
+#include "infrastructure/RedisManager.h"
 #include "JsonUtil.h"
 
 

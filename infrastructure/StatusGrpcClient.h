@@ -1,5 +1,5 @@
-#ifndef GATESERVER_STATUSGRPCCLIENT_H_
-#define GATESERVER_STATUSGRPCCLIENT_H_
+#ifndef infrastructure_STATUSGRPCCLIENT_H_
+#define infrastructure_STATUSGRPCCLIENT_H_
 
 #include <memory>
 #include <functional>

@@ -119,7 +119,7 @@ void LoginDlg::onLoginButtonClicked()
         email.toStdString(),
         password.toStdString(),
         this,
-        std::bind(&LoginDlg::onLoginSuccess, this, std::placeholders::_1),
+        std::bind(&LoginDlg::onLoginSuccess, this),
         std::bind(&LoginDlg::onLoginError, this, std::placeholders::_1)
     );
 

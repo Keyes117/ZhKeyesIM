@@ -84,32 +84,34 @@ bool ZhKeyesIM::Protocol::IMMessage::deserialize(const std::string& data, IMMess
     return true;
 }
 
-bool ZhKeyesIM::Protocol::IMMessage::deserializeFromBuffer(const char* data, size_t len, IMMessage& out)
+std::shared_ptr<ZhKeyesIM::Protocol::IMMessage>
+        ZhKeyesIM::Protocol::IMMessage::deserializeFromBuffer(const char* data, size_t len)
 {
     if (!data || len < HEADER_SIZE) {
-        return false; // 数据不足以解析头部
+        return nullptr; // 数据不足以解析头部
     }
 
     BinaryReader reader(data, len);
 
     MessageHeader header{};
-    if (!reader.readUInt32(header.magic))   return false;
-    if (!reader.readUInt32(header.length))  return false;
-    if (!reader.readUInt16(header.type))    return false;
-    if (!reader.readUInt16(header.seqId))   return false;
-    if (!reader.readUInt16(header.reserve)) return false;
+
+    if (!reader.readUInt32(header.magic))   return nullptr;
+    if (!reader.readUInt32(header.length))  return nullptr;
+    if (!reader.readUInt16(header.type))    return nullptr;
+    if (!reader.readUInt16(header.seqId))   return nullptr;
+    if (!reader.readUInt16(header.reserve)) return nullptr;
 
     if (header.magic != PROTOCOL_MAGIC) {
-        return false;
+        return nullptr;
     }
 
     if (header.length < HEADER_SIZE || header.length > MAX_PACKET_SIZE) {
-        return false;
+        return nullptr;
     }
 
     if (len < header.length) {
         // 缓冲区里还没有一整条消息，调用方应继续等待更多数据
-        return false;
+        return nullptr;
     }
 
     size_t bodyLen = header.length - HEADER_SIZE;
@@ -117,11 +119,12 @@ bool ZhKeyesIM::Protocol::IMMessage::deserializeFromBuffer(const char* data, siz
     if (bodyLen > 0) {
         body.resize(bodyLen);
         if (!reader.readBytes(&body[0], bodyLen)) {
-            return false;
+            return nullptr;
         }
     }
 
-    out.m_header = header;
-    out.m_body = std::move(body);
-    return true;
+    auto msg = std::make_shared<IMMessage>();
+    msg->m_header = header;
+    msg->m_body = std::move(body);
+    return msg;
 }

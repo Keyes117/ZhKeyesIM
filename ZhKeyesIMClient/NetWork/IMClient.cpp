@@ -60,6 +60,8 @@ bool IMClient::init(const ZhKeyes::Util::ConfigManager& config)
 bool IMClient::connect(const std::string& ip, uint16_t port,
     SuccessCallback onSuccess /*= nullptr */, ErrorCallback onError /*= nullptr */)
 {
+    m_spTcpManager = std::make_unique<TcpManager>(m_spMainEventLoop);
+
     m_spTcpManager->setConnectCallback(std::move(onSuccess));
     m_spTcpManager->setConnectFailedCallback(std::move(onError));
 
@@ -99,8 +101,8 @@ void IMClient::requestUserLogin(DataCallback<User> onSuccess,
     const std::string& username, 
     const std::string password)
 {
-    m_spHttpManager->requestUserLogin(onSuccess,
-        onError, username, password);
+    m_spHttpManager->requestUserLogin(std::move(onSuccess),
+        std::move(onError), username, password);
 }
 
 void IMClient::networkThreadFunc()

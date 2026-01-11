@@ -1,5 +1,5 @@
-#ifndef GATESERVER_REDISCONNPOOL_H_
-#define GATESERVER_REDISCONNPOOL_H_
+#ifndef infrastructure_REDISCONNPOOL_H_
+#define infrastructure_REDISCONNPOOL_H_
 
 #include <atomic>
 #include <condition_variable>

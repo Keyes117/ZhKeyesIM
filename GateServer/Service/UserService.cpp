@@ -70,6 +70,8 @@ void UserService::login(const std::string& email,
                 return;
             }
 
+            //查询是否登录
+
             // 4. 生成Token
             std::string token = m_spAuthService->generateToken(userInfo.uid);
             if (token.empty())

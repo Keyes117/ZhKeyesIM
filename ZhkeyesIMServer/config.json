@@ -1,0 +1,30 @@
+{
+    "redis": {
+        "host":"172.25.224.240",
+        "port":"6379",
+        "password":"123456",
+        "connNumber":10
+    },
+    "IMServer":{
+        "threadNum":4,
+        "ip":"127.0.0.1",
+        "port":9000,
+        "IOType":0
+    },
+    "mysql":{
+        "host":"172.25.224.240",
+        "port":"3306",
+        "user":"ZhKeyes",
+        "schema":"ZhKeyesMysql",
+        "password":"123456",
+        "connNumber":10
+    },
+    "WorkThreadPool":{
+        "threadNum" : "4",
+        "maxQueueSize" : "1000"
+    },
+    "log":{
+        "level":"debug",
+        "path":"./logs"
+    }
+}

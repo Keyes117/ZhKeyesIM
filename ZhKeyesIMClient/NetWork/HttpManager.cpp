@@ -91,10 +91,10 @@ void HttpManager::requestResetPassword(SuccessCallback onSuccess,
 void HttpManager::requestUserLogin(DataCallback<User> onSuccess, ErrorCallback onError, const std::string& username, const std::string password)
 {
     nlohmann::json requestJson;
-    requestJson["username"] = username;
+    requestJson["email"] = username;
     requestJson["password"] = password;
 
-    std::string url = fmt::format("http://{}{}", m_httpBaseUrl.c_str(), ApiRoutes::API_USER_RESETPASS);
+    std::string url = fmt::format("http://{}{}", m_httpBaseUrl.c_str(), ApiRoutes::API_USER_LOGIN);
     m_spHttpClient->postJson(url,
         requestJson.dump(),
         std::bind(&HttpManager::onResponseUserLogin, this, std::move(onSuccess), std::move(onError), std::placeholders::_1)
@@ -105,7 +105,7 @@ void HttpManager::onResponseVerificationCode(SuccessCallback onSuccess, ErrorCal
 {
     std::string responseBody = response.getBody();
 
-    auto responseFunc = [onSuccess = std::move(onSuccess), onError = std::move(onError)](const std::string& responseBody)
+    auto responseFunc = [onSuccess = std::move(onSuccess), onError = std::move(onError)](const std::string& responseBody) mutable
         {
             auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(responseBody);
             if (!requestJsonOpt)
@@ -195,7 +195,7 @@ void HttpManager::onResponseUserLogin(DataCallback<User> onSuccess, ErrorCallbac
 
     std::string responseBody = response.getBody();
 
-    auto responseFunc = [onSuccess = std::move(onSuccess), onError = std::move(onError)](const std::string& responseBody)
+    auto responseFunc = [onSuccess = std::move(onSuccess), onError = std::move(onError)](const std::string& responseBody) mutable
         {
             auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(responseBody);
             if (!requestJsonOpt)

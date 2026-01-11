@@ -16,12 +16,12 @@ bool IMServer::init(const ZhKeyes::Util::ConfigManager& config)
 {
     auto ipOpt = config.getSafe<std::string>({ "IMServer", "ip" });
     auto portOpt = config.getSafe<uint16_t>({ "IMServer", "port" });
-    auto threadNumOpt = config.getSafe<int>({ "IMServer", "threadNum" });
+    auto threadNumOpt = config.getSafe<int32_t>({ "IMServer", "threadNum" });
     auto IOTypeOpt = config.getSafe<int>({ "IMServer", "IOType" });
 
     if (!ipOpt || !portOpt || !threadNumOpt || !IOTypeOpt)
     {
-        LOG_ERROR("IMServer »ñÈ¡ÅäÖÃÐÅÏ¢Ê§°Ü");
+        LOG_ERROR("IMServer èŽ·å–é…ç½®ä¿¡æ¯å¤±è´¥");
         return false;
     }
 
@@ -32,7 +32,7 @@ bool IMServer::init(const ZhKeyes::Util::ConfigManager& config)
 
     if (!m_spTcpServer->init(threadNum, ip, port, IOType))
     {
-        LOG_ERROR("IMServer ³õÊ¼»¯Ê§°Ü");
+        LOG_ERROR("IMServer åˆå§‹åŒ–å¤±è´¥");
         return false;
     }
 
@@ -40,13 +40,23 @@ bool IMServer::init(const ZhKeyes::Util::ConfigManager& config)
     m_spTcpServer->setDisConnectionCallback(std::bind(&IMServer::onDisConnected, this, std::placeholders::_1));
     m_spTcpServer->start();
 
+    
+    // ================== Repository ==================
+
+
+    // ================== Service ==================
+    m_spUserService = std::make_shared<IMUserService>();
+
+    // ================== Controller ==================
+    m_spUserController = std::make_shared<IMUserController>(m_spUserService);
+
     return true;
 }
 
 bool IMServer::handleMsg(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg,
     std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender)
 {
-    return m_dispathcer.dispatch(msg, sender);
+    return m_dispatcher.dispatch(msg, sender);
 }
 
 void IMServer::onConnected(std::shared_ptr<TCPConnection> spConn)
@@ -81,6 +91,12 @@ void IMServer::onDisConnected(SOCKET socket)
 
         m_socketToSession.erase(socketIter);
     }
+}
+
+void IMServer::registerHandler()
+{
+    m_dispatcher.registerHandler(ZhKeyesIM::Protocol::MessageType::AUTH_REQ,
+        std::bind(&IMUserController::auth, m_spUserController, std::placeholders::_1, std::placeholders::_2));
 }
 
 

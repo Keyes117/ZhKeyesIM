@@ -1,5 +1,5 @@
-#ifndef GATESERVRE_VERIFYGRPCCLIENT_H_
-#define GATESERVRE_VERIFYGRPCCLIENT_H_
+#ifndef infrastructure_VERIFYGRPCCLIENT_H_
+#define infrastructure_VERIFYGRPCCLIENT_H_
 
 #include <memory>
 #include <functional>

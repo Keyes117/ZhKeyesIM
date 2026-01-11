@@ -79,7 +79,7 @@ private:
 
 
     std::shared_ptr<EventLoop>      m_spEventLoop;
-    std::unique_ptr<TCPConnector>   m_spConnector;
+    std::shared_ptr<TCPConnector>   m_spConnector;
     std::shared_ptr<TCPConnection>  m_spConnection;
 
     ClientConnectionCallback        m_connectionCallback;

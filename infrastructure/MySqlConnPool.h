@@ -1,5 +1,5 @@
-#ifndef STATUSSERVER_MYSQLCONNPOOL_H_
-#define STATUSSERVER_MYSQLCONNPOOL_H_
+#ifndef infrastructure_MYSQLCONNPOOL_H_
+#define infrastructure_MYSQLCONNPOOL_H_
 
 #include <cstdint>
 #include <atomic>
@@ -73,4 +73,4 @@ private:
     std::atomic<int>    m_failCount;
 };
 
-#endif /!STATUSSERVER_MYSQLPOOL_H_
+#endif /!GATESERVER_MYSQLPOOL_H_

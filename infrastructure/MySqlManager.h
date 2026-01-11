@@ -1,6 +1,6 @@
 // MySqlManager.h
-#ifndef STATUSSERVER_MYSQLMANAGER_H_
-#define STATUSSERVER_MYSQLMANAGER_H_
+#ifndef infrastructure_MYSQLMANAGER_H_
+#define infrastructure_MYSQLMANAGER_H_
 
 #include <string>
 #include <memory>
@@ -16,39 +16,39 @@ public:
     MySqlManager();
     ~MySqlManager();
 
-    // ³õÊ¼»¯
+    // ï¿½ï¿½Ê¼ï¿½ï¿½
     bool init(const ZhKeyes::Util::ConfigManager& config);
 
-    // ===== Á¬½Ó¹ÜÀí =====
+    // ===== ï¿½ï¿½ï¿½Ó¹ï¿½ï¿½ï¿½ =====
     std::shared_ptr<MySqlConnection> getConnection();
     void returnConnection(std::shared_ptr<MySqlConnection> conn);
 
-    // ===== »ù´¡²éÑ¯²Ù×÷£¨¹¤¾ß·½·¨£©=====
+    // ===== ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ñ¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß·ï¿½ï¿½ï¿½ï¿½ï¿½=====
 
-    // Ö´ÐÐ²éÑ¯£¨SELECT£©
+    // Ö´ï¿½Ð²ï¿½Ñ¯ï¿½ï¿½SELECTï¿½ï¿½
     std::unique_ptr<sql::ResultSet> executeQuery(
         std::shared_ptr<MySqlConnection> conn,
         const std::string& sql);
 
-    // Ö´ÐÐ¸üÐÂ£¨INSERT/UPDATE/DELETE£©
+    // Ö´ï¿½Ð¸ï¿½ï¿½Â£ï¿½INSERT/UPDATE/DELETEï¿½ï¿½
     int executeUpdate(
         std::shared_ptr<MySqlConnection> conn,
         const std::string& sql);
 
-    // ´´½¨Ô¤´¦ÀíÓï¾ä
+    // ï¿½ï¿½ï¿½ï¿½Ô¤ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     std::unique_ptr<sql::PreparedStatement> prepareStatement(
         std::shared_ptr<MySqlConnection> conn,
         const std::string& sql);
 
-    // ÊÂÎñÖ§³Ö
+    // ï¿½ï¿½ï¿½ï¿½Ö§ï¿½ï¿½
     bool beginTransaction(std::shared_ptr<MySqlConnection> conn);
     bool commit(std::shared_ptr<MySqlConnection> conn);
     bool rollback(std::shared_ptr<MySqlConnection> conn);
 
-    // »ñÈ¡×îºó²åÈëµÄ ID
+    // ï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ID
     int getLastInsertId(std::shared_ptr<MySqlConnection> conn);
 
-    // Á¬½Ó³Ø×´Ì¬
+    // ï¿½ï¿½ï¿½Ó³ï¿½×´Ì¬
     bool isHealthy() const;
     void close();
 

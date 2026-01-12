@@ -48,6 +48,15 @@ set(CLIENT_UI_SOURCE
     UI/ClickedLabel.cpp
     UI/ClickedLabel.h
 
+    UI/ClickedButton.cpp
+    UI/ClickedButton.h
+
+    UI/CustomizeEdit.cpp
+    UI/CustomizeEdit.h
+    
+    UI/ChatUserList.cpp
+    UI/ChatUserList.h
+
     UI/global.h
     UI/global.cpp
     

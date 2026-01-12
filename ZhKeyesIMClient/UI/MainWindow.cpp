@@ -9,19 +9,26 @@ MainWindow::MainWindow(std::shared_ptr<IMClient> spClient,QWidget *parent)
     : QMainWindow(parent),
     m_spClient(spClient),
     m_stackedWidget(new QStackedWidget(this)),
+    m_chatDlg(new ChatDialog(m_spClient, m_stackedWidget)),
     m_loginDlg(new LoginDlg(m_spClient,m_stackedWidget)),
     m_registerDlg(new RegisterDlg(m_spClient,m_stackedWidget)),
     m_resetDlg(new ResetDlg(m_spClient,m_stackedWidget))
 {
     m_ui.setupUi(this);
 
-    m_registerDlg->hide();
+    m_loginDlg->setWindowFlags(Qt::Widget);  // 而不是 Qt::Dialog
+    m_registerDlg->setWindowFlags(Qt::Widget);
+    m_resetDlg->setWindowFlags(Qt::Widget);
+    m_chatDlg->setWindowFlags(Qt::Widget);
 
+    m_stackedWidget->addWidget(m_chatDlg);
     m_stackedWidget->addWidget(m_loginDlg);
     m_stackedWidget->addWidget(m_registerDlg);
     m_stackedWidget->addWidget(m_resetDlg);
 
-    m_stackedWidget->setCurrentWidget(m_loginDlg);
+
+    m_stackedWidget->setCurrentWidget(m_chatDlg);
+    //m_stackedWidget->setCurrentWidget(m_loginDlg);
     setCentralWidget(m_stackedWidget);
 
     connect(m_loginDlg, &LoginDlg::switchRegisterDlg, this, &MainWindow::switchToRegisterDlg);
@@ -32,9 +39,6 @@ MainWindow::MainWindow(std::shared_ptr<IMClient> spClient,QWidget *parent)
     connect(&TaskHandler::getInstance(), &TaskHandler::reportErrorMsg, this, &MainWindow::onErrorMsg);
     connect(&TaskHandler::getInstance(), &TaskHandler::reportSuccessMsg, this, &MainWindow::onSuccessMsg);
 
-    m_loginDlg->setWindowFlags(Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
-    m_registerDlg->setWindowFlags(Qt::CustomizeWindowHint| Qt::FramelessWindowHint);
-    m_resetDlg->setWindowFlags(Qt::CustomizeWindowHint | Qt::FramelessWindowHint);
 }
 
 MainWindow::~MainWindow()

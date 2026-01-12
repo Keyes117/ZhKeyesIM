@@ -2,7 +2,6 @@ QDialog#LoginDlg, #RegisterDlg{
 background-color:rgb(255,255,255)
 }
 
-
 /* 输入框正常状态 */
 QLineEdit {
     border: 1px solid #e0e0e0;
@@ -69,4 +68,28 @@ QLabel[error="true"]::before {
 
 #label_pass_visible[state='visible_hover']{
      border-image: url(:/res/res/visible_hover.png);
+}
+
+#widget_sideBar{
+    background-color:rgb(46,46,46);
+}
+
+#button_add[state='normal']{
+    border-image: url(:/res/res/add_friend_normal.png);
+}
+
+#button_add[state]='hover']{
+    border-image: url(:/res/res/add_friend_hover.png);
+}
+
+#button_add[state]='press']{
+    border-image: url(:/res/res/add_friend.png);
+}
+
+#widget_search{
+    background-color:rgb(247,247,247);
+}
+
+#lineEdit_search{
+    border: 2px solid #f1f1f1;
 }

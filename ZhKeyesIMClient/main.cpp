@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
 
     MainWindow mainWindow(spIMClient);
     mainWindow.setBaseSize(300, 500);
-    mainWindow.setMaximumSize(300, 500);
+    //mainWindow.setMaximumSize(300, 500);
     mainWindow.show();
     int ret =  app.exec();
 

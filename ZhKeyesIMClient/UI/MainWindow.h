@@ -8,9 +8,11 @@
 #include "ui_MainWindow.h"
 
 
+#include "UI/ChatDialog.h"
 #include "UI/LoginDlg.h"
 #include "UI/RegisterDlg.h"
 #include "UI/ResetDlg.h"
+
 #include "NetWork/IMClient.h"
 
 class MainWindow : public QMainWindow
@@ -34,9 +36,11 @@ private:
     std::shared_ptr<IMClient> m_spClient;
 
     QStackedWidget*     m_stackedWidget;
+    ChatDialog*         m_chatDlg;
     LoginDlg*           m_loginDlg;
     RegisterDlg*        m_registerDlg;
     ResetDlg*           m_resetDlg;
+
 };
 
 #endif

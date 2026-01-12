@@ -33,7 +33,10 @@ void ClickedButton::enterEvent(QEnterEvent* event)
 
 void ClickedButton::leaveEvent(QEvent* event)
 {
-
+    setProperty("state", m_normal);
+    repolish(this);
+    update();
+    QPushButton::leaveEvent(event);
 }
 
 void ClickedButton::mousePressEvent(QMouseEvent* event)
@@ -49,5 +52,5 @@ void ClickedButton::mouseReleaseEvent(QMouseEvent* event)
     setProperty("state", m_hover);
     repolish(this);
     update();
-    QPushButton::mousePressEvent(event);
+    QPushButton::mouseReleaseEvent(event);
 }

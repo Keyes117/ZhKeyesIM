@@ -1,6 +1,7 @@
 #include "CustomizeEdit.h"
 
-CustomizeEdit::CustomizeEdit(QWidget* parent)
+CustomizeEdit::CustomizeEdit(QWidget* parent):
+    QLineEdit(parent)
 {
 }
 

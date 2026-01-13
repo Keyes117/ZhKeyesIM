@@ -36,7 +36,9 @@ ChatDialog::ChatDialog(std::shared_ptr<IMClient> spClient, QWidget* parent) :
     ui.setupUi(this);
 
     m_chatUserListWidget = new ChatUserList(ui.stackedWidget_user);
+    m_chatUserListWidget->setObjectName("listWidget_chatUser");
     m_chatUserListWidget->setWindowFlag(Qt::Widget);
+
 
     ui.stackedWidget_user->addWidget(m_chatUserListWidget);
 
@@ -54,6 +56,7 @@ ChatDialog::ChatDialog(std::shared_ptr<IMClient> spClient, QWidget* parent) :
 
     connect(ui.lineEdit_search, &QLineEdit::textChanged, this, &ChatDialog::onLineEditSearchChanged);
     connect(m_clearAction, &QAction::triggered, this, &ChatDialog::onClearActionTriggered);
+    //connect(ui.stackedWidget_chat.pag)
 
     ui.lineEdit_search->setMaxLength(15);
 

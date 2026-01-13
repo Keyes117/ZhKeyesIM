@@ -1,6 +1,8 @@
-QDialog#LoginDlg, #RegisterDlg{
+QDialog#LoginDlg, #RegisterDlg, #ResetDialog{
 background-color:rgb(255,255,255)
 }
+
+
 
 /* 输入框正常状态 */
 QLineEdit {
@@ -98,21 +100,23 @@ QLabel[error="true"]::before {
     background-color:rgb(0,0,0);
 }
 
-ChatUserList {
+ChatUserList#listWidget_chatUser {
     background-color: rgb(247,247,248);
     border: none;
 }
-ChatUserList::item:selected {
+
+ChatUserList#listWidget_chatUser::item:selected {
     background-color: #d3d7d4;
     border: none;
     outline: none;
 }
-ChatUserList::item:hover {
+
+ChatUserList#listWidget_chatUser::item:hover {
     background-color: rgb(206,207,208);
     border: none;
     outline: none;
 }
-ChatUserList:focus {
+ChatUserList#listWidget_chatUser:focus {
     border: none;
     outline: none;
 }
@@ -121,7 +125,6 @@ ChatUserWidget{
     background-color:rgb(247,247,247);
     border:none;
 }
-
 
 #label_msg{
     color:rgb(153,153,153);
@@ -167,8 +170,9 @@ LoadingDlg{
 
 #label_title{
     font-family: "Microsoft YaHei";
-    font-size: 18px;
+    font-size: 16px;
     font-weight: normal;
+    color:rgb(0,0,0)
     
 }
 
@@ -185,6 +189,12 @@ LoadingDlg{
 {
     background: #ffffff;
     border: none; /* 隐藏边框 */
+}
+
+#widget_title
+{
+    background: #ffffff;
+    border-bottom: 0.5px solid #ececec;
 }
 
 #button_send[state='normal']{
@@ -213,6 +223,7 @@ LoadingDlg{
     background: #ffffff;
     border-bottom: 0.5px solid #ececec; /* 设置下边框颜色和宽度 */
 }
+
 #label_emo[state='normal']{
     border-image: url(:/res/res/smile.png);
 }
@@ -231,3 +242,12 @@ LoadingDlg{
 #label_file[state='press']{
     border-image: url(:/res/res/filedir_press.png);
 }
+
+#scrollArea_chat{
+    background:#f0f0f0;
+}
+
+#widget_chat{
+    border: none;
+}
+

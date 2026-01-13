@@ -72,6 +72,22 @@ set(CLIENT_UI_SOURCE
     UI/ChatPage.h
     UI/ChatPage.ui
 
+    UI/ChatView.cpp
+    UI/ChatView.h
+
+    UI/ChatItemBase.h
+    UI/ChatItemBase.cpp
+
+    UI/BubbleFrame.h
+    UI/BubbleFrame.cpp
+    UI/TextBubble.h
+    UI/TextBubble.cpp
+    UI/PictureBubble.h
+    UI/PictureBubble.cpp
+
+    UI/MessageTextEdit.h
+    UI/MessageTextEdit.cpp
+
     UI/global.h
     UI/global.cpp    
     

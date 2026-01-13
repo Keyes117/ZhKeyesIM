@@ -4,7 +4,7 @@
 
 ChatUserWidget::ChatUserWidget(QWidget *parent)
     : ListItemBase(parent)
-{
+{ 
     m_ui.setupUi(this);
     setItemType(ListItemType::CHAT_USER_ITEM);
 }

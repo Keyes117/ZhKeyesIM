@@ -14,6 +14,18 @@
    <string>ChatPage</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <item>
     <widget class="QWidget" name="widget_chat" native="true">
      <layout class="QVBoxLayout" name="verticalLayout_4" stretch="0,0,0,0,2">
@@ -34,7 +46,7 @@
       </property>
       <item>
        <widget class="QWidget" name="widget_title" native="true">
-        <layout class="QVBoxLayout" name="verticalLayout_5">
+        <layout class="QHBoxLayout" name="horizontalLayout">
          <property name="leftMargin">
           <number>0</number>
          </property>
@@ -49,6 +61,22 @@
          </property>
          <item>
           <layout class="QHBoxLayout" name="horizontalLayout_3">
+           <item>
+            <spacer name="horizontalSpacer">
+             <property name="orientation">
+              <enum>Qt::Orientation::Horizontal</enum>
+             </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Policy::Fixed</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>10</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
            <item>
             <widget class="QLabel" name="label_title">
              <property name="sizePolicy">
@@ -74,7 +102,13 @@
        </widget>
       </item>
       <item>
-       <widget class="QWidget" name="widget_chatDataList" native="true">
+       <widget class="ChatView" name="widget_chatView" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <property name="minimumSize">
          <size>
           <width>0</width>
@@ -94,7 +128,7 @@
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>60</height>
+          <height>30</height>
          </size>
         </property>
         <property name="maximumSize">
@@ -122,15 +156,15 @@
          <item>
           <spacer name="horizontalSpacer_2">
            <property name="orientation">
-            <enum>Qt::Vertical</enum>
+            <enum>Qt::Orientation::Horizontal</enum>
            </property>
            <property name="sizeType">
-            <enum>QSizePolicy::Fixed</enum>
+            <enum>QSizePolicy::Policy::Fixed</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
-             <width>5</width>
-             <height>20</height>
+             <width>20</width>
+             <height>5</height>
             </size>
            </property>
           </spacer>
@@ -138,7 +172,7 @@
          <item>
           <widget class="ClickedLabel" name="label_emo">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
@@ -163,15 +197,15 @@
          <item>
           <spacer name="horizontalSpacer_4">
            <property name="orientation">
-            <enum>Qt::Vertical</enum>
+            <enum>Qt::Orientation::Horizontal</enum>
            </property>
            <property name="sizeType">
-            <enum>QSizePolicy::Fixed</enum>
+            <enum>QSizePolicy::Policy::Fixed</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
-             <width>5</width>
-             <height>20</height>
+             <width>20</width>
+             <height>5</height>
             </size>
            </property>
           </spacer>
@@ -179,7 +213,7 @@
          <item>
           <widget class="ClickedLabel" name="label_file">
            <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
              <horstretch>0</horstretch>
              <verstretch>0</verstretch>
             </sizepolicy>
@@ -204,12 +238,12 @@
          <item>
           <spacer name="horizontalSpacer_3">
            <property name="orientation">
-            <enum>Qt::Vertical</enum>
+            <enum>Qt::Orientation::Horizontal</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
-             <width>300</width>
-             <height>20</height>
+             <width>20</width>
+             <height>300</height>
             </size>
            </property>
           </spacer>
@@ -218,11 +252,11 @@
        </widget>
       </item>
       <item>
-       <widget class="QTextEdit" name="textEdit_chat">
+       <widget class="MessageTextEdit" name="textEdit_chat">
         <property name="minimumSize">
          <size>
           <width>0</width>
-          <height>150</height>
+          <height>50</height>
          </size>
         </property>
        </widget>
@@ -263,28 +297,12 @@
          <item>
           <spacer name="horizontalSpacer_5">
            <property name="orientation">
-            <enum>Qt::Vertical</enum>
+            <enum>Qt::Orientation::Horizontal</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_7">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-           <property name="sizeType">
-            <enum>QSizePolicy::Fixed</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>10</width>
-             <height>20</height>
+             <width>20</width>
+             <height>40</height>
             </size>
            </property>
           </spacer>
@@ -308,6 +326,22 @@
            </property>
           </widget>
          </item>
+         <item>
+          <spacer name="horizontalSpacer_7">
+           <property name="orientation">
+            <enum>Qt::Orientation::Vertical</enum>
+           </property>
+           <property name="sizeType">
+            <enum>QSizePolicy::Policy::Fixed</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
         </layout>
        </widget>
       </item>
@@ -327,6 +361,17 @@
    <class>ClickedLabel</class>
    <extends>QLabel</extends>
    <header>clickedlabel.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ChatView</class>
+   <extends>QWidget</extends>
+   <header>chatview.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MessageTextEdit</class>
+   <extends>QTextEdit</extends>
+   <header>messagetextedit.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

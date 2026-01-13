@@ -1,5 +1,5 @@
-#ifndef UI_MAINWINDOW_H_
-#define UI_MAINWINDOW_H_
+#ifndef ZHKEYESIMCLIENT_UI_MAINWINDOW_H_
+#define ZHKEYESIMCLIENT_UI_MAINWINDOW_H_
 
 #include <memory>
 

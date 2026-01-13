@@ -1,5 +1,5 @@
-#ifndef UI_LOGINDLG_H_
-#define UI_LOGINDLG_H_
+#ifndef ZHKEYESIMCLIENT_UI_LOGINDLG_H_
+#define ZHKEYESIMCLIENT_UI_LOGINDLG_H_
 
 #include <QtWidgets/QDialog>
 #include <QLineEdit>

@@ -2,7 +2,7 @@
 
 ClickedLabel::ClickedLabel(QWidget* parent):
     QLabel(parent),
-    m_curState(ClickState::Normal)
+    m_curState(ClickLbState::Normal)
 {
 }
 
@@ -10,17 +10,17 @@ void ClickedLabel::mousePressEvent(QMouseEvent* event)
 {
     if (event->button() == Qt::LeftButton)
     {
-        if (m_curState == ClickState::Normal)
+        if (m_curState == ClickLbState::Normal)
         {
-            m_curState = ClickState::Selected;
-            setProperty("state", m_selected_hover);
+            m_curState = ClickLbState::Selected;
+            setProperty("state", m_selected_press);
             repolish(this);
             update();
         }
         else
         {
-            m_curState = ClickState::Normal;
-            setProperty("state", m_normal_hover);
+            m_curState = ClickLbState::Normal;
+            setProperty("state", m_normal_press);
             repolish(this);
             update();
         }
@@ -31,9 +31,32 @@ void ClickedLabel::mousePressEvent(QMouseEvent* event)
     QLabel::mousePressEvent(event);
 }
 
+void ClickedLabel::mouseReleaseEvent(QMouseEvent* event)
+{
+    if (event->button() == Qt::LeftButton)
+    {
+        if (m_curState == ClickLbState::Normal)
+        {         
+            setProperty("state", m_normal_hover);
+            repolish(this);
+            update();
+        }
+        else
+        {      
+            setProperty("state", m_selected_hover);
+            repolish(this);
+            update();
+        }
+        emit clicked();
+        return;
+    }
+
+    QLabel::mousePressEvent(event);
+}
+
 void ClickedLabel::enterEvent(QEnterEvent* event)
 {
-    if (m_curState == ClickState::Normal)
+    if (m_curState == ClickLbState::Normal)
     {
         setProperty("state", m_normal_hover);
         repolish(this);
@@ -51,7 +74,7 @@ void ClickedLabel::enterEvent(QEnterEvent* event)
 
 void ClickedLabel::leaveEvent(QEvent* event)
 {
-    if (m_curState == ClickState::Normal)
+    if (m_curState == ClickLbState::Normal)
     {
         setProperty("state", m_normal);
         repolish(this);

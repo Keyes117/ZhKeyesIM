@@ -110,7 +110,8 @@
         "xstring": "cpp",
         "xtr1common": "cpp",
         "xtree": "cpp",
-        "xutility": "cpp"
+        "xutility": "cpp",
+        "qwidget": "cpp"
     },
     "C_Cpp.default.configurationProvider": "go2sh.cmake-integration",
     "qt.designerPath": "D:/QT/QT6.3/6.3.2/msvc2019_64/bin/designer.exe",

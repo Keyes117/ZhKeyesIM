@@ -57,9 +57,23 @@ set(CLIENT_UI_SOURCE
     UI/ChatUserList.cpp
     UI/ChatUserList.h
 
+    UI/ListItemBase.h
+    UI/ListItemBase.cpp
+
+    UI/ChatUserWidget.cpp
+    UI/ChatUserWidget.h
+    UI/ChatUserWidget.ui
+
+    UI/LoadingDialog.cpp
+    UI/LoadingDialog.h
+    UI/LoadingDialog.ui
+
+    UI/ChatPage.cpp
+    UI/ChatPage.h
+    UI/ChatPage.ui
+
     UI/global.h
-    UI/global.cpp
-    
+    UI/global.cpp    
     
     
     UI/resource.qrc

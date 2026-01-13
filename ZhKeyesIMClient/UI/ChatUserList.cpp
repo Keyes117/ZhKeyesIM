@@ -33,13 +33,18 @@ bool ChatUserList::eventFilter(QObject* watched, QEvent* event)
         QWheelEvent* wheelEvent = static_cast<QWheelEvent*>(event);
         int numDegrees = wheelEvent->angleDelta().y() / 8;
         int numSteps = numDegrees / 15; // 计算滚动步数
+
         // 设置滚动幅度
         this->verticalScrollBar()->setValue(this->verticalScrollBar()->value() - numSteps);
+        
         // 检查是否滚动到底部
         QScrollBar* scrollBar = this->verticalScrollBar();
         int maxScrollValue = scrollBar->maximum();
         int currentValue = scrollBar->value();
+
         //int pageSize = 10; // 每页加载的联系人数量
+
+
         if (maxScrollValue - currentValue <= 0)
         {
             //发送信号通知聊天界面加载更多聊天内容

@@ -1,5 +1,5 @@
-#ifndef UI_CLICKEDLABEL_H_
-#define UI_CLICKEDLABEL_H_
+#ifndef ZHKEYESIMCLIENT_UI_CLICKEDLABEL_H_
+#define ZHKEYESIMCLIENT_UI_CLICKEDLABEL_H_
 
 #include <QLabel>
 #include <QMouseEvent>
@@ -14,15 +14,19 @@ class ClickedLabel : public QLabel
 public:
     ClickedLabel(QWidget* parent);
 
-    virtual void mousePressEvent(QMouseEvent* event) override;
-    virtual void enterEvent(QEnterEvent* event) override;
-    virtual void leaveEvent(QEvent* event) override;
-
     void setState(const QString& normal = "", const QString& hover = "", const QString& press = "",
         const QString& select = "", const QString& select_hover = "", const QString& select_press = ""
     );
 
-    ClickState getCurState() { return m_curState; }
+    ClickLbState getCurState() { return m_curState; }
+
+protected:
+    virtual void mousePressEvent(QMouseEvent* event) override;
+    virtual void mouseReleaseEvent(QMouseEvent* event) override;
+    virtual void enterEvent(QEnterEvent* event) override;
+    virtual void leaveEvent(QEvent* event) override;
+
+
 signals:
     void clicked(void);
 
@@ -35,7 +39,7 @@ private:
     QString m_selected_hover;
     QString m_selected_press;
 
-    ClickState m_curState;
+    ClickLbState m_curState;
 };
 
 

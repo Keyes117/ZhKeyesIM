@@ -1,5 +1,5 @@
-#ifndef UI_CLICKEDBUTTON_H_
-#define UI_CLICKEDBUTTON_H_
+#ifndef ZHKEYESIMCLIENT_UI_CLICKEDBUTTON_H_
+#define ZHKEYESIMCLIENT_UI_CLICKEDBUTTON_H_
 
 #include <QWidget>
 #include <QPushButton>

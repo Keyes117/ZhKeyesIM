@@ -1,5 +1,5 @@
-#ifndef UI_CUSTOMIZEEDIT_H_
-#define UI_CUSTOMIZEEDIT_H_
+#ifndef ZHKEYESIMCLIENT_UI_CUSTOMIZEEDIT_H_
+#define ZHKEYESIMCLIENT_UI_CUSTOMIZEEDIT_H_
 
 #include <QLineEdit>
 #include <QFocusEvent>

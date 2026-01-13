@@ -78,11 +78,11 @@ QLabel[error="true"]::before {
     border-image: url(:/res/res/add_friend_normal.png);
 }
 
-#button_add[state]='hover']{
+#button_add[state='hover']{
     border-image: url(:/res/res/add_friend_hover.png);
 }
 
-#button_add[state]='press']{
+#button_add[state ='press']{
     border-image: url(:/res/res/add_friend.png);
 }
 
@@ -92,4 +92,142 @@ QLabel[error="true"]::before {
 
 #lineEdit_search{
     border: 2px solid #f1f1f1;
+}
+
+#widget_user{
+    background-color:rgb(0,0,0);
+}
+
+ChatUserList {
+    background-color: rgb(247,247,248);
+    border: none;
+}
+ChatUserList::item:selected {
+    background-color: #d3d7d4;
+    border: none;
+    outline: none;
+}
+ChatUserList::item:hover {
+    background-color: rgb(206,207,208);
+    border: none;
+    outline: none;
+}
+ChatUserList:focus {
+    border: none;
+    outline: none;
+}
+
+ChatUserWidget{
+    background-color:rgb(247,247,247);
+    border:none;
+}
+
+
+#label_msg{
+    color:rgb(153,153,153);
+    font-size: 12px;
+    font-family: "Microsoft YaHei";
+}
+
+#label_name{
+    color:rgb(0,0,0);
+    font-size: 14px;
+    font-weight: normal;
+    font-family: "Microsoft YaHei";
+}
+
+#widget_time #label_time{
+   color:rgb(140,140,140);
+   font-size: 12px;
+   font-family: "Microsoft YaHei";
+}
+
+QScrollBar:vertical {
+    background: transparent; /* 将轨道背景设置为透明 */
+    width: 8px; /* 滚动条宽度，根据需要调整 */
+    margin: 0px; /* 移除滚动条与滑块之间的间距 */
+}
+QScrollBar::handle:vertical {
+    background: rgb(173,170,169); /* 滑块颜色 */
+    min-height: 10px; /* 滑块最小高度，根据需要调整 */
+    border-radius: 4px; /* 滑块边缘圆角，调整以形成椭圆形状 */
+}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+    height: 0px; /* 移除上下按钮 */
+    border: none; /* 移除边框 */
+    background: transparent; /* 背景透明 */
+}
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: none; /* 页面滚动部分背景透明 */
+}
+
+LoadingDlg{
+    background: #f2eada;
+}
+
+#label_title{
+    font-family: "Microsoft YaHei";
+    font-size: 18px;
+    font-weight: normal;
+    
+}
+
+#textEdit_chat
+{
+    background: #ffffff;
+    border: none; /* 隐藏边框 */
+    font-family: "Microsoft YaHei"; /* 设置字体 */
+    font-size: 18px; /* 设置字体大小 */
+    padding: 5px; /* 设置内边距 */
+}
+
+#widget_chatBtn
+{
+    background: #ffffff;
+    border: none; /* 隐藏边框 */
+}
+
+#button_send[state='normal']{
+    background: #f0f0f0;
+    color: #2cb46e;
+    font-size: 16px; /* 设置字体大小 */
+    font-family: "Microsoft YaHei"; /* 设置字体 */
+    border-radius: 20px; /* 设置圆角 */
+}
+#button_send[state='hover']{
+   background: #d2d2d2;
+   color: #2cb46e;
+   font-size: 16px; /* 设置字体大小 */
+   font-family: "Microsoft YaHei"; /* 设置字体 */
+   border-radius: 20px; /* 设置圆角 */
+}
+#button_send[state='press']{
+   background: #c6c6c6;
+   color: #2cb46e;
+   font-size: 16px; /* 设置字体大小 */
+   font-family: "Microsoft YaHei"; /* 设置字体 */
+   border-radius: 20px; /* 设置圆角 */
+}
+
+#widget_tool{
+    background: #ffffff;
+    border-bottom: 0.5px solid #ececec; /* 设置下边框颜色和宽度 */
+}
+#label_emo[state='normal']{
+    border-image: url(:/res/res/smile.png);
+}
+#label_emo[state='hover']{
+    border-image: url(:/res/res/smile_hover.png);
+}
+#label_emo[state='press']{
+    border-image: url(:/res/res/smile_press.png);
+}
+#label_file[state='normal']{
+    border-image: url(:/res/res/filedir.png);
+}
+#label_file[state='hover']{
+    border-image: url(:/res/res/filedir_hover.png);
+}
+#label_file[state='press']{
+    border-image: url(:/res/res/filedir_press.png);
 }

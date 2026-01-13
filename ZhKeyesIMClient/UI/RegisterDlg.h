@@ -1,5 +1,5 @@
-#ifndef UI_REGISTERDLG_H_
-#define UI_REGISTERDLG_H_
+#ifndef ZHKEYESIMCLIENT_UI_REGISTERDLG_H_
+#define ZHKEYESIMCLIENT_UI_REGISTERDLG_H_
 
 #include <QDialog>
 #include <QTimer>

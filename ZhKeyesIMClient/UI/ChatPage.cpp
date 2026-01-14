@@ -28,7 +28,7 @@ void ChatPage::onButtonSendClicked()
     auto pTextEdit = ui.textEdit_chat;
     ChatRole role = ChatRole::Self;
     QString userName = QString::fromLocal8Bit("ÁµÁµ·ç³½");
-    QString userIcon = ":/res/head_1.jpg";
+    QString userIcon = ":/res/res/head_1.jpg";
     const QVector<MsgInfo>& msgList = pTextEdit->getMsgList();
     for (int i = 0; i < msgList.size(); ++i)
     {

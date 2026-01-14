@@ -85,8 +85,14 @@ set(CLIENT_UI_SOURCE
     UI/PictureBubble.h
     UI/PictureBubble.cpp
 
+    UI/StateWidget.cpp
+    UI/StateWidget.h
+
     UI/MessageTextEdit.h
     UI/MessageTextEdit.cpp
+
+    UI/SearchListWidget.cpp
+    UI/SearchListWidget.h
 
     UI/global.h
     UI/global.cpp    

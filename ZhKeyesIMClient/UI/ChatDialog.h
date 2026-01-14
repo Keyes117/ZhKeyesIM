@@ -4,6 +4,7 @@
 #include <memory>
 
 #include <QDialog>
+#include <QList>
 #include <QStackedWidget>
 
 #include "ui_ChatDialog.h"
@@ -23,16 +24,27 @@ public:
 
     void addChatUserList();
 
+private:
+    void clearLabelState(StateWidget* label);
+    void addLabelGroup(StateWidget* label);
+
+    void showSearch(bool bsearch = false);
 private slots:
     void onLineEditSearchChanged(const QString& text);
     void onClearActionTriggered();
 
     void onLoadingChatUser();
 
+    void onLabelSideChatClicked();
+    void onLabelSideContactClicked();
+
+
 private:
     Ui::ChatDialogClass ui;
+    QList<StateWidget*>   m_labelList;
 
-    ChatUserList*    m_chatUserListWidget;
+
+    ChatUserListWidget*  m_chatUserListWidget;
 
     ChatUIMode  m_mode = ChatUIMode::ChatMode;
     ChatUIMode  m_state = ChatUIMode::ChatMode;

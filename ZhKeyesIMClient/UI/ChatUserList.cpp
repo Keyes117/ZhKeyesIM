@@ -1,15 +1,16 @@
 #include "ChatUserList.h"
 
-ChatUserList::ChatUserList(QWidget* parent):
+ChatUserListWidget::ChatUserListWidget(QWidget* parent):
     QListWidget(parent)
 {
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
     // 安装事件过滤器
     this->viewport()->installEventFilter(this);
 }
 
-bool ChatUserList::eventFilter(QObject* watched, QEvent* event)
+bool ChatUserListWidget::eventFilter(QObject* watched, QEvent* event)
 {
     // 检查事件是否是鼠标悬浮进入或离开
     if (watched == this->viewport())

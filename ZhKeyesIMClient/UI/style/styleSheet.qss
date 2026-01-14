@@ -100,23 +100,24 @@ QLabel[error="true"]::before {
     background-color:rgb(0,0,0);
 }
 
-ChatUserList#listWidget_chatUser {
+ChatUserList {
     background-color: rgb(247,247,248);
     border: none;
 }
 
-ChatUserList#listWidget_chatUser::item:selected {
+ChatUserList::item:selected {
     background-color: #d3d7d4;
     border: none;
     outline: none;
 }
 
-ChatUserList#listWidget_chatUser::item:hover {
+ChatUserList::item:hover {
     background-color: rgb(206,207,208);
     border: none;
     outline: none;
 }
-ChatUserList#listWidget_chatUser:focus {
+
+ChatUserList:focus {
     border: none;
     outline: none;
 }
@@ -124,6 +125,12 @@ ChatUserList#listWidget_chatUser:focus {
 ChatUserWidget{
     background-color:rgb(247,247,247);
     border:none;
+}
+
+ChatUserWidget:hover {
+    background-color: rgb(206,207,208);
+    border: none;
+    outline: none;
 }
 
 #label_msg{
@@ -251,3 +258,74 @@ LoadingDlg{
     border: none;
 }
 
+#widget_sideBar{
+    background: #ffffff;
+    border-bottom: 0.5px solid #ececec; /* 设置下边框颜色和宽度 */
+}
+
+#chat_user_name
+{
+    color:rgb(153,153,153);
+    font-size: 14px;
+    font_family: "Microsoft YaHei";
+}
+
+#label_side_chat[state='normal']
+{
+    border-image: url(:/res/res/chat_icon.png);
+}
+
+#label_side_chat[state='hover']
+{
+    border-image: url(:/res/res/chat_icon_hover.png);
+}
+
+#label_side_chat[state='pressed']
+{
+    border-image: url(:/res/res/chat_icon_press.png);
+}
+
+#label_side_chat[state='selected_normal']
+{
+    border-image: url(:/res/res/chat_icon_press.png);
+}
+
+#label_side_chat[state='selected_hover']
+{
+    border-image: url(:/res/res/chat_icon_press_hover.png);
+}
+
+#label_side_chat[state='selected_pressed']
+{
+    border-image: url(:/res/res/chat_icon_press_press.png);
+}
+
+#label_side_contact[state='normal']
+{
+    border-image: url(:/res/res/contact_list.png);
+}
+
+#label_side_contact[state='hover']
+{
+    border-image: url(:/res/res/contact_list_hover.png);
+}
+
+#label_side_contact[state='pressed']
+{
+    border-image: url(:/res/res/contact_list_press.png);
+}
+
+#label_side_contact[state='selected_normal']
+{
+    border-image: url(:/res/res/contact_list_press.png);
+}
+
+#label_side_contact[state='selected_hover']
+{
+    border-image: url(:/res/res/contact_list_press.png);
+}
+
+#label_side_contact[state='selected_pressed']
+{
+    border-image: url(:/res/res/contact_list_press.png);
+}

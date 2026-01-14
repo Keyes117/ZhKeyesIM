@@ -35,12 +35,25 @@ ChatDialog::ChatDialog(std::shared_ptr<IMClient> spClient, QWidget* parent) :
 {
     ui.setupUi(this);
 
-    m_chatUserListWidget = new ChatUserList(ui.stackedWidget_user);
+    m_chatUserListWidget = new ChatUserListWidget(ui.stackedWidget_user);
     m_chatUserListWidget->setObjectName("listWidget_chatUser");
     m_chatUserListWidget->setWindowFlag(Qt::Widget);
-
-
     ui.stackedWidget_user->addWidget(m_chatUserListWidget);
+
+    QPixmap pixmap(":/res/res/head_1.jpg");
+    ui.label_side_head->setPixmap(pixmap);
+
+    QPixmap scaledPixmap = pixmap.scaled(ui.label_side_head->size(), Qt::KeepAspectRatio);
+    ui.label_side_head->setPixmap(scaledPixmap);
+    ui.label_side_head->setScaledContents(true);
+
+    ui.label_side_chat->setProperty("state", "normal");
+    ui.label_side_chat->setState("normal", "hover", "press", 
+        "selected_normal", "selected_hover", "selected_press");
+    ui.label_side_contact->setState("normal", "hover", "press",
+        "selected_normal", "selected_hover", "selected_press");
+
+    //ui.label_side_chat->setSelected(false);..
 
     ui.button_add->SetState("normal", "hover", "press");
 
@@ -54,9 +67,15 @@ ChatDialog::ChatDialog(std::shared_ptr<IMClient> spClient, QWidget* parent) :
 
     ui.lineEdit_search->addAction(m_clearAction, QLineEdit::TrailingPosition);
 
+    connect(ui.label_side_chat, &StateWidget::clicked, this, &ChatDialog::onLabelSideChatClicked);
+    connect(ui.label_side_contact, &StateWidget::clicked, this, &ChatDialog::onLabelSideContactClicked);
     connect(ui.lineEdit_search, &QLineEdit::textChanged, this, &ChatDialog::onLineEditSearchChanged);
     connect(m_clearAction, &QAction::triggered, this, &ChatDialog::onClearActionTriggered);
     //connect(ui.stackedWidget_chat.pag)
+
+    addLabelGroup(ui.label_side_chat);
+    addLabelGroup(ui.label_side_contact);
+
 
     ui.lineEdit_search->setMaxLength(15);
 
@@ -85,6 +104,47 @@ void ChatDialog::addChatUserList()
     }
 }
 
+void ChatDialog::clearLabelState(StateWidget* label)
+{
+    for (auto& pLabel : m_labelList)
+    {
+        if (pLabel == label)
+            continue;
+
+        pLabel->clearState();
+    }
+
+}
+
+void ChatDialog::addLabelGroup(StateWidget* label)
+{
+    m_labelList.push_back(label);
+}
+
+void ChatDialog::showSearch(bool bsearch)
+{
+    if (bsearch)
+    {
+        
+    }
+    else if (m_state == ChatUIMode::SearchMode)
+    {
+
+    }
+    else if (m_state == ChatUIMode::ContactMode)
+    {
+
+    }
+    else if (m_state == ChatUIMode::ChatMode)
+    {
+        ui.stackedWidget_user->setCurrentWidget(m_chatUserListWidget);
+    }
+    else if (m_state == ChatUIMode::SettingsMode)
+    {
+
+    }
+}
+
 
 void ChatDialog::onLineEditSearchChanged(const QString& text)
 {
@@ -108,5 +168,20 @@ void ChatDialog::onClearActionTriggered()
 
 void ChatDialog::onLoadingChatUser()
 {
+
+}
+
+void ChatDialog::onLabelSideChatClicked()
+{
+    clearLabelState(ui.label_side_chat);
+    ui.stackedWidget_chat->setCurrentWidget(ui.page_chatPage);
+    m_state = ChatUIMode::ChatMode;
+    showSearch(true);
+}
+
+void ChatDialog::onLabelSideContactClicked()
+{
+    clearLabelState(ui.label_side_contact);
+    m_state = ChatUIMode::ContactMode;
 
 }

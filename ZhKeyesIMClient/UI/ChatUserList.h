@@ -9,11 +9,11 @@
 #include <QDebug>
 #include <qcoreevent.h>
 
-class ChatUserList : public QListWidget
+class ChatUserListWidget : public QListWidget
 {
     Q_OBJECT
 public:
-    ChatUserList(QWidget* parent = nullptr);
+    ChatUserListWidget(QWidget* parent = nullptr);
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event) override;

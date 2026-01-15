@@ -74,4 +74,19 @@ struct MsgInfo {
     QPixmap pixmap;//文件和图片的缩略图
 };
 
+class SearchInfo {
+public:
+    SearchInfo(int uid, QString name, QString nick, QString desc, int sex) :
+        m_uid(uid), m_name(name), m_nick(nick), m_desc(desc), m_sex(sex)
+    {
+
+    }
+
+    int     m_uid;
+    QString m_name;
+    QString m_nick;
+    QString m_desc;
+    int     m_sex;
+};
+
 #endif

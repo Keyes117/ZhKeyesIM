@@ -81,6 +81,9 @@ ChatDialog::ChatDialog(std::shared_ptr<IMClient> spClient, QWidget* parent) :
     addLabelGroup(ui.label_side_chat);
     addLabelGroup(ui.label_side_contact);
 
+    this->installEventFilter(this);
+
+    ui.label_side_chat->setSelected(true);
 
     ui.lineEdit_search->setMaxLength(15);
 
@@ -107,6 +110,17 @@ void ChatDialog::addChatUserList()
        m_chatUserListWidget->addItem(item);
        m_chatUserListWidget->setItemWidget(item, chat_user_wid);
     }
+}
+
+bool ChatDialog::eventFilter(QObject* watched, QEvent* event)
+{
+    if (event->type() == QEvent::MouseButtonPress)
+    {
+        QMouseEvent* mouseEvent = dynamic_cast<QMouseEvent*>(event);
+        handleGlobalMousePress(mouseEvent);
+    }
+
+    return QDialog::eventFilter(watched, event);
 }
 
 void ChatDialog::clearLabelState(StateWidget* label)
@@ -149,6 +163,20 @@ void ChatDialog::showSearch(bool bsearch)
     else if (m_state == ChatUIMode::SettingsMode)
     {
         m_mode = ChatUIMode::SettingsMode;
+    }
+}
+
+void ChatDialog::handleGlobalMousePress(QMouseEvent* event)
+{
+    if (m_mode != ChatUIMode::SearchMode)
+        return;
+
+    QPoint posInSearchList = m_searchListWidget->mapFromGlobal(event->globalPos());
+
+    if (!m_searchListWidget->rect().contains(posInSearchList))
+    {
+        ui.lineEdit_search->clear();
+        showSearch(false);
     }
 }
 

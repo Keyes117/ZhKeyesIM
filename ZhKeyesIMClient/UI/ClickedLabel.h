@@ -28,7 +28,7 @@ protected:
 
 
 signals:
-    void clicked(void);
+    void clicked(QString, ClickLbState);
 
 private:
     QString m_normal;

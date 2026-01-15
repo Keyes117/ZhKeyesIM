@@ -24,12 +24,15 @@ public:
     ~ChatDialog();
 
     void addChatUserList();
+protected:
+    virtual bool eventFilter(QObject* watched, QEvent* event);
 
 private:
     void clearLabelState(StateWidget* label);
     void addLabelGroup(StateWidget* label);
-
     void showSearch(bool bsearch = false);
+    void handleGlobalMousePress(QMouseEvent* event);
+
 private slots:
     void onLineEditSearchChanged(const QString& text);
     void onClearActionTriggered();

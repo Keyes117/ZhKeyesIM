@@ -5,6 +5,7 @@
 #include <QScrollBar>
 
 #include "UI/AddUserItem.h"
+#include "UI/FindSuccessDialog.h"
 
 SearchListWidget::SearchListWidget(QWidget* parent):
     QListWidget(parent)
@@ -86,7 +87,33 @@ void SearchListWidget::addTipItem()
 
 void SearchListWidget::onItemClicked(QListWidgetItem* item)
 {
+    QWidget* widget = this->itemWidget(item);
+    if (!widget)
+    {
+        return;
+    }
 
+    ListItemBase* customItem = qobject_cast<ListItemBase*>(widget);
+    if (!customItem)
+    {
+        return;
+    }
+
+    auto itemType = customItem->GetItemType();
+    if (itemType == ListItemType::INVALID_ITEM)
+        return;
+
+    if (itemType == ListItemType::ADD_USER_TIP_ITEM)
+    {
+        m_findDialog = std::make_shared<FindSuccessDialog>(this);
+        auto searchInfo = std::make_shared<SearchInfo>(0, "ZhKeyes", "ZhKeyes", "Hello, my friend!", 0);
+
+        (std::dynamic_pointer_cast<FindSuccessDialog>(m_findDialog))->SetSearchInfo(searchInfo);
+        m_findDialog->show();
+        return;
+    }
+
+    closeFindDlg();
 }
 
 void SearchListWidget::onUserSearch(std::shared_ptr<SearchInfo> info)

@@ -1,27 +1,27 @@
-#include "ChatUserWidget.h"
+#include "ChatUserItem.h"
 
 #include <QPixmap>
 
-ChatUserWidget::ChatUserWidget(QWidget *parent)
+ChatUserItem::ChatUserItem(QWidget *parent)
     : ListItemBase(parent)
 { 
     m_ui.setupUi(this);
     setItemType(ListItemType::CHAT_USER_ITEM);
 }
 
-ChatUserWidget::~ChatUserWidget()
+ChatUserItem::~ChatUserItem()
 {}
 
-void ChatUserWidget::setInfo(const QString& name, const QString& head, const QString& msg)
+void ChatUserItem::setInfo(const QString& name, const QString& head, const QString& msg)
 {
     m_name =    name;
     m_head =    head;
     m_msg  =     msg;
 
 
-    // ¼ÓÔØÍ¼Æ¬
+    // ï¿½ï¿½ï¿½ï¿½Í¼Æ¬
     QPixmap pixmap(m_head);
-    // ÉèÖÃÍ¼Æ¬×Ô¶¯Ëõ·Å
+    // ï¿½ï¿½ï¿½ï¿½Í¼Æ¬ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½
   
     m_ui.label_icon->setPixmap(pixmap.scaled(m_ui.label_icon->size(),
         Qt::KeepAspectRatio, Qt::SmoothTransformation));

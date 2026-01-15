@@ -2,16 +2,16 @@
 #define ZHKEYESIMCLIENT_UI_CHATUSERWIDGET_H_
 #include <QWidget>
 
-#include "ui_ChatUserWidget.h"
+#include "ui_ChatUseritem.h"
 
 #include "ListItemBase.h"
 
-class ChatUserWidget : public ListItemBase
+class ChatUserItem : public ListItemBase
 {
     Q_OBJECT
 public:
-    explicit ChatUserWidget(QWidget* parent = nullptr);
-    ~ChatUserWidget();
+    explicit ChatUserItem(QWidget* parent = nullptr);
+    ~ChatUserItem();
 
     virtual QSize sizeHint() const override {
         return QSize(250, 70);
@@ -22,7 +22,7 @@ public:
 
 
 private:
-    Ui::ChatUserWidgetClass m_ui;
+    Ui::ChatUserItemClass m_ui;
 
     QString m_name;
     QString m_head;

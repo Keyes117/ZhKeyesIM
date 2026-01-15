@@ -1,10 +1,17 @@
 #include "SearchListWidget.h"
 
+#include <QEvent>
+#include <QWheelEvent>
+#include <QScrollBar>
+
+#include "UI/AddUserItem.h"
+
 SearchListWidget::SearchListWidget(QWidget* parent):
     QListWidget(parent)
 {
     Q_UNUSED(parent);
 
+    this->setObjectName("listWidget_search");
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     // 安装事件过滤器
@@ -27,7 +34,29 @@ void SearchListWidget::setSearchEdit(QWidget* eidt)
 
 bool SearchListWidget::eventFilter(QObject* watched, QEvent* event)
 {
-    return false;
+    if (watched == this->viewport())
+    {
+        if (event->type() == QEvent::Enter)
+        {
+            this->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+        }
+        else if (event->type() == QEvent::Leave)
+        {
+            this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        }
+    }
+
+    if (watched == this->viewport() && event->type() == QEvent::Wheel)
+    {
+        QWheelEvent* wheelEvent = static_cast<QWheelEvent*>(event);
+        int numDegrees = wheelEvent->angleDelta().y() / 8;
+        int numSteps = numDegrees / 15; // 计算滚动步数
+        // 设置滚动幅度
+        this->verticalScrollBar()->setValue(this->verticalScrollBar()->value() - numSteps);
+        return true; 
+    }
+
+    return QListWidget::eventFilter(watched, event);
 }
 
 void SearchListWidget::waitPending(bool pending)
@@ -36,8 +65,31 @@ void SearchListWidget::waitPending(bool pending)
 
 void SearchListWidget::addTipItem()
 {
+    auto* invalid_item = new QWidget();
+    QListWidgetItem* item_tmp = new QListWidgetItem;
+
+    item_tmp->setSizeHint(QSize(250, 10));
+    this->addItem(item_tmp);
+
+    invalid_item->setObjectName("invalid_item");
+    this->setItemWidget(item_tmp, invalid_item);
+    item_tmp->setFlags(item_tmp->flags() & ~Qt::ItemIsSelectable);
+
+
+    auto* add_user_item = new AddUserItem();
+    QListWidgetItem* item = new QListWidgetItem();
+
+    item->setSizeHint(add_user_item->sizeHint());
+    this->addItem(item);
+    this->setItemWidget(item, add_user_item);
+}
+
+void SearchListWidget::onItemClicked(QListWidgetItem* item)
+{
+
 }
 
 void SearchListWidget::onUserSearch(std::shared_ptr<SearchInfo> info)
 {
+
 }

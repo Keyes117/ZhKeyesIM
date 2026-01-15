@@ -3,7 +3,7 @@
 #include <QHBoxLayout>
 #include <QPainter>
 
-static const int WIDTH_TRIANGLE = 0;
+static const int WIDTH_TRIANGLE = 8;
 
 BubbleFrame::BubbleFrame(ChatRole role, QWidget* parent):
     m_role(role),

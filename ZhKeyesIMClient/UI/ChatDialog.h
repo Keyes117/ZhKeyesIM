@@ -11,6 +11,7 @@
 
 #include "NetWork/IMClient.h"
 #include "UI/ChatUserList.h"
+#include "UI/SearchListWidget.h"
 #include "UI/global.h"
 
 
@@ -39,12 +40,15 @@ private slots:
     void onLabelSideContactClicked();
 
 
+
 private:
     Ui::ChatDialogClass ui;
     QList<StateWidget*>   m_labelList;
 
 
     ChatUserListWidget*  m_chatUserListWidget;
+    SearchListWidget* m_searchListWidget;
+
 
     ChatUIMode  m_mode = ChatUIMode::ChatMode;
     ChatUIMode  m_state = ChatUIMode::ChatMode;

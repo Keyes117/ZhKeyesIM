@@ -5,6 +5,7 @@ ChatUserListWidget::ChatUserListWidget(QWidget* parent):
 {
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    this->setObjectName("listWidget_chatUser");
 
     // 安装事件过滤器
     this->viewport()->installEventFilter(this);

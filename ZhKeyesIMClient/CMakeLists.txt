@@ -60,9 +60,12 @@ set(CLIENT_UI_SOURCE
     UI/ListItemBase.h
     UI/ListItemBase.cpp
 
-    UI/ChatUserWidget.cpp
-    UI/ChatUserWidget.h
-    UI/ChatUserWidget.ui
+    UI/ChatUserItem.cpp
+    UI/ChatUserItem.h
+    UI/ChatUserItem.ui
+    UI/AddUserItem.cpp
+    UI/AddUserItem.h
+    UI/AddUserItem.ui
 
     UI/LoadingDialog.cpp
     UI/LoadingDialog.h

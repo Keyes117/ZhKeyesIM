@@ -1,7 +1,7 @@
 #include "ChatDialog.h"
 
 #include "ClickedButton.h"
-#include "ChatUserWidget.h"
+#include "ChatUserItem.h"
 
 #include <QRandomGenerator>
 #include <QAction>
@@ -36,9 +36,14 @@ ChatDialog::ChatDialog(std::shared_ptr<IMClient> spClient, QWidget* parent) :
     ui.setupUi(this);
 
     m_chatUserListWidget = new ChatUserListWidget(ui.stackedWidget_user);
-    m_chatUserListWidget->setObjectName("listWidget_chatUser");
     m_chatUserListWidget->setWindowFlag(Qt::Widget);
+
+    m_searchListWidget = new SearchListWidget(ui.stackedWidget_user);
+    m_searchListWidget->setWindowFlag(Qt::Widget);
+
+
     ui.stackedWidget_user->addWidget(m_chatUserListWidget);
+    ui.stackedWidget_user->addWidget(m_searchListWidget);
 
     QPixmap pixmap(":/res/res/head_1.jpg");
     ui.label_side_head->setPixmap(pixmap);
@@ -94,7 +99,7 @@ void ChatDialog::addChatUserList()
         int str_i = randomValue % strs.size();
         int head_i = randomValue % heads.size();
         int name_i = randomValue % names.size();
-        auto* chat_user_wid = new ChatUserWidget();
+        auto* chat_user_wid = new ChatUserItem();
         chat_user_wid->setInfo(names[name_i], heads[head_i], strs[str_i]);
         QListWidgetItem* item = new QListWidgetItem;
         //qDebug()<<"chat_user_wid sizeHint is " << chat_user_wid->sizeHint();
@@ -125,23 +130,25 @@ void ChatDialog::showSearch(bool bsearch)
 {
     if (bsearch)
     {
-        
+        ui.stackedWidget_user->setCurrentWidget(m_searchListWidget);
+        m_mode = ChatUIMode::SearchMode;
     }
     else if (m_state == ChatUIMode::SearchMode)
     {
-
+        m_mode = ChatUIMode::SearchMode;
     }
     else if (m_state == ChatUIMode::ContactMode)
     {
-
+        m_mode = ChatUIMode::ContactMode;
     }
     else if (m_state == ChatUIMode::ChatMode)
     {
         ui.stackedWidget_user->setCurrentWidget(m_chatUserListWidget);
+        m_mode = ChatUIMode::ChatMode;
     }
     else if (m_state == ChatUIMode::SettingsMode)
     {
-
+        m_mode = ChatUIMode::SettingsMode;
     }
 }
 
@@ -151,10 +158,12 @@ void ChatDialog::onLineEditSearchChanged(const QString& text)
     if (!text.isEmpty())
     {
         m_clearAction->setIcon(QIcon(":/res/res/close_search.png"));
+        showSearch(true);
     }
     else
     {
         m_clearAction->setIcon(QIcon(":/res/res/close_transparent.png"));
+        showSearch(false);
     }
 
 }
@@ -176,12 +185,13 @@ void ChatDialog::onLabelSideChatClicked()
     clearLabelState(ui.label_side_chat);
     ui.stackedWidget_chat->setCurrentWidget(ui.page_chatPage);
     m_state = ChatUIMode::ChatMode;
-    showSearch(true);
+    showSearch(false);
 }
 
 void ChatDialog::onLabelSideContactClicked()
 {
     clearLabelState(ui.label_side_contact);
     m_state = ChatUIMode::ContactMode;
+    showSearch(false);
 
 }

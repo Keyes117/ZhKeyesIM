@@ -2,6 +2,7 @@
 
 #include <QDir>
 
+
 #include "UI/ClickedButton.h"
 
 FindSuccessDialog::FindSuccessDialog(QWidget *parent)
@@ -11,7 +12,7 @@ FindSuccessDialog::FindSuccessDialog(QWidget *parent)
 
     setWindowTitle("添加");
 
-    setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
+    //setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
 
     QString appPath = QCoreApplication::applicationDirPath();
     QString pixPath = QDir::toNativeSeparators(appPath +

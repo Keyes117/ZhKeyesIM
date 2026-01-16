@@ -3,9 +3,15 @@
 
 
 #include <QDialog>
+#include <QHash>
 #include "ui_ApplyFriendDialog.h"
 
+#include "UI/FriendLabelFrame.h"
 #include "UI/global.h"
+#include <memory>
+#include <memory>
+
+class ClickedLabel;
 
 class ApplyFriendDialog : public QDialog
 {
@@ -27,26 +33,29 @@ private:
     void addLabel(const QString& name);
 
 public slots:
-    void onShowMoreLabel();
-    void onLabelEnter();
+    void onLabelMoreClicked();
+    void onLineEditLabelEnter();
     void onRemoveFriendLabel(QString);
     void onChangeFriendLabelByTip(QString, ClickLbState);
-    void onLabelTextChange(const QString& text);
-    void onLabelEditFinished();
-    void onAddFriendLabelByClickTip(QString text);
-    void onApplySure();
+    void onLineEditLabelTextChange(const QString& text);
+    void onLineEditLabelFinished();
+    void onLabelTipClickedOnce(QString text);
+    void onApplyConfirm();
     void onApplyCancel();
 
 private:
     Ui::ApplyFriendDialogClass ui;
 
-    std::unordered_map<QString, ClickedLabel*> m_addLabels;
+    QHash<QString, ClickedLabel*> m_addLabels;
     std::vector<QString>        m_addLabelKeys;
     QPoint                  m_labelPoint;
 
-    //std::unordered_map<QString, FriendLabel*> m_firendLabels;
+    QHash<QString, FriendLabelFrame*> m_friendLabels;
     std::vector<QString>    m_friendLabelKeys;
     std::vector<QString>        m_tipData;
+    QPoint                  m_tipCurPoint;
+
+    std::shared_ptr<SearchInfo> m_searchInfo;
 };
 
 #endif // !ZHKEYESIMCLIENT_UI_APPLYFRIENDDIALOG_H_

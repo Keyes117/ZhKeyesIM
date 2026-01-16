@@ -15,13 +15,13 @@ SearchListWidget::SearchListWidget(QWidget* parent):
     this->setObjectName("listWidget_search");
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    // °²×°ÊÂ¼ş¹ıÂËÆ÷
+    // å®‰è£…äº‹ä»¶è¿‡æ»¤å™¨
     this->viewport()->installEventFilter(this);
-    //Á¬½Óµã»÷µÄĞÅºÅºÍ²Û
+    //è¿æ¥ç‚¹å‡»çš„ä¿¡å·å’Œæ§½
     connect(this, &QListWidget::itemClicked, this, &SearchListWidget::onItemClicked);
-    //Ìí¼ÓÌõÄ¿
+    //æ·»åŠ æ¡ç›®
     addTipItem();
-    //Á¬½ÓËÑË÷ÌõÄ¿
+    //è¿æ¥æœç´¢æ¡ç›®
     //connect(TcpMgr::GetInstance().get(), &TcpMgr::sig_user_search, this, &SearchList::slot_user_search);
 }
 
@@ -51,8 +51,8 @@ bool SearchListWidget::eventFilter(QObject* watched, QEvent* event)
     {
         QWheelEvent* wheelEvent = static_cast<QWheelEvent*>(event);
         int numDegrees = wheelEvent->angleDelta().y() / 8;
-        int numSteps = numDegrees / 15; // ¼ÆËã¹ö¶¯²½Êı
-        // ÉèÖÃ¹ö¶¯·ù¶È
+        int numSteps = numDegrees / 15; // è®¡ç®—æ»šåŠ¨æ­¥æ•°
+        // è®¾ç½®æ»šåŠ¨å¹…åº¦
         this->verticalScrollBar()->setValue(this->verticalScrollBar()->value() - numSteps);
         return true; 
     }

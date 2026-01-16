@@ -63,6 +63,7 @@ set(CLIENT_UI_SOURCE
     UI/ChatUserItem.cpp
     UI/ChatUserItem.h
     UI/ChatUserItem.ui
+    
     UI/AddUserItem.cpp
     UI/AddUserItem.h
     UI/AddUserItem.ui
@@ -107,6 +108,10 @@ set(CLIENT_UI_SOURCE
     UI/ApplyFriendDialog.h
     UI/ApplyFriendDialog.cpp
     UI/ApplyFriendDialog.ui
+
+    UI/FriendLabelFrame.cpp
+    UI/FriendLabelFrame.h
+    UI/FriendLabelFrame.ui
 
     UI/global.h
     UI/global.cpp    
@@ -184,28 +189,6 @@ else()
     message(WARNING "Config file not found: ${CONFIG_FILE}")
     message(STATUS "You may need to create config.json manually in the output directory")
 endif()
-
-# ==================== 复制 static 文件夹到输出目录 ====================
-set(STATIC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/static")
-if(EXISTS "${STATIC_DIR}" AND IS_DIRECTORY "${STATIC_DIR}")
-    # 复制 static 文件夹到输出目录（构建后）
-    add_custom_command(TARGET ZhKeyesIMClient POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${STATIC_DIR}"
-        "$<TARGET_FILE_DIR:ZhKeyesIMClient>/static"
-        COMMENT "Copying static directory to ZhKeyesIMClient output directory"
-    )
-    
-    # 安装 static 文件夹
-    install(DIRECTORY "${STATIC_DIR}"
-        DESTINATION bin
-        OPTIONAL
-    )
-else()
-    message(STATUS "Static directory not found: ${STATIC_DIR}")
-    message(STATUS "You may need to create static directory manually if needed")
-endif()
-
 
 # 设置 Visual Studio 调试工作目录为可执行文件所在目录
 set_target_properties(ZhKeyesIMClient PROPERTIES

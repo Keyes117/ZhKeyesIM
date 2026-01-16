@@ -19,6 +19,16 @@ public:
     );
 
     ClickLbState getCurState() { return m_curState; }
+    void setCurState(ClickLbState state)
+    {
+        m_curState = state;
+    }
+    void resetNormalState()
+    {
+        m_curState = ClickLbState::Normal;
+        setProperty("state", m_normal);
+        repolish(this);
+    }
 
 protected:
     virtual void mousePressEvent(QMouseEvent* event) override;

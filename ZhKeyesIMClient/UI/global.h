@@ -9,7 +9,7 @@
 //申请好友标签输入框最低长度
 const int MIN_APPLY_LABEL_ED_LEN = 40;
 
-const QString add_prefix = "添加标签 ";
+const QString add_prefix = QString::fromLocal8Bit("添加标签 ");
 
 
 const int  tip_offset = 5;

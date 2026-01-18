@@ -13,7 +13,6 @@ ApplyFriendDialog::ApplyFriendDialog(QWidget *parent)
     ui.setupUi(this);
 
     setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
-    this->setObjectName("dialog_applyfriend");
     this->setModal(this);
 
     ui.lineEdit_name->setPlaceholderText(tr("ZhKeyes"));
@@ -22,14 +21,12 @@ ApplyFriendDialog::ApplyFriendDialog(QWidget *parent)
 
     ui.lineEdit_back->setMaxLength(21);
     ui.lineEdit_back->move(2, 2);
-    ui.lineEdit_back->setFixedHeight(20);
     ui.lineEdit_back->setMaxLength(10);
     ui.widget_inputTip->hide();
 
     m_tipCurPoint = QPoint(5, 5);
     //测试数据
-    m_tipData = { "同学","家人","菜鸟教程","C++ Primer","Rust 程序设计",
-                            "父与子学Python","nodejs开发指南","go 语言开发指南",
+    m_tipData = { "同学","家人","菜鸟教程","C++ Primer","Rust 程序设计", "父与子学Python","nodejs开发指南","go 语言开发指南",
                                "游戏伙伴","金融投资","微信读书","拼多多拼友" };
 
 
@@ -63,7 +60,7 @@ void ApplyFriendDialog::initTipLabels()
         auto* label = new ClickedLabel(ui.widget_labelList);
         label->setState("normal", "hover", "pressed", "selected_normal",
             "selected_hover", "selected_pressed");
-        label->setObjectName("label_tips");
+        label->setObjectName("label_tip");
         label->setText(m_tipData[i]);
 
         connect(label, &ClickedLabel::clicked, this, &ApplyFriendDialog::onChangeFriendLabelByTip);
@@ -173,7 +170,7 @@ void ApplyFriendDialog::addLabel(const QString& name)
 
     auto label_temp = new FriendLabelFrame(ui.widget_grid);
     label_temp->SetText(name);
-    label_temp->setObjectName("FriendLabelFrame");
+    
 
     auto maxWidth = ui.widget_grid->width();
 
@@ -232,8 +229,10 @@ void ApplyFriendDialog::onLabelMoreClicked()
             m_tipCurPoint.setY(m_tipCurPoint.y() + textHeight + 15);
         }
         addedLabel->move(m_tipCurPoint);
+
         nextPoint.setX(addedLabel->pos().x() + textWidth + 15);
         nextPoint.setY(m_tipCurPoint.y());
+
         m_tipCurPoint = nextPoint;
     }
 
@@ -245,9 +244,11 @@ void ApplyFriendDialog::onLabelMoreClicked()
             continue;
 
         auto* label = new ClickedLabel(ui.widget_labelList);
+
         label->setState("normal", "hover", "pressed", "selected_normal",
             "selected_hover", "selected_pressed");
-        label->setObjectName("label_tips");
+
+        label->setObjectName("label_tip");
         label->setText(m_tipData[i]);
 
         connect(label, &ClickedLabel::clicked, this, &ApplyFriendDialog::onChangeFriendLabelByTip);
@@ -263,7 +264,7 @@ void ApplyFriendDialog::onLabelMoreClicked()
             m_tipCurPoint.setY(m_tipCurPoint.y() + textHeight + 15);
         }
 
-        auto nextPoint = m_tipCurPoint;
+        nextPoint = m_tipCurPoint;
 
         addTipLabels(label, m_tipCurPoint, nextPoint, textWidth, textHeight);
 
@@ -299,7 +300,7 @@ void ApplyFriendDialog::onLineEditLabelEnter()
     auto* label = new ClickedLabel(ui.widget_labelList);
     label->setState("normal", "hover", "pressed", "selected_normal",
         "selected_hover", "selected_pressed");
-    label->setObjectName("label_tips");
+    label->setObjectName("label_tip");
     label->setText(*find_it);
 
     connect(label, &ClickedLabel::clicked, this, &ApplyFriendDialog::onChangeFriendLabelByTip);
@@ -421,24 +422,26 @@ void ApplyFriendDialog::onLabelTipClickedOnce(QString text)
     }
     //标签展示栏也增加一个标签, 并设置绿色选中
     auto* lb = new ClickedLabel(ui.widget_labelList);
+
     lb->setState("normal", "hover", "pressed", "selected_normal",
         "selected_hover", "selected_pressed");
-    lb->setObjectName("tipslb");
+    lb->setObjectName("label_tip");
     lb->setText(text);
     connect(lb, &ClickedLabel::clicked, this, &ApplyFriendDialog::onChangeFriendLabelByTip);
-    qDebug() << "ui->lb_list->width() is " << ui.widget_labelList->width();
-    qDebug() << "_tip_cur_point.x() is " << m_tipCurPoint.x();
+
     QFontMetrics fontMetrics(lb->font()); // 获取QLabel控件的字体信息
     int textWidth = fontMetrics.horizontalAdvance(lb->text()); // 获取文本的宽度
     int textHeight = fontMetrics.height(); // 获取文本的高度
-    qDebug() << "textWidth is " << textWidth;
+
     if (m_tipCurPoint.x() + textWidth + tip_offset + 3 > ui.widget_labelList->width()) {
         m_tipCurPoint.setX(5);
         m_tipCurPoint.setY(m_tipCurPoint.y() + textHeight + 15);
     }
     auto next_point = m_tipCurPoint;
+
     addTipLabels(lb, m_tipCurPoint, next_point, textWidth, textHeight);
     m_tipCurPoint = next_point;
+
     int diff_height = next_point.y() + textHeight + tip_offset - ui.widget_labelList->height();
     ui.widget_labelList->setFixedHeight(next_point.y() + textHeight + tip_offset);
     lb->setCurState(ClickLbState::Selected);

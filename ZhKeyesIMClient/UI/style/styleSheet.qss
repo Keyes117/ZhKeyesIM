@@ -428,6 +428,45 @@ LoadingDlg
     color:rgb(147,147,147)
 }
 
+#FindSuccessDialogClass
+{
+    background-color:#ffffff;
+}
+
+#label_name
+{
+    font-size:14px;
+    font-family: "Microsoft YaHei";
+}
+
+#button_addFriend[state='normal']
+{
+    background: #07c160;
+    color: #ffffff;
+    font-size: 14px; /* 设置字体大小 */
+    font-family: "Microsoft YaHei"; /* 设置字体 */
+    border-radius: 20px; /* 设置圆角 */
+}
+
+#button_addFriend[state='hover']
+{
+    background: #3bbb4b;
+    color: #ffffff;
+    font-size: 14px; /* 设置字体大小 */
+    font-family: "Microsoft YaHei"; /* 设置字体 */
+    border-radius: 20px; /* 设置圆角 */
+}
+
+#button_addFriend[state='press']
+{
+   background: #07c160;
+   color: #ffffff;
+   font-size: 14px; /* 设置字体大小 */
+   font-family: "Microsoft YaHei"; /* 设置字体 */
+   border-radius: 20px; /* 设置圆角 */
+}
+
+
 #ApplyFriendDialogClass {
     border: 2px solid #f1f1f1;
     font-size: 14px;
@@ -448,6 +487,7 @@ LoadingDlg
     font-family: "Microsoft YaHei";
     font-size: 16px;
     font-weight: normal;
+    color:rgb(140,140,140);
 }
 
 #widget_apply QLabel

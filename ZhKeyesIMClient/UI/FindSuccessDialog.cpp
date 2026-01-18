@@ -4,9 +4,10 @@
 
 
 #include "UI/ClickedButton.h"
+#include "UI/ApplyFriendDialog.h"
 
 FindSuccessDialog::FindSuccessDialog(QWidget *parent)
-    : QDialog(parent)
+    : QDialog(parent), m_parent(parent)
 {
     ui.setupUi(this);
 
@@ -25,6 +26,8 @@ FindSuccessDialog::FindSuccessDialog(QWidget *parent)
     ui.label_head->setPixmap(headPix);
     ui.button_addFriend->SetState("normal", "hover", "press");
     this->setModal(true);
+
+    connect(ui.button_addFriend, &QPushButton::clicked, this, &FindSuccessDialog::onButtonAddFriendClicked);
 }
 
 FindSuccessDialog::~FindSuccessDialog()
@@ -40,5 +43,11 @@ void FindSuccessDialog::SetSearchInfo(std::shared_ptr<SearchInfo> searchInfo)
 void FindSuccessDialog::onButtonAddFriendClicked()
 {
     //TODO: 添加好友界面弹出
+
+    auto applyFriendDialog = new ApplyFriendDialog(m_parent);
+    applyFriendDialog->setSearchInfo(m_searchInfo);
+    applyFriendDialog->setModal(true);
+    applyFriendDialog->show();
+
 }
 

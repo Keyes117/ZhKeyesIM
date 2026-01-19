@@ -7,6 +7,8 @@
 #include "UI/AddUserItem.h"
 #include "UI/FindSuccessDialog.h"
 
+#include "Base/UserData.h"
+
 SearchListWidget::SearchListWidget(QWidget* parent):
     QListWidget(parent)
 {

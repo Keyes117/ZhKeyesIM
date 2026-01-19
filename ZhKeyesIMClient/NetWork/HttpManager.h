@@ -5,7 +5,7 @@
 
 #include "EventLoop.h"
 #include "Http/HttpClient.h"
-#include "UI/global.h"
+#include "Base/global.h"
 #include "util/ConfigManager.h"
 
 

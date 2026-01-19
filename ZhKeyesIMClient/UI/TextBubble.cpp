@@ -2,7 +2,7 @@
 #include <QFontMetricsF>
 #include <QDebug>
 #include <QFont>
-#include "global.h"
+#include "Base/global.h"
 #include <QTimer>
 #include <QTextDocument>
 #include <QTextBlock>

@@ -5,7 +5,7 @@
 #include <QMouseEvent>
 #include <QEnterEvent>
 
-#include "global.h"
+#include "Base/global.h"
 
 
 class ClickedLabel : public QLabel

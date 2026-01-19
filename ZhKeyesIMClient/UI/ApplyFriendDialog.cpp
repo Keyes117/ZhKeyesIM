@@ -4,7 +4,7 @@
 #include <QScrollBar>
 
 #include "Base/UserSession.h"
-#include "UI/global.h"
+#include "Base/global.h"
 #include "UI/ClickedLabel.h"
 
 ApplyFriendDialog::ApplyFriendDialog(QWidget *parent)

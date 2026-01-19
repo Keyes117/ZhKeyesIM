@@ -3,7 +3,7 @@
 
 #include <QWidget>
 
-#include "UI/global.h"
+#include "Base/global.h"
 
 class QLabel;
 class BubbleFrame;

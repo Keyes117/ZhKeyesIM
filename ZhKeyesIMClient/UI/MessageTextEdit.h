@@ -14,7 +14,7 @@
 #include <QVector>
 
 
-#include "UI/global.h"
+#include "Base/global.h"
 
 
 class MessageTextEdit : public QTextEdit

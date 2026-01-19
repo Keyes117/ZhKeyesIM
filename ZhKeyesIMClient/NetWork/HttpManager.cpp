@@ -4,7 +4,7 @@
 #include "NetWork/ApiRoutes.h"
 #include "Task/HttpResponseTask.h"
 #include "Task/TaskHandler.h"
-#include "UI/global.h"
+#include "Base/global.h"
 
 #include "fmt/format.h"
 

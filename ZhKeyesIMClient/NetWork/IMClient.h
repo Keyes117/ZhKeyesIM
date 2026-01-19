@@ -8,7 +8,7 @@
 #include "NetWork/HttpManager.h"
 #include "NetWork/TcpManager.h"
 #include "util/ConfigManager.h"
-#include "UI/global.h"
+#include "Base/global.h"
 
 
 

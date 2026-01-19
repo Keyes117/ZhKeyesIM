@@ -6,7 +6,7 @@
 
 #include "ui_RegisterDlg.h"
 
-#include "global.h"
+#include "Base/global.h"
 #include "NetWork/IMClient.h"
 
 class RegisterDlg : public QDialog

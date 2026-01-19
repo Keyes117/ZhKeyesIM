@@ -4,7 +4,7 @@
 #include <string>
 #include <memory>
 #include <mutex>
-#include "UI/global.h"
+#include "Base/global.h"
 
 /**
  * @brief 用户会话管理类（单例模式）

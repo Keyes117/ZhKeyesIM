@@ -1,6 +1,6 @@
 #include "ClickedButton.h"
 
-#include "UI/global.h"
+#include "Base/global.h"
 
 ClickedButton::ClickedButton(QWidget* parent):
     QPushButton(parent)

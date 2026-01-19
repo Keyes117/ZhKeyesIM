@@ -4,7 +4,7 @@
 #include "ui_FindSuccessDialog.h"
 
 #include <memory>
-#include "UI/global.h"
+#include "Base/UserData.h"
 
 class FindSuccessDialog : public QDialog
 {

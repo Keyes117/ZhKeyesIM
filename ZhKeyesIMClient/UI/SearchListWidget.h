@@ -3,7 +3,7 @@
 
 #include <QListWidget>
 
-#include "UI/global.h"
+#include "Base/UserData.h"
 
 class LoadingDialog;
 class SearchListWidget : public QListWidget

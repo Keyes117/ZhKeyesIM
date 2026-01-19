@@ -12,7 +12,7 @@
 #include "NetWork/IMClient.h"
 #include "UI/ChatUserList.h"
 #include "UI/SearchListWidget.h"
-#include "UI/global.h"
+#include "Base/global.h"
 
 
 class ChatDialog : public QDialog

@@ -4,7 +4,7 @@
 
 
 
-#include "global.h"
+#include "Base/global.h"
 #include "Task/ResetPasswordTask.h"
 #include "Task/VerifyCodeTask.h"
 #include "Task/TaskHandler.h"

@@ -2,7 +2,7 @@
 #define ZHKEYESIMCLIENT_UI_STATEWIDGET_H_
 
 #include <QLabel>
-#include "UI/global.h"
+#include "Base/global.h"
 #include <qcoreevent.h>
 
 class QLabel;

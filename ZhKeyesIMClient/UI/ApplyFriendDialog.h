@@ -7,7 +7,7 @@
 #include "ui_ApplyFriendDialog.h"
 
 #include "UI/FriendLabelFrame.h"
-#include "UI/global.h"
+#include "Base/UserData.h"
 #include <memory>
 #include <memory>
 

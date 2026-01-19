@@ -10,7 +10,7 @@
 
 #include "NetWork/IMClient.h"
 #include "Task/Task.h"
-#include "UI/global.h"
+#include "Base/global.h"
 
 /**
  * 用户登录任务

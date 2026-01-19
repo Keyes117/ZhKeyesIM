@@ -7,6 +7,12 @@ file(GLOB CLIENT_IMPROTOCOL_SOURCE
 set(CLIENT_BASE_SOURCE
     Base/UserSession.h
     Base/UserSession.cpp
+
+    Base/global.h
+    Base/global.cpp    
+    
+    Base/UserData.h
+    Base/UserData.cpp
 )
 
 set(CLIENT_NETWORK_SOURCE
@@ -113,9 +119,13 @@ set(CLIENT_UI_SOURCE
     UI/FriendLabelFrame.h
     UI/FriendLabelFrame.ui
 
-    UI/global.h
-    UI/global.cpp    
-    
+    UI/ContactUserList.cpp
+    UI/ContactUserList.h
+    UI/ContactUserItem.cpp
+    UI/ContactUserItem.h
+    UI/ContactUserItem.ui
+
+
     
     UI/resource.qrc
     UI/style/styleSheet.qss

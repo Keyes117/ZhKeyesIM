@@ -2,7 +2,7 @@
 #define ZHKEYESIMCLIENT_UI_CONTACTUSERLISTWIDGET_H_
 
 #include <QListWidget>
-
+#include "UI/ContactUserItem.h"
 
 class ContactUserItem;
 class ContactUserListWidget : public QListWidget
@@ -26,7 +26,7 @@ public slots:
 signals:
     void loadingContactUser();
     void switchApplyFriendPage();
-    void switchFriendInfoPage();
+    void switchFriendInfoPage(std::shared_ptr<UserInfo> spUserInfo);
 
 private:
     ContactUserItem* m_addFriendItem;

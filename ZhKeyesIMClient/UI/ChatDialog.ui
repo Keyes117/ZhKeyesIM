@@ -303,6 +303,7 @@
        </property>
       </layout>
      </widget>
+     <widget class="QWidget" name="page_applyFriend"/>
     </widget>
    </item>
   </layout>

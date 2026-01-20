@@ -2,9 +2,11 @@
 #define UI_GLOBAL_H_
 
 #include <QWidget>
-#include <functional>
 #include <QStyle>
-#include <QWidget>
+#include <QString>
+
+#include <functional>
+#include <vector>
 
 //申请好友标签输入框最低长度
 const int MIN_APPLY_LABEL_ED_LEN = 40;
@@ -13,6 +15,29 @@ const QString add_prefix = QString::fromLocal8Bit("添加标签 ");
 
 
 const int  tip_offset = 5;
+
+static std::vector<QString>  strs = { "hello world !",
+                             "nice to meet u",
+                             "New year，new life",
+                            "You have to love yourself",
+                            "My love is written in the wind ever since the whole world is you" };
+static std::vector<QString> heads = {
+    ":/res/res/head_1.jpg",
+    ":/res/res/head_2.jpg",
+    ":/res/res/head_3.jpg",
+    ":/res/res/head_4.jpg",
+    ":/res/res/head_5.jpg"
+};
+static std::vector<QString> names = {
+    "llfc",
+    "zack",
+    "golang",
+    "cpp",
+    "java",
+    "nodejs",
+    "python",
+    "rust"
+};
 
 /**
  * 登录数据结构

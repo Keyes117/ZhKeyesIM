@@ -15,7 +15,7 @@ public:
     
     virtual void setItemType(ListItemType itemType);
 
-    virtual ListItemType GetItemType();
+    virtual ListItemType getItemType();
 
 protected:
     virtual void paintEvent(QPaintEvent* event);

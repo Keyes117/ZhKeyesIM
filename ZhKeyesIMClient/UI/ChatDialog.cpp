@@ -1,5 +1,6 @@
 #include "ChatDialog.h"
 
+#include "Base/global.h"
 #include "ClickedButton.h"
 #include "ChatUserItem.h"
 
@@ -7,28 +8,6 @@
 #include <QAction>
 #include <QIcon>
 
-std::vector<QString>  strs = { "hello world !",
-                             "nice to meet u",
-                             "New year£¬new life",
-                            "You have to love yourself",
-                            "My love is written in the wind ever since the whole world is you" };
-std::vector<QString> heads = {
-    ":/res/res/head_1.jpg",
-    ":/res/res/head_2.jpg",
-    ":/res/res/head_3.jpg",
-    ":/res/res/head_4.jpg",
-    ":/res/res/head_5.jpg"
-};
-std::vector<QString> names = {
-    "llfc",
-    "zack",
-    "golang",
-    "cpp",
-    "java",
-    "nodejs",
-    "python",
-    "rust"
-};
 
 ChatDialog::ChatDialog(std::shared_ptr<IMClient> spClient, QWidget* parent) :
     m_spClient(spClient), QDialog(parent)

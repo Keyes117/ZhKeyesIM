@@ -101,7 +101,7 @@ void SearchListWidget::onItemClicked(QListWidgetItem* item)
         return;
     }
 
-    auto itemType = customItem->GetItemType();
+    auto itemType = customItem->getItemType();
     if (itemType == ListItemType::INVALID_ITEM)
         return;
 

@@ -125,8 +125,19 @@ set(CLIENT_UI_SOURCE
     UI/ContactUserItem.h
     UI/ContactUserItem.ui
 
-
+    UI/GroupTipItem.cpp
+    UI/GroupTipItem.h
+    UI/GroupTipItem.ui
     
+    UI/ApplyFriendPage.cpp
+    UI/ApplyFriendPage.h
+    UI/ApplyFriendPage.ui
+    UI/ApplyFriendItem.cpp
+    UI/ApplyFriendItem.h
+    UI/ApplyFriendItem.ui
+    UI/ApplyFriendList.h
+    UI/ApplyFriendList.cpp
+
     UI/resource.qrc
     UI/style/styleSheet.qss
 )

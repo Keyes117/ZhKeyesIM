@@ -11,7 +11,7 @@ ContactUserListWidget::ContactUserListWidget(QWidget* parent)
 {
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
+    this->setObjectName("listWidget_contactUser");
     this->viewport()->installEventFilter(this);
 
     addContactUserList();

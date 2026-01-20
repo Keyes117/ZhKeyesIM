@@ -17,8 +17,11 @@ public:
 
 
     void setInfo(std::shared_ptr<ApplyInfo> spApplyInfo);
-    void showAddBtn(bool bShow);
-    virtual QSize sizeHint() const override;
+    void showButtonAdd(bool bShow);
+    virtual QSize sizeHint() const override
+    {
+        return QSize(250, 80);
+    }
 
     int GetUid() {
         return m_applyInfo->_uid;

@@ -5,6 +5,7 @@
 #include <memory>
 #include <mutex>
 #include "Base/global.h"
+#include "Base/UserData.h"
 
 /**
  * @brief 用户会话管理类（单例模式）
@@ -72,9 +73,16 @@ public:
      */
     void updateToken(const std::string& newToken);
 
+    std::vector<std::shared_ptr<ApplyInfo>> GetApplyList()
+    {
+        return m_applyList;
+    }
+
 private:
     UserSession() = default;
     ~UserSession() = default;
+
+    std::vector<std::shared_ptr<ApplyInfo>> m_applyList;
 
     mutable std::mutex m_mutex;  // 线程安全
     User m_currentUser;          // 当前用户信息

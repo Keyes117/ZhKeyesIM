@@ -10,8 +10,10 @@
 #include "ui_ChatDialog.h"
 
 #include "NetWork/IMClient.h"
+#include "UI/ContactUserList.h"
 #include "UI/ChatUserList.h"
 #include "UI/SearchListWidget.h"
+#include "UI/ApplyFriendList.h"
 #include "Base/global.h"
 
 
@@ -51,7 +53,8 @@ private:
 
     ChatUserListWidget*  m_chatUserListWidget;
     SearchListWidget* m_searchListWidget;
-
+    ApplyFriendListWidget* m_applyFriendListWidget;
+    ContactUserListWidget* m_contactUserListWidget;
 
     ChatUIMode  m_mode = ChatUIMode::ChatMode;
     ChatUIMode  m_state = ChatUIMode::ChatMode;

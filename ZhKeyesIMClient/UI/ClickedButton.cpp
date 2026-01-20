@@ -6,6 +6,7 @@ ClickedButton::ClickedButton(QWidget* parent):
     QPushButton(parent)
 {
     setCursor(Qt::PointingHandCursor);
+    setFocusPolicy(Qt::NoFocus);
 }
 
 ClickedButton::~ClickedButton()

@@ -20,9 +20,18 @@ ChatDialog::ChatDialog(std::shared_ptr<IMClient> spClient, QWidget* parent) :
     m_searchListWidget = new SearchListWidget(ui.stackedWidget_user);
     m_searchListWidget->setWindowFlag(Qt::Widget);
 
+    m_applyFriendListWidget = new ApplyFriendListWidget(ui.stackedWidget_user);
+    m_applyFriendListWidget->setWindowFlag(Qt::Widget);
+
+    m_contactUserListWidget = new ContactUserListWidget(ui.stackedWidget_user);
+    m_contactUserListWidget->setWindowFlag(Qt::Widget);
+ 
+
 
     ui.stackedWidget_user->addWidget(m_chatUserListWidget);
     ui.stackedWidget_user->addWidget(m_searchListWidget);
+    ui.stackedWidget_user->addWidget(m_applyFriendListWidget);
+    ui.stackedWidget_user->addWidget(m_contactUserListWidget);
 
     QPixmap pixmap(":/res/res/head_1.jpg");
     ui.label_side_head->setPixmap(pixmap);
@@ -128,11 +137,13 @@ void ChatDialog::showSearch(bool bsearch)
     }
     else if (m_state == ChatUIMode::SearchMode)
     {
+        ui.stackedWidget_user->setCurrentWidget(m_searchListWidget);
         m_mode = ChatUIMode::SearchMode;
     }
     else if (m_state == ChatUIMode::ContactMode)
     {
         m_mode = ChatUIMode::ContactMode;
+        ui.stackedWidget_user->setCurrentWidget(m_contactUserListWidget);
     }
     else if (m_state == ChatUIMode::ChatMode)
     {

@@ -13,7 +13,7 @@ ApplyFriendDialog::ApplyFriendDialog(QWidget *parent)
     ui.setupUi(this);
 
     setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
-    this->setModal(this);
+    this->setModal(true);
 
     ui.lineEdit_name->setPlaceholderText(tr("ZhKeyes"));
     ui.lineEdit_label->setPlaceholderText("搜索、添加标签");
@@ -21,7 +21,6 @@ ApplyFriendDialog::ApplyFriendDialog(QWidget *parent)
 
     ui.lineEdit_back->setMaxLength(21);
     ui.lineEdit_back->move(2, 2);
-    ui.lineEdit_back->setMaxLength(10);
     ui.widget_inputTip->hide();
 
     m_tipCurPoint = QPoint(5, 5);
@@ -111,7 +110,7 @@ bool ApplyFriendDialog::eventFilter(QObject* watched, QEvent* event)
     {
         ui.scrollArea->verticalScrollBar()->setHidden(true);
     }
-    return QObject::eventFilter(watched, event);
+    return QDialog::eventFilter(watched, event);
 }
 
 void ApplyFriendDialog::setSearchInfo(std::shared_ptr<SearchInfo> searchInfo)
@@ -159,7 +158,7 @@ void ApplyFriendDialog::resetLabels()
     }
     else
     {
-        ui.lineEdit_back->move(m_labelPoint);
+        ui.lineEdit_label->move(m_labelPoint);
     }
 }
 
@@ -176,7 +175,7 @@ void ApplyFriendDialog::addLabel(const QString& name)
 
     if (m_labelPoint.x() + label_temp->width() > maxWidth)
     {
-        m_labelPoint.setY(m_labelPoint.x() + label_temp->height() + 6);
+        m_labelPoint.setY(m_labelPoint.y() + label_temp->height() + 6);
         m_labelPoint.setX(2);
     }
 
@@ -301,7 +300,7 @@ void ApplyFriendDialog::onLineEditLabelEnter()
     label->setState("normal", "hover", "pressed", "selected_normal",
         "selected_hover", "selected_pressed");
     label->setObjectName("label_tip");
-    label->setText(*find_it);
+    label->setText(text);
 
     connect(label, &ClickedLabel::clicked, this, &ApplyFriendDialog::onChangeFriendLabelByTip);
 

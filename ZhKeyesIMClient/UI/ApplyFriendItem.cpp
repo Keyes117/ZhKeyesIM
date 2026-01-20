@@ -31,7 +31,7 @@ void ApplyFriendItem::setInfo(std::shared_ptr<ApplyInfo> spApplyInfo)
     ui.label_userchat->setText(m_applyInfo->_desc);
 }
 
-void ApplyFriendItem::showAddBtn(bool bShow)
+void ApplyFriendItem::showButtonAdd(bool bShow)
 {
     if (bShow) {
         ui.button_add->show();

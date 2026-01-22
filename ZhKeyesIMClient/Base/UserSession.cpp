@@ -65,3 +65,40 @@ void UserSession::updateToken(const std::string& newToken)
     m_currentUser.token = newToken;
     LOG_INFO("UserSession: TokenÒÑ¸üÐÂ");
 }
+
+std::vector<std::shared_ptr<FriendInfo>> UserSession::GetContactUserListPerPage()
+{
+    std::vector<std::shared_ptr<FriendInfo>> friend_list;
+    int begin = m_contact_loaded;
+    int end = begin + CHAT_COUNT_PER_PAGE;
+
+    if (begin >= m_friend_list.size()) {
+        return friend_list;
+    }
+
+    if (end > m_friend_list.size()) {
+        friend_list = std::vector<std::shared_ptr<FriendInfo>>(m_friend_list.begin() + begin, m_friend_list.end());
+        return friend_list;
+    }
+
+
+    friend_list = std::vector<std::shared_ptr<FriendInfo>>(m_friend_list.begin() + begin, m_friend_list.begin() + end);
+    return friend_list;
+}
+
+void UserSession::UpdateContactLoadedCount()
+{
+    int begin = m_contact_loaded;
+    int end = begin + CHAT_COUNT_PER_PAGE;
+
+    if (begin >= m_friend_list.size()) {
+        return;
+    }
+
+    if (end > m_friend_list.size()) {
+        m_contact_loaded = m_friend_list.size();
+        return;
+    }
+
+    m_contact_loaded = end;
+}

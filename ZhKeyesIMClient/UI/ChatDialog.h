@@ -31,6 +31,7 @@ protected:
 
 private:
     void clearLabelState(StateWidget* label);
+    void loadMoreContactUser();
     void addLabelGroup(StateWidget* label);
     void showSearch(bool bsearch = false);
     void handleGlobalMousePress(QMouseEvent* event);
@@ -45,7 +46,7 @@ private slots:
     void onLabelSideContactClicked();
 
 
-
+    void onSwitchApplyFriendPage();
 private:
     Ui::ChatDialogClass ui;
     QList<StateWidget*>   m_labelList;

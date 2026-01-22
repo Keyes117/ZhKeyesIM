@@ -78,11 +78,23 @@ public:
         return m_applyList;
     }
 
+    std::vector<std::shared_ptr<FriendInfo>> GetContactUserListPerPage();
+
+    void UpdateContactLoadedCount();
+
 private:
     UserSession() = default;
     ~UserSession() = default;
 
+
+
+    std::shared_ptr<UserInfo> m_user_info;
     std::vector<std::shared_ptr<ApplyInfo>> m_applyList;
+    std::vector<std::shared_ptr<FriendInfo>> m_friend_list;
+    QMap<int, std::shared_ptr<FriendInfo>> m_friend_map;
+    QString m_token;
+    int m_chat_loaded;
+    int m_contact_loaded;
 
     mutable std::mutex m_mutex;  // 线程安全
     User m_currentUser;          // 当前用户信息

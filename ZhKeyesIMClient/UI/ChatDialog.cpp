@@ -1,12 +1,14 @@
 #include "ChatDialog.h"
 
-#include "Base/global.h"
-#include "ClickedButton.h"
-#include "ChatUserItem.h"
-
 #include <QRandomGenerator>
 #include <QAction>
 #include <QIcon>
+
+#include "Base/global.h"
+#include "Base/UserSession.h"
+#include "UI/LoadingDialog.h"
+#include "UI/ClickedButton.h"
+#include "UI/ChatUserItem.h"
 
 
 ChatDialog::ChatDialog(std::shared_ptr<IMClient> spClient, QWidget* parent) :
@@ -64,6 +66,10 @@ ChatDialog::ChatDialog(std::shared_ptr<IMClient> spClient, QWidget* parent) :
     connect(ui.label_side_contact, &StateWidget::clicked, this, &ChatDialog::onLabelSideContactClicked);
     connect(ui.lineEdit_search, &QLineEdit::textChanged, this, &ChatDialog::onLineEditSearchChanged);
     connect(m_clearAction, &QAction::triggered, this, &ChatDialog::onClearActionTriggered);
+    connect(m_contactUserListWidget, &ContactUserListWidget::switchApplyFriendPage, this,
+        &ChatDialog::onSwitchApplyFriendPage);
+    connect(m_contactUserListWidget, &ContactUserListWidget::loadingContactUser, this,
+        &ChatDialog::onLoadingChatUser);
     //connect(ui.stackedWidget_chat.pag)
 
     addLabelGroup(ui.label_side_chat);
@@ -121,6 +127,27 @@ void ChatDialog::clearLabelState(StateWidget* label)
         pLabel->clearState();
     }
 
+}
+
+
+void ChatDialog::loadMoreContactUser()
+{
+    auto friend_list = UserSession::getInstance().GetContactUserListPerPage();
+    if (friend_list.empty() == false) {
+        for (auto& friend_ele : friend_list) {
+            auto* chat_user_wid = new ContactUserItem();
+            chat_user_wid->setInfo(friend_ele->_uid, friend_ele->_name,
+                friend_ele->_icon);
+            QListWidgetItem* item = new QListWidgetItem;
+
+            item->setSizeHint(chat_user_wid->sizeHint());
+            m_contactUserListWidget->addItem(item);
+            m_contactUserListWidget->setItemWidget(item, chat_user_wid);
+        }
+
+        //更新已加载条目
+        UserSession::getInstance().UpdateContactLoadedCount();
+    }
 }
 
 void ChatDialog::addLabelGroup(StateWidget* label)
@@ -195,6 +222,18 @@ void ChatDialog::onClearActionTriggered()
 
 void ChatDialog::onLoadingChatUser()
 {
+    if (m_loading)
+        return;
+
+    m_loading = true;
+    LoadingDialog* loadingDlg = new LoadingDialog(this);
+    loadingDlg->setModal(true);
+    loadingDlg->show();
+
+    loadMoreContactUser();
+    loadingDlg->deleteLater();
+
+    m_loading = false;
 
 }
 
@@ -212,4 +251,9 @@ void ChatDialog::onLabelSideContactClicked()
     m_state = ChatUIMode::ContactMode;
     showSearch(false);
 
+}
+
+void ChatDialog::onSwitchApplyFriendPage()
+{
+    ui.stackedWidget_chat->setCurrentWidget(ui.page_applyFriend);
 }

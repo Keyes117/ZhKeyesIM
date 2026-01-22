@@ -12,6 +12,7 @@ ApplyFriendPage::ApplyFriendPage(QWidget *parent)
 
     //connect(ui.listWidget_applyFriend,&Apply)
     connect(ui.listWidget_applyFriend, &ApplyFriendListWidget::showSearch, this, &ApplyFriendPage::showSearch);
+    loadApplyList();
     //接受TCP传递的authresp
 }
 

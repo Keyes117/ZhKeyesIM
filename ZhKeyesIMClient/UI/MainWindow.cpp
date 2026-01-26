@@ -16,7 +16,7 @@ MainWindow::MainWindow(std::shared_ptr<IMClient> spClient,QWidget *parent)
 {
     m_ui.setupUi(this);
 
-    m_loginDlg->setWindowFlags(Qt::Widget);  // 而不是 Qt::Dialog
+    m_loginDlg->setWindowFlags(Qt::Widget); 
     m_registerDlg->setWindowFlags(Qt::Widget);
     m_resetDlg->setWindowFlags(Qt::Widget);
     m_chatDlg->setWindowFlags(Qt::Widget);
@@ -27,12 +27,13 @@ MainWindow::MainWindow(std::shared_ptr<IMClient> spClient,QWidget *parent)
     m_stackedWidget->addWidget(m_resetDlg);
 
 
-    m_stackedWidget->setCurrentWidget(m_chatDlg);
-    //m_stackedWidget->setCurrentWidget(m_loginDlg);
+    //m_stackedWidget->setCurrentWidget(m_chatDlg);
+    m_stackedWidget->setCurrentWidget(m_loginDlg);
     setCentralWidget(m_stackedWidget);
 
     connect(m_loginDlg, &LoginDlg::switchRegisterDlg, this, &MainWindow::switchToRegisterDlg);
     connect(m_loginDlg, &LoginDlg::switchResetDlg, this, &MainWindow::switchToResetDlg);
+    connect(m_loginDlg, &LoginDlg::loginSuccess, this, &MainWindow::switchToChatDlg);
     connect(m_registerDlg, &RegisterDlg::switchLoginDlg, this, &MainWindow::switchToLoginDlg);
     connect(m_resetDlg, &ResetDlg::switchLoginDlg, this, &MainWindow::switchToLoginDlg);
 
@@ -61,6 +62,12 @@ void MainWindow::switchToLoginDlg()
     if (m_stackedWidget)
         m_stackedWidget->setCurrentWidget(m_loginDlg);
 
+}
+
+void MainWindow::switchToChatDlg()
+{
+    if (m_stackedWidget)
+        m_stackedWidget->setCurrentWidget(m_chatDlg);
 }
 
 void MainWindow::onErrorMsg(QString errorMsg)

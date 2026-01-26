@@ -10,6 +10,13 @@ set(SERVER_SOURCES
     IMSession.cpp
 )
 
+file(GLOB SERVER_INFRASTRUCTURE_SOURCES
+    "${CMAKE_SOURCE_DIR}/infrastructure/ChatGrpcClient.cpp"
+    "${CMAKE_SOURCE_DIR}/infrastructure/ChatGrpcClient.h"
+    "${CMAKE_SOURCE_DIR}/infrastructure/ChatGrpcServer.cpp"
+    "${CMAKE_SOURCE_DIR}/infrastructure/ChatGrpcServer.h"
+)
+
 file(GLOB SERVER_IMPROTOCOL_SOURCES
     "${CMAKE_SOURCE_DIR}/IMProtocol/*.cpp"
     "${CMAKE_SOURCE_DIR}/IMProtocol/*.h"
@@ -38,6 +45,7 @@ file(GLOB SERVER_MODEL_SOURCES
 add_executable(ZhkeyesIMServer 
     main.cpp   
     ${SERVER_SOURCES}
+    ${SERVER_INFRASTRUCTURE_SOURCES}
     ${SERVER_IMPROTOCOL_SOURCES}
     ${SERVER_CONTROLLER_SOURCES}
     ${SERVER_SERVICE_SOURCES}
@@ -80,7 +88,7 @@ source_group(
 # 单独处理公共 IMProtocol 文件
 source_group(
   TREE ${CMAKE_SOURCE_DIR}
-  FILES ${SERVER_IMPROTOCOL_SOURCES}
+  FILES ${SERVER_IMPROTOCOL_SOURCES} ${SERVER_INFRASTRUCTURE_SOURCES}
 )
 
 set_target_properties(ZhKeyesIMClient PROPERTIES AUTOGEN_SOURCE_GROUP "Generated")

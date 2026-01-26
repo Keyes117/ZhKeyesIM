@@ -1,0 +1,10 @@
+#ifndef INFRASTRUCTURE_CHATGRPCCLIENT_H_
+#define INFRASTRUCTURE_CHATGRPCCLIENT_H_
+
+class ChatGrpcClient
+{
+
+};
+
+
+#endif

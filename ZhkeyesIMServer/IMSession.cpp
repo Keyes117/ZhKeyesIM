@@ -25,6 +25,12 @@ bool IMSession::sendMessage(const ZhKeyesIM::Protocol::IMMessage& msg)
     return m_spConn->send(msgData);
 }
 
+void IMSession::setUserInfo(uint32_t uid, const std::string& token)
+{
+    m_uid = uid;
+    m_token = token;
+}
+
 uint32_t IMSession::generateID()
 {
     static std::atomic<uint32_t> s_sessionID = 0;

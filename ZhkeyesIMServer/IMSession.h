@@ -22,6 +22,8 @@ public:
 
     virtual bool sendMessage(const ZhKeyesIM::Protocol::IMMessage& msg) override;
 
+    void setUserInfo(uint32_t uid, const std::string& token);
+
 private:
     static uint32_t generateID();
 
@@ -32,6 +34,10 @@ private:
     IMServer* m_pServer;
     std::shared_ptr<TCPConnection> m_spConn;
     SessionID m_sessionId;
+
+    uint32_t    m_uid;
+    std::string m_token;
+
 };
 
 

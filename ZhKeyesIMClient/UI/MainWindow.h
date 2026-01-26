@@ -27,6 +27,7 @@ private slots:
     void switchToRegisterDlg();
     void switchToResetDlg();
     void switchToLoginDlg();
+    void switchToChatDlg();
 
     void onErrorMsg(QString errorMsg);
     void onSuccessMsg(QString successMsg);

@@ -87,7 +87,7 @@ void UserService::login(const std::string& email,
 
             m_spRedisRepo->saveToken(userInfo.uid, token);
 
-            // 5. 更新登录时间（异步执行，不阻塞主流程）
+            //
             bool timeUpdated = m_spUserRepo->updateLastLoginTime(userInfo.uid);
             if (!timeUpdated)
             {
@@ -100,7 +100,6 @@ void UserService::login(const std::string& email,
             }
 
             // 6. 异步获取聊天服务器地址
-            // 注意：这里从工作线程池的线程中发起gRPC异步调用
             m_spGrpcStatusClient->GetChatStatus(userInfo.uid,
                 [callback, userInfo, token](const message::GetChatServerResponse& response) {
 

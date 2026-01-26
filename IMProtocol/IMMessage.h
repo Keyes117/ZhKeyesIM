@@ -11,10 +11,10 @@ class IMMessage
 {
 public:
     /**
-     * @brief ���캯��
-     * @param type IMProtocol.h �����
-     * @param seqId ˳��
-     * @param body //Ӧ����������BInaryWrite �Ƚ��д���
+     * @brief ??????
+     * @param type IMProtocol.h ?????
+     * @param seqId ???
+     * @param body //???????????BInaryWrite ????��???
      */
     IMMessage(MessageType type = MessageType::UNKNOWN, uint32_t seqId = INT_MAX, const std::string& body = " ");
 

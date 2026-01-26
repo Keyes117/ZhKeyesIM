@@ -8,10 +8,13 @@ void IMUserService::auth(uint32_t uid, const std::string& token, std::shared_ptr
     ZhKeyesIM::Protocol::IMMessage msg;
 
     auto session = std::dynamic_pointer_cast<IMSession>(sender);
-    if (!session)
+    if (session)
     {
         msg.setSeqId(0);
         msg.setType(ZhKeyesIM::Protocol::MessageType::AUTH_RESP);
-        session->sendMessage(msg);
+
+        session->setUserInfo(uid, token);
+
+        sender->sendMessage(msg);
     }
 }

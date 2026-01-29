@@ -71,12 +71,13 @@ source_group(
   FILES ${SERVER_SOURCES} ${SERVER_HEADERS}
 )
 
+
 source_group(
   TREE ${CMAKE_SOURCE_DIR}
   FILES ${infrastructure_SOURCES} ${infrastructure_HEADERS}
 )
 
-set_target_properties(ZhKeyesIMClient PROPERTIES AUTOGEN_SOURCE_GROUP "Generated")
+set_target_properties(GateServer  PROPERTIES AUTOGEN_SOURCE_GROUP "Generated")
 
 
 configure_target_output(GateServer "GateServer")

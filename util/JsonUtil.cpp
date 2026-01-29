@@ -113,7 +113,7 @@ std::optional<nlohmann::json> JsonUtil::accessPath(const nlohmann::json& json,
             }
             current = &(*current)[key];
         }
-        return *current;
+        return std::make_optional(*current);
     }
     catch (const nlohmann::json::exception&)
     {

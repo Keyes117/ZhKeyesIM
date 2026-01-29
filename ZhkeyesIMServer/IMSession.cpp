@@ -40,6 +40,8 @@ uint32_t IMSession::generateID()
 
 void IMSession::onRead(Buffer& buf)
 {
+
+    LOG_INFO("IMSession::onRead,接收导数据，开始解析....");
     while (true)
     {
         if (buf.readableBytes() < ZhKeyesIM::Protocol::HEADER_SIZE)

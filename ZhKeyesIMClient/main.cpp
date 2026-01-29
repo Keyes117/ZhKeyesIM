@@ -6,10 +6,10 @@
 #include <QFile>
 #include <QTextStream>
 
-#include "IMClient.h"
+#include "NetWork/IMClient.h"
 #include "Logger.h"
-#include "TaskHandler.h"
-#include "MainWindow.h"
+#include "Task/TaskHandler.h"
+#include "UI/MainWindow.h"
 #include "common.h"
 
 
@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
 #endif
     Logger::instance().setLogFile("IMClient.log");
 
-    ConfigManager config;
+    ZhKeyes::Util::ConfigManager config;
     if (!config.load("config.json"))
     {
         LOG_ERROR("配置文件读取失败....");
@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
 
     MainWindow mainWindow(spIMClient);
     mainWindow.setBaseSize(300, 500);
-    mainWindow.setMaximumSize(300, 500);
+    //mainWindow.setMaximumSize(300, 500);
     mainWindow.show();
     int ret =  app.exec();
 

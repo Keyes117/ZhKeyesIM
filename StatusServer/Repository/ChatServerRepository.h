@@ -8,7 +8,7 @@
 #include <memory>
 #include <climits>
 
-#include "Infrastructure/RedisManager.h"
+#include "infrastructure/RedisManager.h"
 #include "Model/ChatServerInfo.h"
 
 class ChatServerRepository

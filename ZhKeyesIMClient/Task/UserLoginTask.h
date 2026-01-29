@@ -8,9 +8,10 @@
 #include <QObject>
 
 
-#include "Task/Task.h"
 #include "NetWork/IMClient.h"
-#include "global.h"
+#include "Task/Task.h"
+#include "Base/global.h"
+
 /**
  * 用户登录任务
  */
@@ -21,7 +22,7 @@ public:
         std::string email,
         std::string password,
         QObject* uiReceiver,
-        std::function<void(const User&)> onSuccess,
+        std::function<void()> onSuccess,
         std::function<void(const std::string&)> onError);
 
     ~UserLoginTask() override = default;
@@ -29,15 +30,16 @@ public:
     void doTask() override;
 
 private:
-    void handleSuccess(const User& data);
-    void handleError(const std::string& error);
+    void onHttpConnectSuccess(const User& data);
+    void onTcpConnectSuccess();
 
+    void onLoginError(const std::string& error);
 private:
     std::shared_ptr<IMClient> m_client;
     std::string m_email;
     std::string m_password;
     QObject* m_uiReceiver;
-    std::function<void(const User&)> m_onSuccess;
+    std::function<void()> m_onSuccess;
     std::function<void(const std::string&)> m_onError;
 };
 

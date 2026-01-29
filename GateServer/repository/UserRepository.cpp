@@ -12,7 +12,7 @@ std::optional<UserInfo> UserRepository::findByUsername(const std::string& userna
 {
     auto spConn = m_spMySql->getConnection();
 
-    Defer def([this, &spConn]() {
+    ZhKeyes::Util::Defer def([this, &spConn]() {
         m_spMySql->returnConnection(std::move(spConn));
         });
 
@@ -51,7 +51,7 @@ std::optional<UserInfo> UserRepository::findByEmail(const std::string& email)
 {
     auto spConn = m_spMySql->getConnection();
 
-    Defer def([this, &spConn]() {
+    ZhKeyes::Util::Defer def([this, &spConn]() {
         m_spMySql->returnConnection(std::move(spConn));
         });
 
@@ -94,7 +94,7 @@ bool UserRepository::exsitsByUsername(const std::string& username)
 {
     auto spConn = m_spMySql->getConnection();
 
-    Defer def([this, &spConn]() {
+    ZhKeyes::Util::Defer def([this, &spConn]() {
         m_spMySql->returnConnection(std::move(spConn));
         });
 
@@ -132,7 +132,7 @@ bool UserRepository::exsitsByEmail(const std::string& email)
 {
     auto spConn = m_spMySql->getConnection();
 
-    Defer def([this, &spConn]() {
+    ZhKeyes::Util::Defer def([this, &spConn]() {
         m_spMySql->returnConnection(std::move(spConn));
         });
 
@@ -170,7 +170,7 @@ int UserRepository::create(const std::string& username, const std::string& email
 {
     auto spConn = m_spMySql->getConnection();
 
-    Defer def([this, &spConn]() {
+    ZhKeyes::Util::Defer def([this, &spConn]() {
         m_spMySql->returnConnection(std::move(spConn));
         });
 
@@ -254,7 +254,7 @@ bool UserRepository::updateLastLoginTime(int uid)
 {
     auto spConn = m_spMySql->getConnection();
 
-    Defer def([this, &spConn]() {
+    ZhKeyes::Util::Defer def([this, &spConn]() {
         m_spMySql->returnConnection(std::move(spConn));
         });
 

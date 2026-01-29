@@ -11,7 +11,7 @@ StatusServer::~StatusServer()
 {
 }
 
-bool StatusServer::init(ConfigManager& config)
+bool StatusServer::init(ZhKeyes::Util::ConfigManager& config)
 {
     try
     {
@@ -95,7 +95,7 @@ void StatusServer::shutdown()
     }
 }
 
-bool StatusServer::initChatServers(ConfigManager& config)
+bool StatusServer::initChatServers(ZhKeyes::Util::ConfigManager& config)
 {
     try
     {

@@ -12,7 +12,7 @@
 #include "openssl/buffer.h"
 
 
-bool AuthService::init(const ConfigManager& config)
+bool AuthService::init(const ZhKeyes::Util::ConfigManager& config)
 {
     return false;
 }

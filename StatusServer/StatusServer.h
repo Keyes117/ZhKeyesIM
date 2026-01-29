@@ -12,7 +12,7 @@
 
 #include "Service/StatusService.h"
 #include "Controller/StatusController.h"
-#include "Infrastructure/RedisManager.h"
+#include "infrastructure/RedisManager.h"
 #include "JsonUtil.h"
 
 
@@ -23,12 +23,12 @@ public:
     StatusServer();
     ~StatusServer();
 
-    bool init(ConfigManager& config);
+    bool init(ZhKeyes::Util::ConfigManager& config);
     void start();
     void shutdown();
 
 private:
-    bool initChatServers(ConfigManager& config);
+    bool initChatServers(ZhKeyes::Util::ConfigManager& config);
 
 protected:
 

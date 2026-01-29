@@ -5,9 +5,11 @@
 #include <functional>
 #include <memory>
 #include <string>
+
 #include <QObject>
-#include "Task.h"
-#include "IMClient.h"
+
+#include "Task/Task.h"
+#include "NetWork/IMClient.h"
 
 /**
  * ÖØÖÃÃÜÂëÈÎÎñ

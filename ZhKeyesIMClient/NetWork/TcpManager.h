@@ -4,22 +4,60 @@
 
 #include <memory>
 
-#include "EventLoop.h"
-#include "TCPClient.h"
+#include "net/Buffer.h"
+#include "net/EventLoop.h"
+#include "net/TCPClient.h"
+#include "net/TCPConnection.h"
 
+#include "IMProtocol/IMMessageDispatcher.h"
+#include "IMProtocol/IMMessageSender.h"
 
-class TcpManager
+class TcpManager : public ZhKeyesIM::Protocol::IMMessageSender
 {
 public:
+    using ConnectionCallback = std::function<void()>;
+    using ConnectionFailedCallback = std::function<void(const std::string&)>;
+
     TcpManager(std::shared_ptr<EventLoop> eventLoop);
     ~TcpManager() = default;
 
     bool connect(const std::string& ip, uint16_t port);
 
+    bool authenticate(const std::string& token, uint32_t uid);
+
+    void setConnectCallback(ConnectionCallback&& onSuccess)
+    {
+        m_connectionCallback = std::move(onSuccess);
+    }
+    void setConnectFailedCallback(ConnectionFailedCallback&& onFailed)
+    {
+        m_connectFailedCallback = std::move(onFailed);
+    }
+
+    virtual bool sendMessage(const ZhKeyesIM::Protocol::IMMessage& msg);
+
+
+private:
+    void releaseConnectCallback();
+
+    void registerHandler();
+
+    void handleAuthResponse(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage>, 
+        std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender>);
+private:
+
+    void onTcpResponse(Buffer& recvBuf);
+
+    void onConnected(std::shared_ptr<TCPConnection> spConn);
+    void onConnectFailed();
 private:
     std::shared_ptr<EventLoop>  m_spEventLoop;
     std::unique_ptr<TCPClient>  m_spTcpClient;
 
+    ZhKeyesIM::Protocol::IMMessageDispatcher    m_dispatcher;
+
+    ConnectionCallback m_connectionCallback;
+    ConnectionFailedCallback m_connectFailedCallback;
 };
 
 

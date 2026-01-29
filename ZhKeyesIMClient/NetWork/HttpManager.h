@@ -3,10 +3,11 @@
 
 #include <memory>
 
-#include "ConfigManager.h"
 #include "EventLoop.h"
-#include "global.h"
 #include "Http/HttpClient.h"
+#include "Base/global.h"
+#include "util/ConfigManager.h"
+
 
 class HttpManager 
 {
@@ -21,7 +22,7 @@ public:
     ~HttpManager() = default;
 
 
-    bool init(const ConfigManager& config);
+    bool init(const ZhKeyes::Util::ConfigManager& config);
 
 
     void requestVerificationCode(SuccessCallback onSuccess,

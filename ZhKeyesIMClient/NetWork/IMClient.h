@@ -1,13 +1,16 @@
 #ifndef ZHKEYESIMCLIENT_IMCLIENT_H_
 #define ZHKEYESIMCLIENT_IMCLIENT_H_
 
+#include <cstdint>
+
 #include <string>
 
-#include "HttpManager.h"
-#include "TcpManager.h"
-#include "ConfigManager.h"
+#include "NetWork/HttpManager.h"
+#include "NetWork/TcpManager.h"
+#include "util/ConfigManager.h"
+#include "Base/global.h"
 
-#include "global.h"
+
 
 class IMClient
 {
@@ -22,7 +25,10 @@ public:
     IMClient();
     ~IMClient();
 
-    bool init(const ConfigManager& config);
+    bool init(const ZhKeyes::Util::ConfigManager& config);
+
+    bool connect(const std::string& ip, uint16_t port, 
+        SuccessCallback onSuccess = nullptr, ErrorCallback onError = nullptr);
 
     void requestVerificationCode(SuccessCallback onSuccess,
         ErrorCallback onError,
@@ -48,6 +54,8 @@ public:
         const std::string& username,
         const std::string password
     );
+
+    
 
 private:
     void networkThreadFunc();

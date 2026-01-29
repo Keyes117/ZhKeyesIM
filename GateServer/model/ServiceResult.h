@@ -10,20 +10,20 @@ struct LoginResult {
     bool success = false;
     std::string message;
     UserInfo userInfo;
-    std::string ip;
+    std::string host;
     int    port;
     ServerStatus::ErrorCodes code;
     std::string token;
 
     static LoginResult createSuccess(const UserInfo& user, 
-        const std::string& token, std::string ip, int    port)
+        const std::string& token, std::string host, int    port)
     {
         LoginResult result;
         result.success = true;
         result.message = "Login successful";
         result.userInfo = user;
         result.token = token;
-        result.ip = ip;
+        result.host = host;
         result.port = port;
         return result;
     }

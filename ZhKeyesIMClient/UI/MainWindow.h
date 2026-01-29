@@ -1,5 +1,5 @@
-#ifndef UI_MAINWINDOW_H_
-#define UI_MAINWINDOW_H_
+#ifndef ZHKEYESIMCLIENT_UI_MAINWINDOW_H_
+#define ZHKEYESIMCLIENT_UI_MAINWINDOW_H_
 
 #include <memory>
 
@@ -8,10 +8,12 @@
 #include "ui_MainWindow.h"
 
 
-#include "LoginDlg.h"
-#include "RegisterDlg.h"
-#include "ResetDlg.h"
-#include "IMClient.h"
+#include "UI/ChatDialog.h"
+#include "UI/LoginDlg.h"
+#include "UI/RegisterDlg.h"
+#include "UI/ResetDlg.h"
+
+#include "NetWork/IMClient.h"
 
 class MainWindow : public QMainWindow
 {
@@ -25,6 +27,7 @@ private slots:
     void switchToRegisterDlg();
     void switchToResetDlg();
     void switchToLoginDlg();
+    void switchToChatDlg();
 
     void onErrorMsg(QString errorMsg);
     void onSuccessMsg(QString successMsg);
@@ -34,9 +37,11 @@ private:
     std::shared_ptr<IMClient> m_spClient;
 
     QStackedWidget*     m_stackedWidget;
+    ChatDialog*         m_chatDlg;
     LoginDlg*           m_loginDlg;
     RegisterDlg*        m_registerDlg;
     ResetDlg*           m_resetDlg;
+
 };
 
 #endif

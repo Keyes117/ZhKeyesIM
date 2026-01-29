@@ -70,6 +70,8 @@ void UserService::login(const std::string& email,
                 return;
             }
 
+            //查询是否登录
+
             // 4. 生成Token
             std::string token = m_spAuthService->generateToken(userInfo.uid);
             if (token.empty())
@@ -85,7 +87,7 @@ void UserService::login(const std::string& email,
 
             m_spRedisRepo->saveToken(userInfo.uid, token);
 
-            // 5. 更新登录时间（异步执行，不阻塞主流程）
+            //
             bool timeUpdated = m_spUserRepo->updateLastLoginTime(userInfo.uid);
             if (!timeUpdated)
             {
@@ -98,7 +100,6 @@ void UserService::login(const std::string& email,
             }
 
             // 6. 异步获取聊天服务器地址
-            // 注意：这里从工作线程池的线程中发起gRPC异步调用
             m_spGrpcStatusClient->GetChatStatus(userInfo.uid,
                 [callback, userInfo, token](const message::GetChatServerResponse& response) {
 
@@ -275,7 +276,7 @@ void UserService::resetPassword(const std::string& email,
 
     ResetPasswordResult result;
 
-    Defer def([this, callback, &result]() {
+    ZhKeyes::Util::Defer def([this, callback, &result]() {
         callback(result);
         });
 

@@ -13,34 +13,34 @@ ChatServerInfo StatusService::getChatServer(int32_t uid)
     info.error = 0;
 
     try {
-        LOG_INFO("StatusService: ‰∏∫Áî®Êà∑ %d ÂàÜÈÖçËÅäÂ§©ÊúçÂä°Âô®", uid);
+        LOG_INFO("StatusService: Œ™”√ªß %d ∑÷≈‰¡ƒÃÏ∑˛ŒÒ∆˜", uid);
 
-        // 1. ‰ªé Repository Ëé∑ÂèñËøûÊé•Êï∞ÊúÄÂ∞ëÁöÑÊúçÂä°Âô®ÔºàË¥üËΩΩÂùáË°°Ôºâ
+        // 1. ¥” Repository ªÒ»°¡¨Ω” ˝◊Ó…Ÿµƒ∑˛ŒÒ∆˜£®∏∫‘ÿæ˘∫‚£©
         auto serverOpt = m_spChatServerRepo->getServerWithMinConnections();
 
         if (!serverOpt.has_value()) {
-            LOG_ERROR("StatusService: Ê≤°ÊúâÂèØÁî®ÁöÑËÅäÂ§©ÊúçÂä°Âô®");
+            LOG_ERROR("StatusService: √ª”–ø…”√µƒ¡ƒÃÏ∑˛ŒÒ∆˜");
             info.error = 1;
             return info;
         }
 
         info = serverOpt.value();
 
-        // È™åËØÅÊúçÂä°Âô®‰ø°ÊÅØÊòØÂê¶ÂÆåÊï¥
+        // —È÷§∑˛ŒÒ∆˜–≈œ¢ «∑ÒÕÍ’˚
         if (info.host.empty() || info.port == 0) {
-            LOG_ERROR("StatusService: ÊúçÂä°Âô®‰ø°ÊÅØ‰∏çÂÆåÊï¥, name=%s", info.name.c_str());
+            LOG_ERROR("StatusService: ∑˛ŒÒ∆˜–≈œ¢≤ªÕÍ’˚, name=%s", info.name.c_str());
             info.error = 1;
             return info;
         }
 
 
-        LOG_INFO("StatusService: ÊàêÂäü‰∏∫Áî®Êà∑ %d ÂàÜÈÖçÊúçÂä°Âô® %s (%s:%d)",
+        LOG_INFO("StatusService: ≥…π¶Œ™”√ªß %d ∑÷≈‰∑˛ŒÒ∆˜ %s (%s:%d)",
             uid, info.name.c_str(), info.host.c_str(), info.port);
 
         return info;
     }
     catch (const std::exception& e) {
-        LOG_ERROR("StatusService: getChatServer ÂºÇÂ∏∏: %s", e.what());
+        LOG_ERROR("StatusService: getChatServer “Ï≥£: %s", e.what());
         info.error = 1;
         return info;
     }
@@ -52,7 +52,7 @@ bool StatusService::validateToken(int32_t uid, const std::string& token)
         return m_spTokenRepo->validate(uid, token);
     }
     catch (const std::exception& e) {
-        LOG_ERROR("StatusService: validateToken ÂºÇÂ∏∏: %s", e.what());
+        LOG_ERROR("StatusService: validateToken “Ï≥£: %s", e.what());
         return false;
     }
 }
@@ -68,7 +68,7 @@ std::string StatusService::getToken(int32_t uid)
         return token;
     }
     catch (const std::exception& e) {
-        LOG_ERROR("StatusService: validateToken ÂºÇÂ∏∏: %s", e.what());
+        LOG_ERROR("StatusService: validateToken “Ï≥£: %s", e.what());
         return false;
     }
 }

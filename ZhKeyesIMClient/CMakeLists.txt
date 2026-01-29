@@ -1,3 +1,20 @@
+
+file(GLOB CLIENT_IMPROTOCOL_SOURCE
+    "${CMAKE_SOURCE_DIR}/IMProtocol/*.cpp"
+    "${CMAKE_SOURCE_DIR}/IMProtocol/*.h"
+)
+
+set(CLIENT_BASE_SOURCE
+    Base/UserSession.h
+    Base/UserSession.cpp
+
+    Base/global.h
+    Base/global.cpp    
+    
+    Base/UserData.h
+    Base/UserData.cpp
+)
+
 set(CLIENT_NETWORK_SOURCE
     NetWork/IMClient.cpp
     NetWork/IMClient.h
@@ -6,7 +23,6 @@ set(CLIENT_NETWORK_SOURCE
     NetWork/HttpManager.h
     NetWork/HttpManager.cpp
 
-    NetWork/ChatProtocol.h
     NetWork/TcpManager.h
     NetWork/TcpManager.cpp
 )
@@ -28,17 +44,100 @@ set(CLIENT_UI_SOURCE
     UI/ResetDlg.h
     UI/ResetDlg.ui
 
+    UI/ChatDialog.cpp
+    UI/ChatDialog.h
+    UI/ChatDialog.ui
+
     UI/TimerButton.cpp
     UI/TimerButton.h
 
     UI/ClickedLabel.cpp
     UI/ClickedLabel.h
 
-    UI/global.h
-    UI/global.cpp
+    UI/ClickedButton.cpp
+    UI/ClickedButton.h
+
+    UI/CustomizeEdit.cpp
+    UI/CustomizeEdit.h
     
+    UI/ChatUserList.cpp
+    UI/ChatUserList.h
+
+    UI/ListItemBase.h
+    UI/ListItemBase.cpp
+
+    UI/ChatUserItem.cpp
+    UI/ChatUserItem.h
+    UI/ChatUserItem.ui
     
+    UI/AddUserItem.cpp
+    UI/AddUserItem.h
+    UI/AddUserItem.ui
+
+    UI/LoadingDialog.cpp
+    UI/LoadingDialog.h
+    UI/LoadingDialog.ui
+
+    UI/ChatPage.cpp
+    UI/ChatPage.h
+    UI/ChatPage.ui
+
+    UI/ChatView.cpp
+    UI/ChatView.h
+
+    UI/ChatItemBase.h
+    UI/ChatItemBase.cpp
+
+    UI/BubbleFrame.h
+    UI/BubbleFrame.cpp
+    UI/TextBubble.h
+    UI/TextBubble.cpp
+    UI/PictureBubble.h
+    UI/PictureBubble.cpp
+
+    UI/StateWidget.cpp
+    UI/StateWidget.h
+
+    UI/MessageTextEdit.h
+    UI/MessageTextEdit.cpp
+
+    UI/SearchListWidget.cpp
+    UI/SearchListWidget.h
+
+    UI/FindSuccessDialog.h
+    UI/FindSuccessDialog.cpp
+    UI/FindSuccessDialog.ui
+
+    UI/ClickedOnceLabel.cpp
+    UI/ClickedOnceLabel.h
+
+    UI/ApplyFriendDialog.h
+    UI/ApplyFriendDialog.cpp
+    UI/ApplyFriendDialog.ui
+
+    UI/FriendLabelFrame.cpp
+    UI/FriendLabelFrame.h
+    UI/FriendLabelFrame.ui
+
+    UI/ContactUserList.cpp
+    UI/ContactUserList.h
+    UI/ContactUserItem.cpp
+    UI/ContactUserItem.h
+    UI/ContactUserItem.ui
+
+    UI/GroupTipItem.cpp
+    UI/GroupTipItem.h
+    UI/GroupTipItem.ui
     
+    UI/ApplyFriendPage.cpp
+    UI/ApplyFriendPage.h
+    UI/ApplyFriendPage.ui
+    UI/ApplyFriendItem.cpp
+    UI/ApplyFriendItem.h
+    UI/ApplyFriendItem.ui
+    UI/ApplyFriendList.h
+    UI/ApplyFriendList.cpp
+
     UI/resource.qrc
     UI/style/styleSheet.qss
 )
@@ -50,6 +149,8 @@ set(CLIENT_TASK_SOURCE
     Task/TaskHandler.h
 
 
+    Task/HttpResponseTask.h
+    Task/HttpResponseTask.cpp
     Task/VerifyCodeTask.h
     Task/VerifyCodeTask.cpp
     Task/RegisterTask.h
@@ -58,6 +159,8 @@ set(CLIENT_TASK_SOURCE
     Task/ResetPasswordTask.cpp
     Task/UserLoginTask.h
     Task/UserLoginTask.cpp
+    Task/TcpConnectTask.h
+    Task/TcpConnectTask.cpp
 
 )
 
@@ -78,8 +181,10 @@ set(CMAKE_AUTORCC ON)
 add_executable(ZhKeyesIMClient 
     main.cpp   
     ${CLIENT_NETWORK_SOURCE} 
+    ${CLIENT_BASE_SOURCE}
     ${CLIENT_UI_SOURCE}
     ${CLIENT_TASK_SOURCE}
+    ${CLIENT_IMPROTOCOL_SOURCE}
 )
 
 configure_target_output(ZhKeyesIMClient "ZhKeyesIMClient")
@@ -113,17 +218,20 @@ set_target_properties(ZhKeyesIMClient PROPERTIES
 
 source_group(
   TREE ${CMAKE_CURRENT_SOURCE_DIR}
-  FILES ${CLIENT_NETWORK_SOURCE} ${CLIENT_UI_SOURCE} ${CLIENT_TASK_SOURCE} main.cpp
+  FILES ${CLIENT_NETWORK_SOURCE} ${CLIENT_UI_SOURCE} ${CLIENT_TASK_SOURCE}  ${CLIENT_BASE_SOURCE} main.cpp
 )
+source_group(
+  TREE ${CMAKE_SOURCE_DIR}
+  FILES ${CLIENT_IMPROTOCOL_SOURCE}
+)
+
 
 set_target_properties(ZhKeyesIMClient PROPERTIES AUTOGEN_SOURCE_GROUP "Generated")
 
 # 包含目录
 target_include_directories(ZhKeyesIMClient PRIVATE
+    ${CMAKE_SOURCE_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/UI
-    ${CMAKE_CURRENT_SOURCE_DIR}/Task
-    ${CMAKE_CURRENT_SOURCE_DIR}/NetWork
     ${CMAKE_SOURCE_DIR}/net
     ${CMAKE_SOURCE_DIR}/util
     ${CMAKE_SOURCE_DIR}/Log

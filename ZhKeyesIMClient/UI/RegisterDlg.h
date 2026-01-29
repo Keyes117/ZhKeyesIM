@@ -1,13 +1,13 @@
-#ifndef UI_REGISTERDLG_H_
-#define UI_REGISTERDLG_H_
+#ifndef ZHKEYESIMCLIENT_UI_REGISTERDLG_H_
+#define ZHKEYESIMCLIENT_UI_REGISTERDLG_H_
 
 #include <QDialog>
 #include <QTimer>
 
 #include "ui_RegisterDlg.h"
 
-#include "global.h"
-#include "IMClient.h"
+#include "Base/global.h"
+#include "NetWork/IMClient.h"
 
 class RegisterDlg : public QDialog
 {

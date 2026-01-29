@@ -19,67 +19,67 @@ class Util_API JsonUtil
 {
 public:
     /**
-     * @brief °²È«½âÎö Json ×Ö·û´® (²»Å×Òì³£)
-     * @param jsonStr£¨Json×Ö·û´®£©
-     * @return  ½âÎö³É¹¦·µ»Ø json ¶ÔÏó£¬ Ê§°Ü·µ»Ø std::nullopt
+     * @brief å®‰å…¨è§£æ Json å­—ç¬¦ä¸² (ä¸æŠ›å¼‚å¸¸)
+     * @param jsonStrï¼ˆJsonå­—ç¬¦ä¸²ï¼‰
+     * @return  è§£ææˆåŠŸè¿”å› json å¯¹è±¡ï¼Œ å¤±è´¥è¿”å› std::nullopt
      */
     static std::optional<nlohmann::json> parseSafe(const std::string& jsonStr);
 
     /**
-      * @brief °²È«½âÎö JSON Á÷£¨²»Å×Òì³££©
-      * @param is ÊäÈëÁ÷
-      * @return ½âÎö³É¹¦·µ»Ø json ¶ÔÏó£¬Ê§°Ü·µ»Ø std::nullopt
+      * @brief å®‰å…¨è§£æ JSON æµï¼ˆä¸æŠ›å¼‚å¸¸ï¼‰
+      * @param is è¾“å…¥æµ
+      * @return è§£ææˆåŠŸè¿”å› json å¯¹è±¡ï¼Œå¤±è´¥è¿”å› std::nullopt
       */
     static std::optional<nlohmann::json> parseSafe(std::istream& is);
 
     /**
-  * @brief °²È«»ñÈ¡ JSON Öµ£¨²»Å×Òì³££©
-  * @param json JSON ¶ÔÏó
-  * @param key ¼üÃû
-  * @return ³É¹¦·µ»ØÖµ£¬Ê§°Ü·µ»Ø std::nullopt
+  * @brief å®‰å…¨è·å– JSON å€¼ï¼ˆä¸æŠ›å¼‚å¸¸ï¼‰
+  * @param json JSON å¯¹è±¡
+  * @param key é”®å
+  * @return æˆåŠŸè¿”å›å€¼ï¼Œå¤±è´¥è¿”å› std::nullopt
   */
     template<typename T>
     static std::optional<T> getSafe(const nlohmann::json& json, const std::string& key);
 
     /**
-     * @brief °²È«»ñÈ¡Ç¶Ì× JSON Öµ£¨²»Å×Òì³££©
-     * @param json JSON ¶ÔÏó
-     * @param keys ¼üÂ·¾¶£¬Èç {"user", "profile", "name"}
-     * @return ³É¹¦·µ»ØÖµ£¬Ê§°Ü·µ»Ø std::nullopt
+     * @brief å®‰å…¨è·å–åµŒå¥— JSON å€¼ï¼ˆä¸æŠ›å¼‚å¸¸ï¼‰
+     * @param json JSON å¯¹è±¡
+     * @param keys é”®è·¯å¾„ï¼Œå¦‚ {"user", "profile", "name"}
+     * @return æˆåŠŸè¿”å›å€¼ï¼Œå¤±è´¥è¿”å› std::nullopt
      */
     template<typename T>
     static std::optional<T> getSafe(const nlohmann::json& json,
         const std::vector<std::string>& keys);
 
     /**
-     * @brief °²È«ĞòÁĞ»¯ JSON£¨²»Å×Òì³££©
-     * @param json JSON ¶ÔÏó
-     * @param indent Ëõ½ø¿Õ¸ñÊı£¬-1 ±íÊ¾²»¸ñÊ½»¯
-     * @return ³É¹¦·µ»Ø JSON ×Ö·û´®£¬Ê§°Ü·µ»Ø std::nullopt
+     * @brief å®‰å…¨åºåˆ—åŒ– JSONï¼ˆä¸æŠ›å¼‚å¸¸ï¼‰
+     * @param json JSON å¯¹è±¡
+     * @param indent ç¼©è¿›ç©ºæ ¼æ•°ï¼Œ-1 è¡¨ç¤ºä¸æ ¼å¼åŒ–
+     * @return æˆåŠŸè¿”å› JSON å­—ç¬¦ä¸²ï¼Œå¤±è´¥è¿”å› std::nullopt
      */
     static std::optional<std::string> dumpSafe(const nlohmann::json& json, int indent = -1);
 
     /**
-     * @brief ¼ì²é JSON ÊÇ·ñ°üº¬Ö¸¶¨Â·¾¶
-     * @param json JSON ¶ÔÏó
-     * @param keys ¼üÂ·¾¶
-     * @return Â·¾¶´æÔÚ·µ»Ø true£¬·ñÔò·µ»Ø false
+     * @brief æ£€æŸ¥ JSON æ˜¯å¦åŒ…å«æŒ‡å®šè·¯å¾„
+     * @param json JSON å¯¹è±¡
+     * @param keys é”®è·¯å¾„
+     * @return è·¯å¾„å­˜åœ¨è¿”å› trueï¼Œå¦åˆ™è¿”å› false
      */
     static bool hasPath(const nlohmann::json& json, const std::vector<std::string>& keys);
 
     /**
-     * @brief ¼ì²é JSON ÊÇ·ñ°üº¬Ö¸¶¨¼ü
-     * @param json JSON ¶ÔÏó
-     * @param key ¼üÃû
-     * @return ¼ü´æÔÚ·µ»Ø true£¬·ñÔò·µ»Ø false
+     * @brief æ£€æŸ¥ JSON æ˜¯å¦åŒ…å«æŒ‡å®šé”®
+     * @param json JSON å¯¹è±¡
+     * @param key é”®å
+     * @return é”®å­˜åœ¨è¿”å› trueï¼Œå¦åˆ™è¿”å› false
      */
     static bool hasKey(const nlohmann::json& json, const std::string& key);
 
     /**
-     * @brief °²È«·ÃÎÊÇ¶Ì× JSON£¨Á´Ê½·ÃÎÊµÄÌæ´ú·½°¸£©
-     * @param json JSON ¶ÔÏó
-     * @param keys ¼üÂ·¾¶
-     * @return ³É¹¦·µ»Ø JSON ¶ÔÏó£¬Ê§°Ü·µ»Ø std::nullopt
+     * @brief å®‰å…¨è®¿é—®åµŒå¥— JSONï¼ˆé“¾å¼è®¿é—®çš„æ›¿ä»£æ–¹æ¡ˆï¼‰
+     * @param json JSON å¯¹è±¡
+     * @param keys é”®è·¯å¾„
+     * @return æˆåŠŸè¿”å› JSON å¯¹è±¡ï¼Œå¤±è´¥è¿”å› std::nullopt
      */
     static std::optional<nlohmann::json> accessPath(const nlohmann::json& json,
         const std::vector<std::string>& keys);
@@ -91,7 +91,7 @@ private:
     JsonUtil& operator=(const JsonUtil&) = delete;
 };
 
-// Ä£°åÊµÏÖ - Ìí¼ÓÒì³£´¦ÀíºÍÈÕÖ¾
+// æ¨¡æ¿å®ç° - æ·»åŠ å¼‚å¸¸å¤„ç†å’Œæ—¥å¿—
 template<typename T>
 std::optional<T> JsonUtil::getSafe(const nlohmann::json& json, const std::string& key)
 {
@@ -101,19 +101,19 @@ std::optional<T> JsonUtil::getSafe(const nlohmann::json& json, const std::string
         {
             return json[key].get<T>();
         }
-        // ¼ü²»´æÔÚÊ±¼ÇÂ¼ÈÕÖ¾
+        // é”®ä¸å­˜åœ¨æ—¶è®°å½•æ—¥å¿—
         LOG_DEBUG("JSON key '%s' not found", key.c_str());
         return std::nullopt;
     }
     catch (const nlohmann::json::type_error& e)
     {
-        // ÀàĞÍ×ª»»Ê§°Ü£¬¼ÇÂ¼ÈÕÖ¾
+        // ç±»å‹è½¬æ¢å¤±è´¥ï¼Œè®°å½•æ—¥å¿—
         LOG_ERROR("JSON type error for key '%s': %s", key.c_str(), e.what());
         return std::nullopt;
     }
     catch (const nlohmann::json::exception& e)
     {
-        // ÆäËû JSON Òì³££¬¼ÇÂ¼ÈÕÖ¾
+        // å…¶ä»– JSON å¼‚å¸¸ï¼Œè®°å½•æ—¥å¿—
         LOG_ERROR("JSON exception for key '%s': %s", key.c_str(), e.what());
         return std::nullopt;
     }
@@ -131,7 +131,7 @@ std::optional<T> JsonUtil::getSafe(const nlohmann::json& json,
             const auto& key = keys[i];
             if (!current->contains(key))
             {
-                // ¹¹½¨Â·¾¶×Ö·û´®ÓÃÓÚÈÕÖ¾
+                // æ„å»ºè·¯å¾„å­—ç¬¦ä¸²ç”¨äºæ—¥å¿—
                 std::string path;
                 for (size_t j = 0; j <= i; ++j)
                 {
@@ -147,7 +147,7 @@ std::optional<T> JsonUtil::getSafe(const nlohmann::json& json,
     }
     catch (const nlohmann::json::type_error& e)
     {
-        // ¹¹½¨Â·¾¶×Ö·û´®ÓÃÓÚÈÕÖ¾
+        // æ„å»ºè·¯å¾„å­—ç¬¦ä¸²ç”¨äºæ—¥å¿—
         std::string path;
         for (size_t i = 0; i < keys.size(); ++i)
         {
@@ -159,7 +159,7 @@ std::optional<T> JsonUtil::getSafe(const nlohmann::json& json,
     }
     catch (const nlohmann::json::exception& e)
     {
-        // ¹¹½¨Â·¾¶×Ö·û´®ÓÃÓÚÈÕÖ¾
+        // æ„å»ºè·¯å¾„å­—ç¬¦ä¸²ç”¨äºæ—¥å¿—
         std::string path;
         for (size_t i = 0; i < keys.size(); ++i)
         {

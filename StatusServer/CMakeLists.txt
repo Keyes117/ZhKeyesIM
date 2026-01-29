@@ -6,13 +6,9 @@ set(SERVER_SOURCES
     message.pb.cc
     message.grpc.pb.cc
 
-    infrastructure/MySqlConnPool.cpp
-    infrastructure/MySqlManager.cpp
-    infrastructure/RedisManager.cpp
-    infrastructure/RedisConnPool.cpp
-
     Repository/ChatServerRepository.cpp
     Repository/TokenRepository.cpp
+    Repository/UserRepository.cpp
 
     Controller/StatusController.cpp
 
@@ -27,13 +23,9 @@ set(SERVER_HEADERS
 
     Model/ChatServerInfo.h
 
-    infrastructure/MySqlConnPool.h
-    infrastructure/MySqlManager.h
-    infrastructure/RedisManager.h
-    infrastructure/RedisConnPool.h
-
     Repository/ChatServerRepository.h
     Repository/TokenRepository.h
+    Repository/UserRepository.h
 
 
     Controller/StatusController.h
@@ -42,17 +34,38 @@ set(SERVER_HEADERS
 
 )
 
+set(infrastructure_SOURCES
+    ${CMAKE_SOURCE_DIR}/infrastructure/MySqlConnPool.cpp
+    ${CMAKE_SOURCE_DIR}/infrastructure/MySqlManager.cpp
+    ${CMAKE_SOURCE_DIR}/infrastructure/RedisManager.cpp
+    ${CMAKE_SOURCE_DIR}/infrastructure/RedisConnPool.cpp
+)
+
+set(infrastructure_HEADERS
+    ${CMAKE_SOURCE_DIR}/infrastructure/MySqlConnPool.h
+    ${CMAKE_SOURCE_DIR}/infrastructure/MySqlManager.h
+    ${CMAKE_SOURCE_DIR}/infrastructure/RedisManager.h
+    ${CMAKE_SOURCE_DIR}/infrastructure/RedisConnPool.h
+)
+
 
 
 # ==================== 创建可执行文件 ====================
 # 创建服务端可执行文件
-add_executable(StatusServer ${SERVER_SOURCES} ${SERVER_HEADERS})
+add_executable(StatusServer ${SERVER_SOURCES} ${SERVER_HEADERS}
+    ${infrastructure_SOURCES} ${infrastructure_HEADERS})
 
 
 source_group(
   TREE ${CMAKE_CURRENT_SOURCE_DIR}
   FILES ${SERVER_SOURCES} ${SERVER_HEADERS}
 )
+
+source_group(
+  TREE ${CMAKE_SOURCE_DIR}
+  FILES ${infrastructure_SOURCES} ${infrastructure_HEADERS}
+)
+
 
 set_target_properties(StatusServer PROPERTIES AUTOGEN_SOURCE_GROUP "Generated")
 
@@ -67,6 +80,7 @@ set_target_properties(StatusServer PROPERTIES
 # 设置包含目录
 target_include_directories(StatusServer PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/net   # 网络库头文件路径
     ${CMAKE_SOURCE_DIR}/util  # 工具库头文件路径
     ${CMAKE_SOURCE_DIR}/Log

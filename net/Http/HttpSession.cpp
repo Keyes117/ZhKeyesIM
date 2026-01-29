@@ -61,17 +61,13 @@ void HttpSession::onWrite()
 {
   
 }
-void HttpSession::onClose()
-{
-
-}
 
 bool HttpSession::sendResponse(const HttpResponse& response)
 {
     return m_spConnection->send(response.toString());
 }
 
-void HttpSession::handleRequest(std::shared_ptr<HttpRequest>& spRequest)
+void HttpSession::handleRequest(std::shared_ptr<HttpRequest> spRequest)
 {
     if (! m_pHttpServer  || !spRequest)
     {

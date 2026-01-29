@@ -1,10 +1,10 @@
-#ifndef UI_RESETDLG_H_
-#define UI_RESETDLG_H_
+#ifndef ZHKEYESIMCLIENT_UI_RESETDLG_H_
+#define ZHKEYESIMCLIENT_UI_RESETDLG_H_
 
 #include <QDialog>
 #include "ui_ResetDlg.h"
 
-#include <IMClient.h>
+#include <NetWork/IMClient.h>
 
 class ResetDlg : public QDialog
 {

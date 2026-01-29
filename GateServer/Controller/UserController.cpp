@@ -189,7 +189,7 @@ void UserController::onHandleLoginDone(HttpServer::AsyncDone done,
            {"uid", result.userInfo.uid},
            {"username", result.userInfo.username},
            {"email", result.userInfo.email},
-           {"ip",result.ip},
+           {"host",result.host},
            {"port",result.port}
         };
 

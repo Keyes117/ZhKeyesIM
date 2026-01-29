@@ -3,12 +3,15 @@
 #include <QPushButton>
 #include <QMessageBox>
 #include <QSizePolicy>
+#include <QLineEdit>
 #include <QRegularExpression>
 
-#include "ClickedLabel.h"
+#include "Base/UserSession.h"
+#include "UI/ClickedLabel.h"
+#include "Base/global.h"
 #include "Task/TaskHandler.h"
 #include "Task/UserLoginTask.h"
-#include "global.h"
+
 
 LoginDlg::LoginDlg(std::shared_ptr<IMClient> spClient,QWidget* parent)
     :QDialog(parent),
@@ -45,16 +48,11 @@ LoginDlg::~LoginDlg()
 }
 
 
-void LoginDlg::onLoginSuccess(const User& userData)
+void LoginDlg::onLoginSuccess()
 {
     //m_ui.button_login->setEnabled(true);
-
     QMessageBox::information(this, "成功",
-        QString("欢迎回来，%1！").arg(QString::fromStdString(userData.username)));
-
-    // 保存token等信息
-    // StateManager::getInstance().setLoginData(data);
-
+        QString("欢迎回来，%1！").arg(QString::fromStdString(UserSession::getInstance().getUsername())));
 
     emit loginSuccess();
 
@@ -102,7 +100,9 @@ void LoginDlg::hideFieldError(const QString& fieldName)
 
 void LoginDlg::onLoginButtonClicked()
 {
-    if (!checkEmailValid())
+    emit loginSuccess();
+
+  /*  if (!checkEmailValid())
     {
         return;
     }
@@ -121,11 +121,11 @@ void LoginDlg::onLoginButtonClicked()
         email.toStdString(),
         password.toStdString(),
         this,
-        std::bind(&LoginDlg::onLoginSuccess, this, std::placeholders::_1),
+        std::bind(&LoginDlg::onLoginSuccess, this),
         std::bind(&LoginDlg::onLoginError, this, std::placeholders::_1)
     );
 
-    TaskHandler::getInstance().registerNetTask(std::move(loginTask));
+    TaskHandler::getInstance().registerNetTask(std::move(loginTask));*/
 }
 
 

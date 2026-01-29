@@ -1,0 +1,581 @@
+#include "RedisManager.h"
+
+
+#include "Logger.h"
+
+RedisManager::RedisManager()
+{
+}
+
+RedisManager::~RedisManager()
+{
+    close();
+}
+
+bool RedisManager::init(const ZhKeyes::Util::ConfigManager& config)
+{
+    auto hostOpt = config.getSafe<std::string>({ "redis","host" });
+    auto portOpt = config.getSafe<std::string>({ "redis","port" });
+    auto passwordOpt = config.getSafe<std::string>({ "redis","password" });
+    auto connNumberOpt = config.getSafe<int>({ "redis","connNumber" });
+
+    if (!hostOpt || !portOpt || !passwordOpt || !connNumberOpt)
+    {
+        return false;
+    }
+
+    std::string host = *hostOpt;
+    std::string port = *portOpt;
+    std::string password = *passwordOpt;
+    int connNumber = *connNumberOpt;
+    m_spConnPool = std::make_unique<RedisConnPool>(connNumber, host.c_str(),
+        std::atoi(port.c_str()), password.c_str());
+    m_inited = true;
+
+    return true;
+}
+
+bool RedisManager::Get(const std::string& key, std::string& value)
+{
+    if (!m_inited)
+        return false;
+
+    redisContext* pConnection = m_spConnPool->getConnection();
+    if (pConnection == nullptr)
+    {
+        LOG_ERROR("Redis: Failed to get redis Connection");
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    redisReply* pReply = static_cast<redisReply*>(redisCommand(pConnection, "GET %s", key.c_str()));
+    if (!pReply)
+    {
+        LOG_ERROR("Redis: failed to execute command [ Get %s ]", key.c_str());
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    // 处理 NIL 相应(key 不存在)
+    if (pReply->type == REDIS_REPLY_NIL)
+    {
+        LOG_INFO("Redis: Key [ %s ] not found", key.c_str());
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    if (pReply->type != REDIS_REPLY_STRING)
+    {
+        LOG_ERROR("Redis: failed to execute command [ Get %s ]", key.c_str());
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    value = pReply->str;
+    freeReplyObject(pReply);
+
+    m_spConnPool->returnConnection(pConnection);
+    LOG_INFO("Redis: Succeed to execute command [ Get %s ]", key.c_str());
+    return true;
+
+}
+
+bool RedisManager::Set(const std::string& key, const std::string& value)
+{
+    if (!m_inited)
+        return false;
+
+    redisContext* pConnection = m_spConnPool->getConnection();
+    if (pConnection == nullptr)
+    {
+        LOG_ERROR("Redis: Failed to get redis Connection");
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    redisReply* pReply = static_cast<redisReply*>(redisCommand(
+        pConnection, "SET %s %s", key.c_str(), value.c_str())
+        );
+
+    if (!pReply)
+    {
+        LOG_ERROR("Redis: failed to execute command [Set %s %s ]", key.c_str(), value.c_str());
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    //如果执行失败则释放连接
+    if (!(pReply->type == REDIS_REPLY_STATUS && (strcmp(pReply->str, "OK") == 0 
+        || strcmp(pReply->str, "ok") == 0)))
+    {
+        LOG_ERROR("Redis: failed to execute command [ SET %s %s ]", key.c_str(), value.c_str());
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    //执行成功
+    freeReplyObject(pReply);
+
+    m_spConnPool->returnConnection(pConnection);
+    LOG_INFO("Redis: Succeed to execute command [ SET %s %s]", key.c_str(), value.c_str());
+    return true;
+}
+
+bool RedisManager::Auth( const std::string& password)
+{
+    if (!m_inited)
+        return false;
+
+    redisContext* pConnection = m_spConnPool->getConnection();
+    if (pConnection == nullptr)
+    {
+        LOG_ERROR("Redis: Failed to get redis Connection");
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    redisReply* pReply = static_cast<redisReply*>(redisCommand(
+        pConnection, "AUTH %s", password.c_str())
+    );
+
+    if (pReply == nullptr)
+    {
+        LOG_ERROR("redis: failed to authorization - null reply");
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    if (pReply->type == REDIS_REPLY_ERROR)
+    {
+        LOG_ERROR("redis: failed to authorization ");
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+    else
+    {
+        freeReplyObject(pReply);
+        LOG_INFO("Redis: succeed to authorization ");
+        m_spConnPool->returnConnection(pConnection);
+        return true;
+    }
+    m_spConnPool->returnConnection(pConnection);
+}
+
+bool RedisManager::LPush(const std::string& key, const std::string& value)
+{
+    if (!m_inited)
+        return false;
+
+    redisContext* pConnection = m_spConnPool->getConnection();
+    if (pConnection == nullptr)
+    {
+        LOG_ERROR("Redis: Failed to get redis Connection");
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    redisReply* pReply = static_cast<redisReply*>(redisCommand(
+        pConnection, "LPUSH %s %s", key.c_str(), value.c_str())
+        );
+
+    if (!pReply)
+    {
+        LOG_ERROR("Redis: failed to execute [ LPUSH %s %s ]", key.c_str(), value.c_str());
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    if (pReply->type != REDIS_REPLY_INTEGER || pReply->integer <= 0)
+    {
+        LOG_ERROR("Redis: failed to execute [ LPUSH %s %s ]", key.c_str(), value.c_str());
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    LOG_INFO("Redis: succeed to execute [ LPUSH %s %s ] ", key.c_str(), value.c_str());
+    freeReplyObject(pReply);
+
+    m_spConnPool->returnConnection(pConnection);
+    return true;
+}
+
+bool RedisManager::LPop(const std::string& key,  std::string& value)
+{
+    if (!m_inited)
+        return false;
+
+    redisContext* pConnection = m_spConnPool->getConnection();
+    if (pConnection == nullptr)
+    {
+        LOG_ERROR("Redis: Failed to get redis Connection");
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    redisReply* pReply = static_cast<redisReply*>(redisCommand(
+        pConnection, "LPOP %s", key.c_str())
+        );
+
+    if (pReply == nullptr || pReply->type != REDIS_REPLY_NIL)
+    {
+        LOG_ERROR("Redis: failed to execute [ LPOP %s ]", key.c_str());
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    value = pReply->str;
+    LOG_INFO("Redis: succeed to execute [ LPOP %s ] ", key.c_str());
+    freeReplyObject(pReply);
+
+    m_spConnPool->returnConnection(pConnection);
+    return true;
+}
+
+bool RedisManager::RPush(const std::string& key, const std::string& value)
+{
+    if (!m_inited)
+        return false;
+
+    redisContext* pConnection = m_spConnPool->getConnection();
+    if (pConnection == nullptr)
+    {
+        LOG_ERROR("Redis: Failed to get redis Connection");
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    redisReply* pReply = static_cast<redisReply*>(redisCommand(
+        pConnection, "RPUSH %s %s", key.c_str(), value.c_str())
+        );
+
+    if (!pReply)
+    {
+        LOG_ERROR("Redis: failed to execute [ RPUSH %s %s ]", key.c_str(), value.c_str());
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    if (pReply->type != REDIS_REPLY_INTEGER || pReply->integer <= 0)
+    {
+        LOG_ERROR("Redis: failed to execute [ RPUSH %s %s ]", key.c_str(), value.c_str());
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    LOG_INFO("Redis: succeed to execute [ RPUSH %s %s ] ", key.c_str(), value.c_str());
+    freeReplyObject(pReply);
+
+    m_spConnPool->returnConnection(pConnection);
+    return true;
+}
+
+bool RedisManager::RPop(const std::string& key,  std::string& value)
+{
+    if (!m_inited)
+        return false;
+
+    redisContext* pConnection = m_spConnPool->getConnection();
+    if (pConnection == nullptr)
+    {
+        LOG_ERROR("Redis: Failed to get redis Connection");
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    redisReply* pReply = static_cast<redisReply*>(redisCommand(
+        pConnection, "RPOP %s %s", key.c_str(), value.c_str())
+        );
+
+    if (pReply == nullptr || pReply->type != REDIS_REPLY_NIL)
+    {
+        LOG_ERROR("Redis: failed to execute [ RPOP %s %s ]", key.c_str(), value.c_str());
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    value = pReply->str;
+
+    LOG_INFO("Redis: succeed to execute [ RPOP %s %s ] ", key.c_str(), value.c_str());
+    freeReplyObject(pReply);
+
+    m_spConnPool->returnConnection(pConnection);
+    return true;
+}
+
+bool RedisManager::HSet(const std::string& key, const std::string& hkey, const std::string& value)
+{
+    if (!m_inited)
+        return false;
+
+    redisContext* pConnection = m_spConnPool->getConnection();
+    if (pConnection == nullptr)
+    {
+        LOG_ERROR("Redis: Failed to get redis Connection");
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    redisReply* pReply = static_cast<redisReply*>(redisCommand(
+        pConnection, "HSET %s %s %s", key.c_str(), hkey.c_str(), value.c_str())
+        );
+
+    if (pReply == nullptr || pReply->type != REDIS_REPLY_INTEGER)
+    {
+        LOG_ERROR("Redis: failed to execute [ HSET %s %s %s ]", key.c_str(), hkey.c_str(), value.c_str());
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    LOG_INFO("Redis: succeed to execute [ HSET %s %s %s ] ", key.c_str(), hkey.c_str(), value.c_str());
+    freeReplyObject(pReply);
+
+    m_spConnPool->returnConnection(pConnection);
+    return true;
+}
+
+bool RedisManager::HSet(const char* key, const char* hkey, const char* hvalue, size_t hvaluelen)
+{
+    if (!m_inited)
+        return false;
+
+    const char* argv[4];
+    size_t argvlen[4];
+    argv[0] = "HSET";
+    argvlen[0] = 4;
+    argv[1] = key;
+    argvlen[1] = strlen(key);
+    argv[2] = hkey;
+    argvlen[2] = strlen(hkey);
+    argv[3] = hvalue;
+    argvlen[3] = hvaluelen;
+
+    redisContext* pConnection = m_spConnPool->getConnection();
+    if (pConnection == nullptr)
+    {
+        LOG_ERROR("Redis: Failed to get redis Connection");
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    redisReply* pReply = static_cast<redisReply*>(redisCommandArgv(pConnection, 4, argv, argvlen));
+    if (pReply == nullptr || pReply->type != REDIS_REPLY_INTEGER) 
+    {
+        LOG_ERROR("Redis: failed to execute [ HSET %s %s %s ]", key, hkey, hvalue);
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    // 修复：检查是否为 NIL（列表为空）或 STRING（有值）
+    if (pReply->type == REDIS_REPLY_NIL)
+    {
+
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    LOG_INFO("Redis: succeed to execute [ HSET %s %s %s ] ", key, hkey, hvalue);
+    freeReplyObject(pReply);
+
+    m_spConnPool->returnConnection(pConnection);
+    return true;
+}
+
+std::string RedisManager::HGet(const std::string& key, const std::string& hkey)
+{
+    if (!m_inited)
+        return false;
+
+    const char* argv[3];
+    size_t argvlen[3];
+    argv[0] = "HGET";
+    argvlen[0] = 4;
+    argv[1] = key.c_str();
+    argvlen[1] = key.length();
+    argv[2] = hkey.c_str();
+    argvlen[2] = hkey.length();
+
+    redisContext* pConnection = m_spConnPool->getConnection();
+    if (pConnection == nullptr)
+    {
+        LOG_ERROR("Redis: Failed to get redis Connection");
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    redisReply* pReply = static_cast<redisReply*>(redisCommandArgv(pConnection, 3, argv, argvlen));
+    if (pReply == nullptr || pReply->type == REDIS_REPLY_NIL) 
+    {
+        freeReplyObject(pReply);
+        LOG_ERROR("Redis: failed to execute [ HGET %s %s ]", key, hkey);
+        m_spConnPool->returnConnection(pConnection);
+        return "";
+    }
+
+    if (pReply->type != REDIS_REPLY_STRING)
+    {
+        LOG_ERROR("Redis: failed to execute [ HGET %s %s ]", key.c_str(), hkey.c_str());
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return "";
+    }
+
+    std::string value = pReply->str;
+    freeReplyObject(pReply);
+    LOG_INFO("Redis: succeed to execute [ HGET %s %s ] ", key, hkey);
+
+    m_spConnPool->returnConnection(pConnection);
+    return value;
+}
+
+bool RedisManager::del(const std::string& key)
+{
+    if (!m_inited)
+        return false;
+
+    redisContext* pConnection = m_spConnPool->getConnection();
+    if (pConnection == nullptr)
+    {
+        LOG_ERROR("Redis: Failed to get redis Connection");
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    redisReply* pReply = static_cast<redisReply*>(redisCommand(pConnection, "DEL %s", key.c_str()));
+    if (pReply  == nullptr || pReply->type != REDIS_REPLY_INTEGER) {
+        LOG_ERROR("Redis: failed to execute [ DEL %s ]", key);
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+    LOG_INFO("Redis: succeed to execute [ DEL %s ] ", key);
+    freeReplyObject(pReply);
+
+    m_spConnPool->returnConnection(pConnection);
+    return true;
+}
+
+bool RedisManager::existsKey(const std::string& key)
+{
+    if (!m_inited)
+        return false;
+
+    redisContext* pConnection = m_spConnPool->getConnection();
+    if (pConnection == nullptr)
+    {
+        LOG_ERROR("Redis: Failed to get redis Connection");
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    redisReply* pReply = static_cast<redisReply*>(redisCommand(pConnection, "exists %s", key.c_str()));
+    if (pReply == nullptr || pReply->type != REDIS_REPLY_INTEGER || pReply->integer == 0) 
+    {
+        LOG_INFO("Redis: Key [ %s ] Not Fount", key.c_str());
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+    LOG_INFO("Redis: Key [ %s ] Fount", key.c_str());
+    freeReplyObject(pReply);
+
+    m_spConnPool->returnConnection(pConnection);
+    return true;
+}
+
+void RedisManager::close()
+{
+    m_spConnPool->close();
+
+}
+
+std::vector<std::string> RedisManager::LRange(const std::string& key, int start, int end)
+{
+    std::vector<std::string> result;
+
+    if (!m_inited)
+        return result;
+
+    redisContext* pConnection = m_spConnPool->getConnection();
+    if (pConnection == nullptr)
+    {
+        LOG_ERROR("Redis: Failed to get redis Connection");
+        m_spConnPool->returnConnection(pConnection);
+        return result;
+    }
+
+    redisReply* pReply = static_cast<redisReply*>(
+        redisCommand(pConnection,"LRANGE %s %d %d",key.c_str(), start, end)
+        );
+
+    if (!pReply || pReply->type != REDIS_REPLY_ARRAY)
+    {
+        LOG_ERROR("Redis: Failed to execute [ LARNGE %s ]", key.c_str());
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return result;
+    }
+
+    for (size_t i = 0; i < pReply->elements; ++i)
+    {
+        if (pReply->element[i]->type == REDIS_REPLY_STRING)
+        {
+            result.push_back(pReply->element[i]->str);
+        }
+    }
+
+    freeReplyObject(pReply);
+    m_spConnPool->returnConnection(pConnection);
+    LOG_INFO("Redis: succeed to execute [ LRANGE %s ], got %zu elements",
+        key.c_str(), result.size());
+    return result;
+}
+
+bool RedisManager::HIncrBy(const std::string& key, const std::string& field, int increment)
+{
+    if (!m_inited)
+        return false;
+
+    redisContext* pConnection = m_spConnPool->getConnection();
+    if (pConnection == nullptr)
+    {
+        LOG_ERROR("Redis: Failed to get redis Connection");
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    redisReply* pReply = static_cast<redisReply*>(
+        redisCommand(pConnection, "HINCRBY %s %s %d",
+            key.c_str(), field.c_str(), increment)
+        );
+
+    if (!pReply || pReply->type != REDIS_REPLY_INTEGER)
+    {
+        LOG_ERROR("Redis: failed to execute [ HINCRBY %s %s %d ]",
+            key.c_str(), field.c_str(), increment);
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    LOG_INFO("Redis: succeed to execute [ HINCRBY %s %s %d ], new value: %lld",
+        key.c_str(), field.c_str(), increment, pReply->integer);
+    freeReplyObject(pReply);
+    m_spConnPool->returnConnection(pConnection);
+    return true;
+    
+}

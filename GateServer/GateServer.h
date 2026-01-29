@@ -54,7 +54,7 @@ public:
     GateServer();
     ~GateServer();
 
-    bool init(ConfigManager& config);
+    bool init(ZhKeyes::Util::ConfigManager& config);
     void start();
     void shutdown();
 

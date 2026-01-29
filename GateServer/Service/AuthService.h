@@ -10,7 +10,7 @@ public:
     AuthService() = default;
     ~AuthService() = default;
 
-    bool init(const ConfigManager& config);
+    bool init(const ZhKeyes::Util::ConfigManager& config);
 
     // 密码相关
     

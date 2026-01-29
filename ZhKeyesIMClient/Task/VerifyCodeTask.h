@@ -10,6 +10,7 @@
 #include <functional>
 #include <memory>
 #include <string>
+
 #include <QObject>
 
 #include "NetWork/IMClient.h"

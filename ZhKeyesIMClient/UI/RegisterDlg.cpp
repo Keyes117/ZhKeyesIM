@@ -5,8 +5,8 @@
 #include <QRegularExpression>
 #include <QTimer>
 
-#include "global.h"
-#include "TaskHandler.h"
+#include "Base/global.h"
+#include "Task/TaskHandler.h"
 #include "Task/RegisterTask.h"
 #include "Task/VerifyCodeTask.h"
 
@@ -408,7 +408,7 @@ bool RegisterDlg::checkVerifyValid()
 void RegisterDlg::switchLabelPassVisible()
 {
     auto state = m_ui.label_pass_visible->getCurState();
-    if (state == ClickState::Normal)
+    if (state == ClickLbState::Normal)
     {
         m_ui.lineEdit_password->setEchoMode(QLineEdit::Password);
     }
@@ -421,7 +421,7 @@ void RegisterDlg::switchLabelPassVisible()
 void RegisterDlg::switchLabelConfirmVisible()
 {
     auto state = m_ui.label_confirm_visible->getCurState();
-    if (state == ClickState::Normal)
+    if (state == ClickLbState::Normal)
     {
         m_ui.lineEdit_confirm->setEchoMode(QLineEdit::Password);
     }

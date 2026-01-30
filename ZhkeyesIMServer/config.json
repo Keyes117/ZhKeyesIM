@@ -9,7 +9,7 @@
         "threadNum":4,
         "ip":"127.0.0.1",
         "port":9000,
-        "IOType":0
+        "IOType":2
     },
     "mysql":{
         "host":"172.25.224.240",

@@ -3,6 +3,7 @@
 
 #include <memory>
 
+
 #include "net/Buffer.h"
 #include "net/TCPConnection.h"
 #include "IMProtocol/IMMessageSender.h"
@@ -16,7 +17,7 @@ public:
     using SessionID = uint32_t;
 
     IMSession(IMServer* server, std::shared_ptr<TCPConnection> spConn);
-    ~IMSession() = default;;
+    ~IMSession() = default;
 
     SessionID getSessionId() { return m_sessionId; }
 

@@ -91,6 +91,11 @@ void Epoll::poll(uint32_t timeOutUs, std::vector<EventDispatcher*>& triggerEvent
 
     if (n < 0)
     {
+        if(errno == EINTR)
+        {
+            return;
+        }
+
         LOG_ERROR("epoll_wait failed: errno = %d", errno);
     }
 

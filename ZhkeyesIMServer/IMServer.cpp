@@ -7,10 +7,6 @@ IMServer::IMServer():
 {
 }
 
-IMServer::~IMServer()
-{
-    m_spTcpServer->shutdown();
-}
 
 bool IMServer::init(const ZhKeyes::Util::ConfigManager& config)
 {
@@ -38,8 +34,6 @@ bool IMServer::init(const ZhKeyes::Util::ConfigManager& config)
 
     m_spTcpServer->setConnectionCallback(std::bind(&IMServer::onConnected, this, std::placeholders::_1));
     m_spTcpServer->setDisConnectionCallback(std::bind(&IMServer::onDisConnected, this, std::placeholders::_1));
-    m_spTcpServer->start();
-
     
     // ================== Repository ==================
 
@@ -51,6 +45,11 @@ bool IMServer::init(const ZhKeyes::Util::ConfigManager& config)
     m_spUserController = std::make_shared<IMUserController>(m_spUserService);
 
     return true;
+}
+
+void IMServer::start()
+{
+    m_spTcpServer->start();
 }
 
 bool IMServer::handleMsg(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg,

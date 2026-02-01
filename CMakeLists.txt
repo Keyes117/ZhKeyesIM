@@ -173,15 +173,17 @@ find_library(FMT_LIB
     NAMES 
         fmt
         fmt.lib
-        libfmt.a
         libfmt.so
+        libfmt.so.10
+        libfmt.so.10.1.10
+        libfmt.a
     PATHS "${FMT_DIR}/lib"
     NO_DEFAULT_PATH
     NO_CMAKE_FIND_ROOT_PATH
 )
 
 if(FMT_LIB)
-    add_library(fmt::fmt STATIC IMPORTED)
+    add_library(fmt::fmt SHARED IMPORTED)
     set_target_properties(fmt::fmt PROPERTIES
         IMPORTED_LOCATION "${FMT_LIB}"
         INTERFACE_INCLUDE_DIRECTORIES "${FMT_DIR}/include"
@@ -204,10 +206,23 @@ function(copy_fmt_dlls_to_target target_name)
                 COMMENT "Copying fmt DLL to ${target_name} output directory"
             )
         endif()
+    else()
+        get_target_property(FMT_LOCATION fmt::fmt IMPORTED_LOCATION)
+        if(FMT_LOCATION AND FMT_LOCATION MATCHES "\\.so")
+             add_custom_command(TARGET ${target_name} POST_BUILD
+                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                     "${FMT_LOCATION}"
+                    "$<TARGET_FILE_DIR:${target_name}>/$(notdir ${FMT_LOCATION})"
+                COMMENT "Copying fmt shared library to ${target_name} output directory"
+             )
+         endif()
     endif()
 endfunction()
 
 # ======================== Abseil, Protobuf, gRPC 配置 ===============================
+
+# Windows下配置Grpc路径，Linux建议直接用包管理器安装
+if(WIN32)
 # 添加 CMake 模块搜索路径
 list(APPEND CMAKE_PREFIX_PATH 
     "${GRPC_DIR}/lib/cmake/absl"
@@ -216,6 +231,7 @@ list(APPEND CMAKE_PREFIX_PATH
     "${GRPC_DIR}/lib/cmake/re2"
     "${GRPC_DIR}/lib/cmake/utf8_range"
 )
+
 
 set(ABSL_PROPAGATE_CXX_STD ON)
 
@@ -240,7 +256,20 @@ find_package(gRPC CONFIG REQUIRED)
 if(gRPC_FOUND)
     message(STATUS "Found gRPC via CMake config")
 endif()
+else()
+	find_package(Protobuf REQUIRED)
+	if(Protobuf_FOUND)
+		message(STATUS "FOUND Protobuf via module")
+		message(STATUS "Protobuf version: ${Protobuf_VERSION}")
+	endif()
 
+	find_package(gRPC REQUIRED)
+
+	if(gRPC_FOUND)
+		message(STATUS "Found gRPC via CMAKE (gRPC::grpc / grpc::grpc++)")
+	endif()
+
+endif()
 
 # ==================== nlohmann/json 配置 ====================
 # 创建nlohmann::json目标（头文件库）
@@ -485,12 +514,12 @@ if(WIN32)
     add_subdirectory(ZhKeyesIMClient)
 endif()
 add_subdirectory(ZhkeyesIMServer)
-add_subdirectory(GateServer)
-add_subdirectory(StatusServer)
+#add_subdirectory(GateServer)
+#add_subdirectory(StatusServer)
 
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
-    add_subdirectory(tests)
-endif()
+#if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
+#    add_subdirectory(tests)
+#endif()
 
 
 # ==================== 安装配置 ====================
@@ -501,7 +530,7 @@ if(WIN32)
         CONFIGURATIONS Debug Release
     )
 else()
-    install(TARGETS ZhkeyesIMServer GateServer
+    install(TARGETS ZhkeyesIMServer #GateServer
         RUNTIME DESTINATION bin
         CONFIGURATIONS Debug Release
     )

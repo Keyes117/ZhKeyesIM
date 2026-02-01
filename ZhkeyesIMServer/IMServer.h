@@ -16,9 +16,11 @@ class IMServer
 {
 public:
     IMServer();
-    ~IMServer();
+    ~IMServer() = default;
 
     bool init(const ZhKeyes::Util::ConfigManager& configManager);
+
+    void start();
 
     bool handleMsg(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg,
             std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender

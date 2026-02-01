@@ -91,7 +91,7 @@ source_group(
   FILES ${SERVER_IMPROTOCOL_SOURCES} ${SERVER_INFRASTRUCTURE_SOURCES}
 )
 
-set_target_properties(ZhKeyesIMClient PROPERTIES AUTOGEN_SOURCE_GROUP "Generated")
+set_target_properties(ZhkeyesIMServer PROPERTIES AUTOGEN_SOURCE_GROUP "Generated")
 
 configure_target_output(ZhkeyesIMServer "ZhkeyesIMServer")
 copy_mysql_dlls_to_target(ZhkeyesIMServer)

@@ -22,7 +22,7 @@ class ChatDialog : public QDialog
     Q_OBJECT
 
 public:
-    ChatDialog(std::shared_ptr<IMClient> spClient, QWidget *parent = nullptr);
+    ChatDialog(QWidget *parent = nullptr);
     ~ChatDialog();
 
     void addChatUserList();
@@ -61,7 +61,6 @@ private:
     ChatUIMode  m_state = ChatUIMode::ChatMode;
     bool        m_loading = false;
 
-    std::shared_ptr<IMClient> m_spClient;
     QAction* m_clearAction;
     QAction* m_searchAction;
 };

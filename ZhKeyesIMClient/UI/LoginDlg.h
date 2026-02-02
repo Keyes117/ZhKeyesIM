@@ -13,13 +13,10 @@ class LoginDlg : public QDialog
 {
     Q_OBJECT
 public:
-    LoginDlg(std::shared_ptr<IMClient> spClient, QWidget* parent = nullptr);
+    LoginDlg( QWidget* parent = nullptr);
     ~LoginDlg();
 
 private:
-
-    void onLoginSuccess();
-    void onLoginError(const std::string& error);
 
     // …Ë÷√ ‰»ÎøÚ¥ÌŒÛ◊¥Ã¨
     void setLineEditError(QLineEdit* lineEdit, bool hasError);
@@ -41,6 +38,8 @@ private slots:
     void onEmailTextChanged(const QString& text);
     void onPasswordTextChanged(const QString& text);
 
+    void onLoginSuccess();
+    void onLoginError(const std::string& error);
 
     bool checkEmailValid();
     bool checkPassValid();
@@ -48,7 +47,6 @@ private slots:
 private:
 
     void setUpSignals();
-    std::shared_ptr<IMClient> m_spClient;
 
     QMap<QString, QLabel*> m_errorLabels;
     Ui::LoginDlgClass m_ui;

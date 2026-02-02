@@ -7,13 +7,13 @@
 
 #include "Base/global.h"
 #include "Task/TaskHandler.h"
+#include "Task/TaskBuilder.h"
 #include "Task/RegisterTask.h"
 #include "Task/VerifyCodeTask.h"
 
-RegisterDlg::RegisterDlg(std::shared_ptr<IMClient> spClient, QWidget* parent)
+RegisterDlg::RegisterDlg( QWidget* parent)
     : QDialog(parent),
-    m_countdownTimer(new QTimer(this)),
-    m_spClient(spClient)
+    m_countdownTimer(new QTimer(this))
 {
     m_ui.setupUi(this);
     setUpSignals();
@@ -193,14 +193,11 @@ void RegisterDlg::onRegisterButtonClicked()
     QString strPassword = m_ui.lineEdit_password->text();
     QString strCode = m_ui.lineEdit_code->text();
 
-    auto regiserTask = std::make_shared<RegisterTask>(
-        m_spClient, strUser.toStdString(),
+    auto regiserTask = TaskBuilder::getInstance().buildRegisterTask(
+        strUser.toStdString(),
         strEmail.toStdString(),
         strPassword.toStdString(),
-        strCode.toStdString(),
-        this,
-        std::bind(&RegisterDlg::onRegisterSuccess, this, std::placeholders::_1),
-        std::bind(&RegisterDlg::onRegisterError, this, std::placeholders::_1)
+        strCode.toStdString()
     );
 
     TaskHandler::getInstance().registerNetTask(std::move(regiserTask));
@@ -214,12 +211,9 @@ void RegisterDlg::onCodeButtonClicked()
     if (match)
     {
         //发送验证码
-        auto verifyCodeTask = std::make_shared<GetVerifyCodeTask>(m_spClient, 
-            email.toStdString(),
-            this,
-            std::bind(&RegisterDlg::onVerifyCodeSuccess,this),
-            std::bind(&RegisterDlg::onVerifyCodeError,this,std::placeholders::_1));
-
+        auto verifyCodeTask = TaskBuilder::getInstance().buildVerifyCodeTask(
+            email.toStdString()
+        );       
 
         TaskHandler::getInstance().registerNetTask(std::move(verifyCodeTask));
     }

@@ -5,26 +5,28 @@
 
 RegisterTask::RegisterTask(
     std::shared_ptr<IMClient> client,
+    uint64_t taskId,
     std::string username,
     std::string email,
     std::string password,
-    std::string code,
-    QObject* uiReceiver,
-    std::function<void(int)> onSuccess,
-    std::function<void(const std::string&)> onError)
-    : m_client(std::move(client)),
+    std::string code)
+    :  Task(taskId,Task::TaskType::TASK_TYPE_REGISTER),
+    m_client(client),
     m_username(std::move(username)),
     m_email(std::move(email)),
     m_password(std::move(password)),
-    m_code(std::move(code)),
-    m_uiReceiver(uiReceiver),
-    m_onSuccess(std::move(onSuccess)),
-    m_onError(std::move(onError))
+    m_code(std::move(code))
 {
 }
 
 void RegisterTask::doTask() {
     LOG_INFO("RegisterTask: Executing register for user: %s", m_username.c_str());
+
+    nlohmann::json requestJson;
+    requestJson["username"] = m_username;
+    requestJson["password"] = m_password;
+    requestJson["email"] =  m_email;
+    requestJson["code"] = m_code;
 
     auto selfTask = std::static_pointer_cast<RegisterTask>(shared_from_this());
 
@@ -38,28 +40,11 @@ void RegisterTask::doTask() {
 
 void RegisterTask::onSuccess(int uid) {
     LOG_INFO("RegisterTask: Register succeeded, uid=%d", uid);
-
-    // 切换到UI线程执行回调
-    if (m_onSuccess && m_uiReceiver) {
-        QMetaObject::invokeMethod(m_uiReceiver,
-            [callback = m_onSuccess, uid]() {
-                callback(uid);
-            },
-            Qt::QueuedConnection
-        );
-    }
+ 
 }
 
 void RegisterTask::onError(const std::string& error) {
     LOG_ERROR("RegisterTask: Register failed: %s", error.c_str());
-
-    // 切换到UI线程执行回调
-    if (m_onError && m_uiReceiver) {
-        QMetaObject::invokeMethod(m_uiReceiver,
-            [callback = m_onError, error]() {
-                callback(error);
-            },
-            Qt::QueuedConnection
-        );
-    }
 }
+
+

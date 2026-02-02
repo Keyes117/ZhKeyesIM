@@ -3,53 +3,32 @@
 #include <QMetaObject>
 #include "Logger.h"
 
-GetVerifyCodeTask::GetVerifyCodeTask(
+VerifyCodeTask::VerifyCodeTask(
     std::shared_ptr<IMClient> client,
-    std::string email,
-    QObject* uiReceiver,
-    std::function<void()> onSuccess,
-    std::function<void(const std::string&)> onError)
-    : m_spClient(std::move(client)),
-    m_email(std::move(email)),
-    m_uiReceiver(uiReceiver),
-    m_onSuccess(std::move(onSuccess)),
-    m_onError(std::move(onError))
+    Task::TaskId id,
+    std::string email)
+    :Task(id,Task::TaskType::TASK_TYPE_VERIFYCODE),
+    m_spClient(std::move(client)),
+    m_email(std::move(email))
 {
 }
 
-void GetVerifyCodeTask::doTask() {
+void VerifyCodeTask::doTask() {
     LOG_INFO("GetVerifyCodeTask: Sending verify code to: %s", m_email.c_str());
 
-    auto selfTask = std::static_pointer_cast<GetVerifyCodeTask>(shared_from_this());
+    auto selfTask = std::static_pointer_cast<VerifyCodeTask>(shared_from_this());
 
-    m_spClient->requestVerificationCode(std::bind(&GetVerifyCodeTask::onSuccess, selfTask),
-        std::bind(&GetVerifyCodeTask::onError, selfTask, std::placeholders::_1),
+    m_spClient->requestVerificationCode(std::bind(&VerifyCodeTask::onSuccess, selfTask),
+        std::bind(&VerifyCodeTask::onError, selfTask, std::placeholders::_1),
         m_email
     );
 }
 
-void GetVerifyCodeTask::onSuccess() {
+void VerifyCodeTask::onSuccess() {
     LOG_INFO("GetVerifyCodeTask: Verify code sent successfully");
-
-    if (m_onSuccess && m_uiReceiver) {
-        QMetaObject::invokeMethod(m_uiReceiver,
-            [callback = m_onSuccess]() {
-                callback();
-            },
-            Qt::QueuedConnection
-        );
-    }
 }
 
-void GetVerifyCodeTask::onError(const std::string& error) {
+void VerifyCodeTask::onError(const std::string& error) {
     LOG_ERROR("GetVerifyCodeTask: Failed: %s", error.c_str());
 
-    if (m_onError && m_uiReceiver) {
-        QMetaObject::invokeMethod(m_uiReceiver,
-            [callback = m_onError, error]() {
-                callback(error);
-            },
-            Qt::QueuedConnection
-        );
-    }
 }

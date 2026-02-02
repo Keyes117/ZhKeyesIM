@@ -10,16 +10,11 @@
 #include "util/ConfigManager.h"
 #include "Base/global.h"
 
-
-
 class IMClient
 {
 public:
     using SuccessCallback = std::function<void()>;
     using ErrorCallback = std::function<void(const std::string&)>;
-
-    template<typename T>
-    using DataCallback = std::function<void(const T&)>;
 
 public:
     IMClient();
@@ -34,13 +29,7 @@ public:
         ErrorCallback onError,
         const std::string& email);
 
-    void requestRegister(DataCallback<int> onSuccess,
-        ErrorCallback onError,
-        const std::string& username,
-        const std::string& email,
-        const std::string& password,
-        const std::string& verificationCode
-    );
+    void requestRegister(const std::string& jsonStr);
  
     void requestResetPassword(SuccessCallback onSuccess,
         ErrorCallback onError,
@@ -49,7 +38,7 @@ public:
         const std::string& verificationCode
    );
 
-    void requestUserLogin(DataCallback<User> onSuccess,
+    void requestUserLogin(SuccessCallback onSuccess,
         ErrorCallback onError,
         const std::string& username,
         const std::string password

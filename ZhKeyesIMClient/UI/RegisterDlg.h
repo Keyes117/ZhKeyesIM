@@ -14,7 +14,7 @@ class RegisterDlg : public QDialog
     Q_OBJECT
 
 public:
-    RegisterDlg(std::shared_ptr<IMClient> spClient, QWidget* parent = nullptr);
+    RegisterDlg( QWidget* parent = nullptr);
     ~RegisterDlg();
 
 private:
@@ -68,9 +68,6 @@ private:
     int m_countdown{ 0 };
     QTimer* m_countdownTimer;
     QMap<QString, QLabel*> m_errorLabels;
-    std::shared_ptr<IMClient> m_spClient;
-
-
 
 };
 

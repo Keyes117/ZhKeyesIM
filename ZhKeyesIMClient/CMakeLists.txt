@@ -147,7 +147,8 @@ set(CLIENT_TASK_SOURCE
     Task/Task.h
     Task/TaskHandler.cpp
     Task/TaskHandler.h
-
+    Task/TaskBuilder.cpp
+    Task/TaskBuilder.h
 
     Task/HttpResponseTask.h
     Task/HttpResponseTask.cpp

@@ -17,16 +17,15 @@
 #include "Task/Task.h"
 
 
-class GetVerifyCodeTask : public Task
+class VerifyCodeTask : public Task
 {
 public:
-    GetVerifyCodeTask(std::shared_ptr<IMClient> spClient,
-        std::string email,
-        QObject* uiReceiver,
-        std::function<void()> onSuccess,
-        std::function<void(const std::string&) > onError);
+    VerifyCodeTask(std::shared_ptr<IMClient> spClient,
+        Task::TaskId id,
+        std::string email
+     );
 
-    ~GetVerifyCodeTask() override = default;
+    ~VerifyCodeTask() override = default;
 
     void doTask() override;
 

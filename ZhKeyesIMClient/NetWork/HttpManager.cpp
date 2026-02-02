@@ -49,22 +49,11 @@ void HttpManager::requestVerificationCode(SuccessCallback onSuccess,
     );
 }
 
-void HttpManager::requestRegister(DataCallback<int> onSuccess, 
-    ErrorCallback onError, 
-    const std::string& username, 
-    const std::string& email, 
-    const std::string& password,
-    const std::string& verificationCode)
-{
-    nlohmann::json requestJson;
-    requestJson["username"] = username;
-    requestJson["password"] = password;
-    requestJson["email"] = email;
-    requestJson["code"] = verificationCode;
-
+void HttpManager::requestRegister(const std::string& jsonString)
+{  
     std::string url = fmt::format("http://{}{}", m_httpBaseUrl.c_str(), ApiRoutes::API_USER_REGISTER);
     m_spHttpClient->postJson(url,
-        requestJson.dump(),
+        jsonString,
         std::bind(&HttpManager::onResponseRegister, this, std::move(onSuccess), std::move(onError), std::placeholders::_1)
     );
 }
@@ -90,9 +79,7 @@ void HttpManager::requestResetPassword(SuccessCallback onSuccess,
 
 void HttpManager::requestUserLogin(DataCallback<User> onSuccess, ErrorCallback onError, const std::string& username, const std::string password)
 {
-    nlohmann::json requestJson;
-    requestJson["email"] = username;
-    requestJson["password"] = password;
+
 
     std::string url = fmt::format("http://{}{}", m_httpBaseUrl.c_str(), ApiRoutes::API_USER_LOGIN);
     m_spHttpClient->postJson(url,

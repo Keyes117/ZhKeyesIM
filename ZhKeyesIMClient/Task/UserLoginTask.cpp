@@ -7,22 +7,23 @@
 
 UserLoginTask::UserLoginTask(
     std::shared_ptr<IMClient> client,
+    Task::TaskId id,
     std::string email,
-    std::string password,
-    QObject* uiReceiver,
-    std::function<void()> onSuccess,
-    std::function<void(const std::string&)> onError)
-    : m_client(std::move(client)),
+    std::string password)
+    : Task(id, Task::TaskType::TASK_TYPE_LOGIN),
+    m_client(std::move(client)),
     m_email(std::move(email)),
-    m_password(std::move(password)),
-    m_uiReceiver(uiReceiver),
-    m_onSuccess(std::move(onSuccess)),
-    m_onError(std::move(onError))
+    m_password(std::move(password))
 {
 }
 
-void UserLoginTask::doTask() {
+void UserLoginTask::doTask()
+{
     LOG_INFO("LoginTask: Executing login for email: %s", m_email.c_str());
+
+    nlohmann::json requestJson;
+    requestJson["email"] = m_email;
+    requestJson["password"] = m_password;
 
     auto selfTask = std::static_pointer_cast<UserLoginTask>(shared_from_this());
 
@@ -33,7 +34,8 @@ void UserLoginTask::doTask() {
     );
 }
 
-void UserLoginTask::onHttpConnectSuccess(const User& data) {
+void UserLoginTask::onHttpConnectSuccess(const User& data)
+{
     LOG_INFO("LoginTask: Login succeeded, uid=%d", data.uid);
 
     UserSession::getInstance().setUser(data);
@@ -48,27 +50,13 @@ void UserLoginTask::onHttpConnectSuccess(const User& data) {
     }
 }
 
-void UserLoginTask::onLoginError(const std::string& error) {
+void UserLoginTask::onLoginError(const std::string& error)
+{
     LOG_ERROR("LoginTask: Login failed: %s", error.c_str());
-
-    if (m_onError && m_uiReceiver) {
-        QMetaObject::invokeMethod(m_uiReceiver,
-            [callback = m_onError, error]() {
-                callback(error);
-            },
-            Qt::QueuedConnection
-        );
-    }
+    emit LoginFailed(QString::fromStdString(error));
 }
 
 void UserLoginTask::onTcpConnectSuccess()
 {
-    if (m_onSuccess && m_uiReceiver) {
-        QMetaObject::invokeMethod(m_uiReceiver,
-            [callback = m_onSuccess]() {
-                callback();
-            },
-            Qt::QueuedConnection
-        );
-    }
+    emit LoginSuccess();
 }

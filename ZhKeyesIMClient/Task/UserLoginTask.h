@@ -19,15 +19,18 @@ class UserLoginTask : public Task
 {
 public:
     UserLoginTask(std::shared_ptr<IMClient> client,
+        Task::TaskId id,
         std::string email,
-        std::string password,
-        QObject* uiReceiver,
-        std::function<void()> onSuccess,
-        std::function<void(const std::string&)> onError);
+        std::string password);
 
     ~UserLoginTask() override = default;
 
     void doTask() override;
+
+
+signals:
+    void LoginSuccess();
+    void LoginFailed(const QString& errorMsg);
 
 private:
     void onHttpConnectSuccess(const User& data);
@@ -38,9 +41,6 @@ private:
     std::shared_ptr<IMClient> m_client;
     std::string m_email;
     std::string m_password;
-    QObject* m_uiReceiver;
-    std::function<void()> m_onSuccess;
-    std::function<void(const std::string&)> m_onError;
 };
 
 #endif

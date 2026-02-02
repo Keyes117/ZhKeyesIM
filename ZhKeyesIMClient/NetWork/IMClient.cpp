@@ -75,12 +75,12 @@ void IMClient::requestVerificationCode(SuccessCallback onSuccess,
     m_spHttpManager->requestVerificationCode(onSuccess, onError, email);
 }
 
-void IMClient::requestRegister(DataCallback<int> onSuccess,
-    ErrorCallback onError,
-    const std::string& username,
-    const std::string& email, 
-    const std::string& password, 
-    const std::string& verificationCode)
+void IMClient::postJson(const std::string& jsonString)
+{
+    m_spHttpManager
+}
+
+void IMClient::requestRegister(const std::string& jsonString)
 {
     m_spHttpManager->requestRegister(onSuccess,
         onError, username, email, password, verificationCode);

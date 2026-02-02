@@ -13,9 +13,8 @@
 #include "Task/UserLoginTask.h"
 
 
-LoginDlg::LoginDlg(std::shared_ptr<IMClient> spClient,QWidget* parent)
-    :QDialog(parent),
-    m_spClient(spClient)
+LoginDlg::LoginDlg(QWidget* parent)
+    :QDialog(parent)
 {
     m_ui.setupUi(this);
     setUpSignals();
@@ -100,9 +99,8 @@ void LoginDlg::hideFieldError(const QString& fieldName)
 
 void LoginDlg::onLoginButtonClicked()
 {
-    emit loginSuccess();
 
-  /*  if (!checkEmailValid())
+    if (!checkEmailValid())
     {
         return;
     }
@@ -111,7 +109,6 @@ void LoginDlg::onLoginButtonClicked()
     {
         return;
     }
-
    
     QString email = m_ui.lineEdit_accout->text();
     QString password = m_ui.lineEdit_password->text();
@@ -119,13 +116,13 @@ void LoginDlg::onLoginButtonClicked()
     auto loginTask = std::make_shared<UserLoginTask>(
         m_spClient,
         email.toStdString(),
-        password.toStdString(),
-        this,
-        std::bind(&LoginDlg::onLoginSuccess, this),
-        std::bind(&LoginDlg::onLoginError, this, std::placeholders::_1)
+        password.toStdString()
     );
 
-    TaskHandler::getInstance().registerNetTask(std::move(loginTask));*/
+    connect(loginTask.get(), &UserLoginTask::LoginSuccess, this, LoginDlg::onLoginSuccess);
+    connect(loginTask.get(), &UserLoginTask::LoginFailed, this, LoginDlg::onLoginError);
+
+    TaskHandler::getInstance().registerNetTask(std::move(loginTask));
 }
 
 

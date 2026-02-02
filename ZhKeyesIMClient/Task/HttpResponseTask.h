@@ -10,11 +10,12 @@ class HttpResponseTask : public Task
 
 public:
     using ResponseFunc = std::function<void(const std::string& responseBody)>;
-
-    HttpResponseTask(std::string responseBody, ResponseFunc responseFunc);
+     
     ~HttpResponseTask() = default;
 
     void doTask() override;
+protected:
+    HttpResponseTask(std::string responseBody, ResponseFunc responseFunc);
 
 private:
     std::string m_responseBody;

@@ -18,29 +18,26 @@
 class RegisterTask : public Task
 {
 public:
-    /**
-     * 构造函数
-     * @param client 网络客户端
-     * @param username 用户名
-     * @param email 邮箱
-     * @param password 密码
-     * @param code 验证码
-     * @param uiReceiver UI接收者（用于线程切换）
-     * @param onSuccess 成功回调（在UI线程执行）
-     * @param onError 失败回调（在UI线程执行）
-     */
-    RegisterTask(std::shared_ptr<IMClient> client,
-        std::string username,
-        std::string email,
-        std::string password,
-        std::string code,
-        QObject* uiReceiver,
-        std::function<void(int)> onSuccess,
-        std::function<void(const std::string&)> onError);
-
     ~RegisterTask() override = default;
 
     void doTask() override;
+
+protected:
+    /**
+    * 构造函数
+    * @param client 网络客户端
+    * @param username 用户名
+    * @param email 邮箱
+    * @param password 密码
+    * @param code 验证码
+    */
+    RegisterTask(std::shared_ptr<IMClient> client,
+        uint64_t taskId,
+        std::string username,
+        std::string email,
+        std::string password,
+        std::string code
+    );
 
 private:
     void onSuccess(int uid);
@@ -52,9 +49,6 @@ private:
     std::string m_email;
     std::string m_password;
     std::string m_code;
-    QObject* m_uiReceiver;
-    std::function<void(int)> m_onSuccess;
-    std::function<void(const std::string&)> m_onError;
 };
 
 #endif

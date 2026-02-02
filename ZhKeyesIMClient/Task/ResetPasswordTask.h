@@ -17,12 +17,11 @@
 class ResetPasswordTask : public Task {
 public:
     ResetPasswordTask(std::shared_ptr<IMClient> client,
+        Task::TaskId id,
         std::string email,
         std::string newPassword,
-        std::string code,
-        QObject* uiReceiver,
-        std::function<void()> onSuccess,
-        std::function<void(const std::string&)> onError);
+        std::string code
+  );
 
     ~ResetPasswordTask() override = default;
 
@@ -37,9 +36,6 @@ private:
     std::string m_email;
     std::string m_newPassword;
     std::string m_code;
-    QObject* m_uiReceiver;
-    std::function<void()> m_onSuccess;
-    std::function<void(const std::string&)> m_onError;
 };
 
 #endif

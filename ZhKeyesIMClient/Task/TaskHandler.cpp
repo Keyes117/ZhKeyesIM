@@ -1,4 +1,4 @@
-
+﻿
 //#include "GateServer.h"
 #include "TaskHandler.h"
 
@@ -69,15 +69,19 @@ void TaskHandler::sendThreadProc()
             m_netCV.wait(guard);
         }
 
-        auto pTask = m_netTasks.front();
+        auto spTask = m_netTasks.front();
 
-        if (pTask == nullptr)
+        if (spTask == nullptr)
             continue;
 
-        pTask->doTask();
+        if (!isTaskRunning(spTask->getTaskId()))
+        {
+            connect(spTask.get(), Task::taskFinished, this, TaskHandler::onTaskFinished);
+            spTask->doTask();
+            addRunningTask(std::move(spTask));
+        }
         m_netTasks.pop_front();
         
-        //pTask.reset();
     }
 }
 
@@ -96,13 +100,47 @@ void TaskHandler::recvThreadProc()
             m_UICV.wait(guard);
         }
 
-        auto pTask = m_UITasks.front();
+        auto spTask = m_netTasks.front();
 
-        if (pTask == nullptr)
+        if (spTask == nullptr)
             continue;
 
-        pTask->doTask();
-        m_UITasks.pop_front();
-        //pTask.reset();
+        if (!isTaskRunning(spTask->getTaskId()))
+        {
+            connect(spTask.get(), Task::taskFinished, this, TaskHandler::onTaskFinished);
+            spTask->doTask();
+            addRunningTask(std::move(spTask));
+        }
+        m_netTasks.pop_front();
     }
+}
+
+void TaskHandler::addRunningTask(std::shared_ptr<Task>&& task)
+{
+    std::lock_guard<std::mutex> lock(m_runningTasksMutex);
+    auto taskId = task->getTaskId();
+
+    m_runningTask[taskId] = std::move(task);
+}
+
+void TaskHandler::removeRunningTask(Task::TaskId taskId)
+{
+    std::lock_guard<std::mutex> lock(m_runningTasksMutex);
+    auto iter = m_runningTask.find(taskId);
+    if (iter != m_runningTask.end())
+    {
+        m_runningTask.erase(iter);
+    }
+
+}
+
+bool TaskHandler::isTaskRunning(Task::TaskId taskId)
+{
+    return m_runningTask.find(taskId) != m_runningTask.end();
+}
+
+
+void TaskHandler::onTaskFinished(Task::TaskId taskId)
+{
+    removeRunningTask(taskId);
 }

@@ -75,25 +75,18 @@ void IMClient::requestVerificationCode(SuccessCallback onSuccess,
     m_spHttpManager->requestVerificationCode(onSuccess, onError, email);
 }
 
-void IMClient::postJson(const std::string& jsonString)
+void IMClient::requestRegister(const std::string& jsonString,
+    ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse,
+    ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError)
 {
-    m_spHttpManager
+    m_spHttpManager->requestRegister(jsonString, onResponse, onError);
 }
 
-void IMClient::requestRegister(const std::string& jsonString)
+void IMClient::requestResetPassword(const std::string& jsonString,
+    ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse,
+    ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError)
 {
-    m_spHttpManager->requestRegister(onSuccess,
-        onError, username, email, password, verificationCode);
-}
-
-void IMClient::requestResetPassword(SuccessCallback onSuccess,
-    ErrorCallback onError,
-    const std::string& email, 
-    const std::string& password, 
-    const std::string& verificationCode )
-{
-    m_spHttpManager->requestResetPassword(onSuccess,
-        onError, email, password, verificationCode);
+    m_spHttpManager->requestResetPassword(jsonString, onResponse, onError);
 }
 
 void IMClient::requestUserLogin(DataCallback<User> onSuccess,

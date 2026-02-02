@@ -8,6 +8,8 @@
 #include <QObject>
 
 
+#include "net/Http/HttpResponse.h"
+
 #include "Task/Task.h"
 #include "NetWork/IMClient.h"
 
@@ -39,9 +41,14 @@ protected:
         std::string code
     );
 
+signals:
+    void registerSuccess();
+    void registerFailed(const QString& errorMsg);
+
 private:
-    void onSuccess(int uid);
-    void onError(const std::string& error);
+    void onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& response);
+    void onHttpError(const std::string& error);
+    void onHttpSuccess();
 
 private:
     std::shared_ptr<IMClient> m_client;

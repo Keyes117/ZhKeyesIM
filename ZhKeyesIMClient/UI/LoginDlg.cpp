@@ -9,6 +9,7 @@
 #include "Base/UserSession.h"
 #include "UI/ClickedLabel.h"
 #include "Base/global.h"
+#include "Task/TaskBuilder.h"
 #include "Task/TaskHandler.h"
 #include "Task/UserLoginTask.h"
 
@@ -113,11 +114,11 @@ void LoginDlg::onLoginButtonClicked()
     QString email = m_ui.lineEdit_accout->text();
     QString password = m_ui.lineEdit_password->text();
 
-    auto loginTask = std::make_shared<UserLoginTask>(
-        m_spClient,
+    auto task = TaskBuilder::getInstance().buildLoginTask(
         email.toStdString(),
-        password.toStdString()
-    );
+        password.toStdString());
+
+    auto loginTask = std::dynamic_pointer_cast<UserLoginTask>(task);
 
     connect(loginTask.get(), &UserLoginTask::LoginSuccess, this, LoginDlg::onLoginSuccess);
     connect(loginTask.get(), &UserLoginTask::LoginFailed, this, LoginDlg::onLoginError);

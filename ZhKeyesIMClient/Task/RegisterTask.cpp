@@ -3,6 +3,9 @@
 #include <QMetaObject>
 #include "Logger.h"
 
+#include "Task/TaskHandler.h"
+#include "Task/HttpResponseTask.h"
+
 RegisterTask::RegisterTask(
     std::shared_ptr<IMClient> client,
     uint64_t taskId,
@@ -19,7 +22,66 @@ RegisterTask::RegisterTask(
 {
 }
 
-void RegisterTask::doTask() {
+void RegisterTask::onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& response)
+{
+    std::string responseBody = response.getBody();
+
+    auto responseFunc = [this](const std::string& responseBody)
+        {
+            auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(responseBody);
+            if (!requestJsonOpt)
+            {
+                onHttpError("注册功能返回信息错误");
+                LOG_WARN("IMClient:onResponseVerificationCode:接收返回值格式错误：不是正常的Json格式");
+                return;
+            }
+
+            nlohmann::json requestJson = *requestJsonOpt;
+            auto successOpt = ZhKeyes::Util::JsonUtil::getSafe<int>(requestJson, "success");
+            auto msgOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(requestJson, "msg");
+            if (!successOpt || !msgOpt)
+            {
+                onHttpError("注册功能返回信息错误");
+                LOG_WARN("IMClient:onResponseVerificationCode:接收返回值格式错误：不是正常的Json格式");
+                return;
+            }
+
+            int success = *successOpt;
+            std::string msg = *msgOpt;
+            if (success == 0)
+            {
+                onHttpError(msg);
+                LOG_WARN("IMClient:onResponseVerificationCode:未成功注册用户");
+                return;
+            }
+            else if (success == 1)
+            {
+                onHttpSuccess();
+            }
+        };
+
+
+    auto responseTask = std::make_shared<HttpResponseTask>(
+        std::move(responseBody),    
+        std::move(responseFunc));   
+    TaskHandler::getInstance().registerUITask(std::move(responseTask));
+
+}
+
+void RegisterTask::onHttpError(const std::string& error)
+{
+    emit registerFailed(QString::fromStdString(error));
+    emit taskFinished(getTaskId());
+}
+
+void RegisterTask::onHttpSuccess()
+{
+    emit registerSuccess();
+    emit taskFinished(getTaskId());
+}
+
+void RegisterTask::doTask() 
+{
     LOG_INFO("RegisterTask: Executing register for user: %s", m_username.c_str());
 
     nlohmann::json requestJson;
@@ -31,20 +93,11 @@ void RegisterTask::doTask() {
     auto selfTask = std::static_pointer_cast<RegisterTask>(shared_from_this());
 
     // 在网络线程调用IMClient
-    m_client->requestRegister(
-        std::bind(&RegisterTask::onSuccess, selfTask, std::placeholders::_1),
-        std::bind(&RegisterTask::onError, selfTask, std::placeholders::_1),
-        m_username, m_email, m_password, m_code     
+    m_client->requestRegister(requestJson.dump(),
+        std::bind(&RegisterTask::onHttpResponse, this, std::placeholders::_1),
+        std::bind(&RegisterTask::onHttpError, this, std::placeholders::_1)
     );
 }
 
-void RegisterTask::onSuccess(int uid) {
-    LOG_INFO("RegisterTask: Register succeeded, uid=%d", uid);
- 
-}
-
-void RegisterTask::onError(const std::string& error) {
-    LOG_ERROR("RegisterTask: Register failed: %s", error.c_str());
-}
 
 

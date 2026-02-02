@@ -21,6 +21,8 @@ protected:
 private:
     void waitPending(bool pending = true);
     void addTipItem();
+    void waitPending(bool pending);
+
 
 private slots:
     void onItemClicked(QListWidgetItem* item);
@@ -28,9 +30,12 @@ private slots:
 
 private:
     bool m_sendPending = false;
+    
+    
     std::shared_ptr<QDialog> m_findDialog;
     QWidget* m_searchEdit = nullptr;
     LoadingDialog* m_loadingDialog = nullptr;
+    
 
 
 

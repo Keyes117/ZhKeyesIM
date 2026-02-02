@@ -35,9 +35,10 @@ public:
     virtual void doTask() = 0;
 
     TaskId getTaskId() const { return m_taskId; }
+    TaskType getTaskType() const { return m_taskType; }
 
 signals:
-    void taskFinished();
+    void taskFinished(Task::TaskId taskId);
 
 protected:
     Task(TaskId taskId,TaskType type)

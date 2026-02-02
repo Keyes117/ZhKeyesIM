@@ -29,13 +29,13 @@ public:
         ErrorCallback onError,
         const std::string& email);
 
-    void requestRegister(const std::string& jsonStr);
+    void requestRegister(const std::string& jsonStr,
+        ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse,
+        ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError);
  
-    void requestResetPassword(SuccessCallback onSuccess,
-        ErrorCallback onError,
-        const std::string& email,
-        const std::string& password,
-        const std::string& verificationCode
+    void requestResetPassword(const std::string& jsonString,
+        ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse,
+        ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError
    );
 
     void requestUserLogin(SuccessCallback onSuccess,

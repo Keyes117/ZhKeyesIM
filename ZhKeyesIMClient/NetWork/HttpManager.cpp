@@ -49,31 +49,27 @@ void HttpManager::requestVerificationCode(SuccessCallback onSuccess,
     );
 }
 
-void HttpManager::requestRegister(const std::string& jsonString)
+void HttpManager::requestRegister(const std::string& jsonString,
+    ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse, 
+    ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError
+    )
 {  
     std::string url = fmt::format("http://{}{}", m_httpBaseUrl.c_str(), ApiRoutes::API_USER_REGISTER);
     m_spHttpClient->postJson(url,
         jsonString,
-        std::bind(&HttpManager::onResponseRegister, this, std::move(onSuccess), std::move(onError), std::placeholders::_1)
+        onResponse, onError
     );
 }
 
 
-void HttpManager::requestResetPassword(SuccessCallback onSuccess,
-    ErrorCallback onError, 
-    const std::string& email,
-    const std::string& password,
-    const std::string& verificationCode)
+void HttpManager::requestResetPassword(const std::string& jsonString,
+    ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse,
+    ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError)
 {
-    nlohmann::json requestJson;
-    requestJson["password"] = password;
-    requestJson["email"] = email;
-    requestJson["code"] = verificationCode;
 
     std::string url = fmt::format("http://{}{}", m_httpBaseUrl.c_str(), ApiRoutes::API_USER_RESETPASS);
     m_spHttpClient->postJson(url,
-        requestJson.dump(),
-        std::bind(&HttpManager::onResponseResetPassword, this, std::move(onSuccess), std::move(onError), std::placeholders::_1)
+        jsonString, onResponse, onError
     );
 }
 
@@ -127,54 +123,6 @@ void HttpManager::onResponseVerificationCode(SuccessCallback onSuccess, ErrorCal
         std::move(responseBody),      // 移动局部变量
         std::move(responseFunc));      // 移动 lambda
     TaskHandler::getInstance().registerUITask(std::move(responseTask));
-}
-
-void HttpManager::onResponseRegister(DataCallback<int> onSuccess, ErrorCallback onError, const ZhKeyesIM::Net::Http::HttpResponse& response)
-{
-
-    std::string responseBody = response.getBody();
-
-    auto responseFunc = [onSuccess = std::move(onSuccess), onError = std::move(onError)](const std::string& responseBody)
-        {
-            auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(responseBody);
-            if (!requestJsonOpt)
-            {
-                onError("注册功能返回信息错误");
-                LOG_WARN("IMClient:onResponseVerificationCode:接收返回值格式错误：不是正常的Json格式");
-                return;
-            }
-
-            nlohmann::json requestJson = *requestJsonOpt;
-            auto successOpt = ZhKeyes::Util::JsonUtil::getSafe<int>(requestJson, "success");
-            auto msgOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(requestJson, "msg");
-            if (!successOpt || !msgOpt)
-            {
-                onError("注册功能返回信息错误");
-                LOG_WARN("IMClient:onResponseVerificationCode:接收返回值格式错误：不是正常的Json格式");
-                return;
-            }
-
-            int success = *successOpt;
-            std::string msg = *msgOpt;
-            if (success == 0)
-            {
-                onError(msg);
-                LOG_WARN("IMClient:onResponseVerificationCode:未成功注册用户");
-                return;
-            }
-            else if (success == 1)
-            {
-                onSuccess(1);
-            }
-        };
-
-
-    auto responseTask = std::make_shared<HttpResponseTask>(
-        std::move(responseBody),      // 移动局部变量
-        std::move(responseFunc));      // 移动 lambda
-    TaskHandler::getInstance().registerUITask(std::move(responseTask));
-
-
 }
 
 void HttpManager::onResponseUserLogin(DataCallback<User> onSuccess, ErrorCallback onError, const ZhKeyesIM::Net::Http::HttpResponse& response)
@@ -253,47 +201,6 @@ void HttpManager::onResponseUserLogin(DataCallback<User> onSuccess, ErrorCallbac
 void HttpManager::onResponseResetPassword(SuccessCallback onSuccess, ErrorCallback onError, const ZhKeyesIM::Net::Http::HttpResponse& response)
 {
 
-    std::string responseBody = response.getBody();
-
-    auto responseFunc = [onSuccess = std::move(onSuccess), onError = std::move(onError)](const std::string& responseBody)
-        {
-            auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(responseBody);
-            if (!requestJsonOpt)
-            {
-                onError("重置密码功能返回信息错误");
-                LOG_ERROR("IMClient:onResponseResetPassword:接收返回值格式错误：不是正常的Json格式");
-                return;
-            }
-
-            nlohmann::json requestJson = *requestJsonOpt;
-            auto successOpt = ZhKeyes::Util::JsonUtil::getSafe<int>(requestJson, "success");
-            auto msgOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(requestJson, "msg");
-            if (!successOpt || !msgOpt)
-            {
-                onError("重置密码功能返回信息错误");
-                LOG_ERROR("IMClient:onResponseResetPassword:接收返回值格式错误：不是正常的Json格式");
-                return;
-            }
-
-            int success = *successOpt;
-            std::string msg = *msgOpt;
-            if (success == 0)
-            {
-                onError(msg);
-                LOG_ERROR("IMClient:onResponseResetPassword:未成功重置密码");
-            }
-            else if (success == 1)
-            {
-                onSuccess();
-            }
-            return;
-
-        };
-
-
-    auto responseTask = std::make_shared<HttpResponseTask>(
-        std::move(responseBody),      // 移动局部变量
-        std::move(responseFunc));      // 移动 lambda
-    TaskHandler::getInstance().registerUITask(std::move(responseTask));
+    
 }
 

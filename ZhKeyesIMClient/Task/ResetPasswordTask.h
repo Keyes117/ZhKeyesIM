@@ -8,6 +8,8 @@
 
 #include <QObject>
 
+#include "net/Http/HttpResponse.h"
+
 #include "Task/Task.h"
 #include "NetWork/IMClient.h"
 
@@ -27,9 +29,14 @@ public:
 
     void doTask() override;
 
+signals:
+    void resetPasswordSuccess();
+    void resetPasswordFailed(const QString& errorMsg);
+
 private:
-    void onSuccess();
-    void onError(const std::string& error);
+    void onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& response);
+    void onHttpError(const std::string& error);
+    void onHttpSuccess();
 
 private:
     std::shared_ptr<IMClient> m_client;

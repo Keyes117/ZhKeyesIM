@@ -10,16 +10,11 @@
 #include "util/ConfigManager.h"
 #include "Base/global.h"
 
-
-
 class IMClient
 {
 public:
     using SuccessCallback = std::function<void()>;
     using ErrorCallback = std::function<void(const std::string&)>;
-
-    template<typename T>
-    using DataCallback = std::function<void(const T&)>;
 
 public:
     IMClient();
@@ -30,29 +25,22 @@ public:
     bool connect(const std::string& ip, uint16_t port, 
         SuccessCallback onSuccess = nullptr, ErrorCallback onError = nullptr);
 
-    void requestVerificationCode(SuccessCallback onSuccess,
-        ErrorCallback onError,
-        const std::string& email);
+    void requestVerificationCode(const std::string& jsonString,
+        ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse,
+        ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError);
 
-    void requestRegister(DataCallback<int> onSuccess,
-        ErrorCallback onError,
-        const std::string& username,
-        const std::string& email,
-        const std::string& password,
-        const std::string& verificationCode
-    );
+    void requestRegister(const std::string& jsonStr,
+        ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse,
+        ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError);
  
-    void requestResetPassword(SuccessCallback onSuccess,
-        ErrorCallback onError,
-        const std::string& email,
-        const std::string& password,
-        const std::string& verificationCode
+    void requestResetPassword(const std::string& jsonString,
+        ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse,
+        ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError
    );
 
-    void requestUserLogin(DataCallback<User> onSuccess,
-        ErrorCallback onError,
-        const std::string& username,
-        const std::string password
+    void requestUserLogin(const std::string& jsonString,
+        ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse,
+        ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError
     );
 
     

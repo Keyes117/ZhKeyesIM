@@ -9,6 +9,7 @@
 #include "NetWork/IMClient.h"
 #include "Logger.h"
 #include "Task/TaskHandler.h"
+#include "Task/TaskBuilder.h"
 #include "UI/MainWindow.h"
 #include "common.h"
 
@@ -63,11 +64,17 @@ int main(int argc, char* argv[])
 
     if (!TaskHandler::getInstance().init())
     {
-        LOG_ERROR("基础组件初始化失败....");
+        LOG_ERROR("TaskHandler 初始化失败....");
         return 1;
     }
 
-    MainWindow mainWindow(spIMClient);
+    if (!TaskBuilder::getInstance().init(spIMClient))
+    {
+        LOG_ERROR("TaskBuilder 初始化失败....");
+        return 1;            
+    }
+
+    MainWindow mainWindow;
     mainWindow.setBaseSize(300, 500);
     //mainWindow.setMaximumSize(300, 500);
     mainWindow.show();

@@ -512,14 +512,15 @@ add_subdirectory(util)
 add_subdirectory(net)
 if(WIN32)
     add_subdirectory(ZhKeyesIMClient)
+    add_subdirectory(GateServer)
+    add_subdirectory(StatusServer)
+
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
+        add_subdirectory(tests)
+    endif()
 endif()
 add_subdirectory(ZhkeyesIMServer)
-#add_subdirectory(GateServer)
-#add_subdirectory(StatusServer)
 
-#if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/tests/CMakeLists.txt")
-#    add_subdirectory(tests)
-#endif()
 
 
 # ==================== 安装配置 ====================

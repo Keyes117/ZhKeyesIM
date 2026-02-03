@@ -5,12 +5,12 @@
 #include <functional>
 #include <memory>
 #include <string>
-#include <QObject>
 
 
 #include "NetWork/IMClient.h"
 #include "Task/Task.h"
 #include "Base/global.h"
+#include <Http/HttpResponse.h>
 
 /**
  * 用户登录任务
@@ -19,28 +19,22 @@ class UserLoginTask : public Task
 {
 public:
     UserLoginTask(std::shared_ptr<IMClient> client,
+        Task::TaskId id,
         std::string email,
-        std::string password,
-        QObject* uiReceiver,
-        std::function<void()> onSuccess,
-        std::function<void(const std::string&)> onError);
+        std::string password);
 
-    ~UserLoginTask() override = default;
+    virtual  ~UserLoginTask() override = default;
 
-    void doTask() override;
+    virtual void doTask() override;
 
 private:
-    void onHttpConnectSuccess(const User& data);
-    void onTcpConnectSuccess();
+    void onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& response);
+    void onHttpSuccess(const User& data);
 
-    void onLoginError(const std::string& error);
 private:
     std::shared_ptr<IMClient> m_client;
     std::string m_email;
     std::string m_password;
-    QObject* m_uiReceiver;
-    std::function<void()> m_onSuccess;
-    std::function<void(const std::string&)> m_onError;
 };
 
 #endif

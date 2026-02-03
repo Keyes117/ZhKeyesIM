@@ -5,13 +5,12 @@
 
 
 #include "Base/global.h"
-#include "Task/ResetPasswordTask.h"
-#include "Task/VerifyCodeTask.h"
-#include "Task/TaskHandler.h"
 
-ResetDlg::ResetDlg(std::shared_ptr<IMClient> spClient, QWidget *parent)
-    : QDialog(parent),
-    m_spClient(spClient)
+#include "Task/TaskHandler.h"
+#include "Task/TaskBuilder.h"
+
+ResetDlg::ResetDlg(QWidget *parent)
+    : QDialog(parent)
 {
     m_ui.setupUi(this);
     m_ui.label_user_error->setVisible(false);
@@ -44,18 +43,22 @@ ResetDlg::~ResetDlg()
 
 void ResetDlg::onResetPasswordSuccess()
 {
+
 }
 
 void ResetDlg::onResetPasswordError(const std::string& error)
 {
+
 }
 
 void ResetDlg::onVerifyCodeSuccess()
 {
+
 }
 
 void ResetDlg::onVerifyCodeError(const std::string& error)
 {
+
 }
 
 
@@ -256,13 +259,13 @@ void ResetDlg::onConfirmButtonClicked()
     QString code = m_ui.lineEdit_code->text();
     QString password = m_ui.lineEdit_password->text();
 
-    auto resetTask = std::make_shared<ResetPasswordTask>(m_spClient, 
-        email.toStdString(), password.toStdString(),
-        code.toStdString(),   
-        this,
-        std::bind(&ResetDlg::onResetPasswordSuccess,this),
-        std::bind(&ResetDlg::onResetPasswordError,this,std::placeholders::_1)
-    );
+    auto resetTask = TaskBuilder::getInstance().buildResetPasswordTask(
+        email.toStdString(),
+        password.toStdString(),
+        code.toStdString());
+
+    connect(resetTask.get(), Task::taskSuccess, this, ResetDlg::onResetPasswordSuccess);
+    connect(resetTask.get(), Task::taskFailed, this, ResetDlg::onResetPasswordError);
 
     TaskHandler::getInstance().registerNetTask(std::move(resetTask));
 }
@@ -274,9 +277,10 @@ void ResetDlg::onCodeButtonClicked()
 
     QString email = m_ui.lineEdit_email->text();
 
-    auto codeTask = std::make_shared<GetVerifyCodeTask>(m_spClient, email.toStdString(),
-        this,
-        std::bind(&ResetDlg::onVerifyCodeSuccess, this),
-        std::bind(&ResetDlg::onVerifyCodeError, this, std::placeholders::_1));
+    auto codeTask = TaskBuilder::getInstance().buildVerifyCodeTask(email.toStdString());
+
+    connect(codeTask.get(), Task::taskSuccess, this, ResetDlg::onVerifyCodeSuccess);
+    connect(codeTask.get(), Task::taskFailed, this, ResetDlg::onVerifyCodeError);
+
     TaskHandler::getInstance().registerNetTask(std::move(codeTask));
 }

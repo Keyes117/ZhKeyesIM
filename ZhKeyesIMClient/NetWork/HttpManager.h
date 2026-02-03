@@ -3,51 +3,39 @@
 
 #include <memory>
 
+#include <QObject>
+
 #include "EventLoop.h"
 #include "Http/HttpClient.h"
 #include "Base/global.h"
 #include "util/ConfigManager.h"
 
 
-class HttpManager 
+class HttpManager : public QObject
 {
+    Q_OBJECT
 public:
-    using SuccessCallback = std::function<void()>;
-    using ErrorCallback = std::function<void(const std::string&)>;
-
-    template<typename T>
-    using DataCallback = std::function<void(const T&)>;
-
     HttpManager(std::shared_ptr<EventLoop> eventLoop);
     ~HttpManager() = default;
 
-
     bool init(const ZhKeyes::Util::ConfigManager& config);
 
+    void requestVerificationCode(const std::string& jsonString,
+        ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse,
+        ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError);
 
-    void requestVerificationCode(SuccessCallback onSuccess,
-        ErrorCallback onError,
-        const std::string& email);
+    void requestRegister(const std::string& jsonString,
+        ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse,
+        ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError);
 
-    void requestRegister(DataCallback<int> onSuccess,
-        ErrorCallback onError,
-        const std::string& username,
-        const std::string& email,
-        const std::string& password,
-        const std::string& verificationCode
-        );
-
-    void requestResetPassword(SuccessCallback onSuccess,
-        ErrorCallback onError,
-        const std::string& email,
-        const std::string& password,
-        const std::string& verificationCode
+    void requestResetPassword(const std::string& jsonString,
+        ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse,
+        ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError
     );
 
-    void requestUserLogin(DataCallback<User> onSuccess,
-        ErrorCallback onError,
-        const std::string& username,
-        const std::string password
+    void requestUserLogin(const std::string& jsonString,
+        ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse,
+        ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError
     );
 
 private:

@@ -11,8 +11,8 @@
 #include "UI/ChatUserItem.h"
 
 
-ChatDialog::ChatDialog(std::shared_ptr<IMClient> spClient, QWidget* parent) :
-    m_spClient(spClient), QDialog(parent)
+ChatDialog::ChatDialog( QWidget* parent) :
+    QDialog(parent)
 {
     ui.setupUi(this);
 

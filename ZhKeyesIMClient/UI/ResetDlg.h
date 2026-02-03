@@ -11,7 +11,7 @@ class ResetDlg : public QDialog
     Q_OBJECT
 
 public:
-    ResetDlg(std::shared_ptr<IMClient> spClient, QWidget* parent = nullptr);
+    ResetDlg( QWidget* parent = nullptr);
     ~ResetDlg();
 
 
@@ -49,9 +49,6 @@ private slots:
 
 private:
     Ui::ResetDlgClass m_ui;
-
-    std::shared_ptr<IMClient> m_spClient;
-
     QMap<QString, QLabel*> m_errorLabels;
 };
 

@@ -5,6 +5,8 @@
 #include <QScrollBar>
 
 #include "UI/AddUserItem.h"
+#include "UI/CustomizeEdit.h"
+#include "UI/LoadingDialog.h"
 #include "UI/FindSuccessDialog.h"
 
 #include "Base/UserData.h"
@@ -87,6 +89,23 @@ void SearchListWidget::addTipItem()
     this->setItemWidget(item, add_user_item);
 }
 
+void SearchListWidget::waitPending(bool pending)
+{
+    if (pending)
+    {
+        m_loadingDialog = new LoadingDialog(this);
+        m_loadingDialog->setModal(true);
+        m_loadingDialog->show();
+        m_sendPending = pending;
+    }
+    else
+    {
+        m_loadingDialog->hide();
+        m_loadingDialog->deleteLater();
+        m_sendPending = pending;
+    }
+}
+
 void SearchListWidget::onItemClicked(QListWidgetItem* item)
 {
     QWidget* widget = this->itemWidget(item);
@@ -107,12 +126,18 @@ void SearchListWidget::onItemClicked(QListWidgetItem* item)
 
     if (itemType == ListItemType::ADD_USER_TIP_ITEM)
     {
-        m_findDialog = std::make_shared<FindSuccessDialog>(this);
-        auto searchInfo = std::make_shared<SearchInfo>(0, "ZhKeyes", "ZhKeyes", "Hello, my friend!", 0);
+        if (m_sendPending)
+            return;
 
-        (std::dynamic_pointer_cast<FindSuccessDialog>(m_findDialog))->SetSearchInfo(searchInfo);
-        m_findDialog->show();
-        return;
+        if (!m_searchEdit)
+            return;
+
+        waitPending(true);
+        
+        auto searchEdit = dynamic_cast<CustomizeEdit*>(m_searchEdit);
+
+        auto strUid = searchEdit->text();
+
     }
 
     closeFindDlg();

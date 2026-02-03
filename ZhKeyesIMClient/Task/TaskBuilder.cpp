@@ -1,68 +1,103 @@
 // TaskBuilder.cpp
 #include "TaskBuilder.h"
-#include "RegisterTask.h"
+#include "Task/RegisterTask.h"
 #include "Task/UserLoginTask.h"
 #include "Task/VerifyCodeTask.h"
-#include "ResetPasswordTask.h"
+#include "Task/ResetPasswordTask.h"
+#include "Task/TcpConnectTask.h"
 
-std::shared_ptr<Task> TaskBuilder::buildRegisterTask(
-    const std::string& username,
-    const std::string& email,
-    const std::string& password,
-    const std::string& code,
-    std::function<void(int)> onSuccess,
-    std::function<void(const std::string&)> onError)
+TaskBuilder& TaskBuilder::getInstance()
 {
-    return std::make_shared<RegisterTask>(
-        m_client,
-        username, email, password, code,
-        m_uiReceiver,
-        std::move(onSuccess),
-        std::move(onError)
-    );
+    static TaskBuilder builder;
+    return builder;
 }
 
-std::shared_ptr<Task> TaskBuilder::buildLoginTask(
-    const std::string& email,
-    const std::string& password,
-    std::function<void(const UserData&)> onSuccess,
-    std::function<void(const std::string&)> onError)
+bool TaskBuilder::init(std::shared_ptr<IMClient> client)
 {
-    return std::make_shared<UserLoginTask>(
-        m_client,
-        email, password,
-        m_uiReceiver,
-        std::move(onSuccess),
-        std::move(onError)
-    );
+    m_client = client;
+    return true;
 }
 
-std::shared_ptr<Task> TaskBuilder::buildVerifyCodeTask(
-    const std::string& email,
-    std::function<void()> onSuccess,
-    std::function<void(const std::string&)> onError)
+std::shared_ptr<Task> TaskBuilder::buildRegisterTask(const std::string& username, 
+    const std::string& email, const std::string& password, const std::string& code)
 {
-    return std::make_shared<GetVerifyCodeTask>(
-        m_client,
-        email,
-        m_uiReceiver,
-        std::move(onSuccess),
-        std::move(onError)
-    );
+    if (!m_client)
+        return nullptr;
+
+    Task::TaskId taskId = generateTaskId();
+
+    auto registerTask = std::make_shared<RegisterTask>(m_client, taskId, username,
+        email, password, code);
+
+    return std::move(registerTask);
 }
 
-std::shared_ptr<Task> TaskBuilder::buildResetPasswordTask(
-    const std::string& email,
-    const std::string& newPassword,
-    const std::string& code,
-    std::function<void()> onSuccess,
-    std::function<void(const std::string&)> onError)
+std::shared_ptr<Task> TaskBuilder::buildLoginTask(const std::string& email, const std::string& password)
 {
-    return std::make_shared<ResetPasswordTask>(
-        m_client,
-        email, newPassword, code,
-        m_uiReceiver,
-        std::move(onSuccess),
-        std::move(onError)
-    );
+    if (!m_client)
+        return nullptr;
+
+    Task::TaskId taskId = generateTaskId();
+
+    auto loginTask = std::make_shared<UserLoginTask>(m_client, taskId, email, password);
+
+    return std::move(loginTask);
+}
+
+std::shared_ptr<Task> TaskBuilder::buildVerifyCodeTask(const std::string& email)
+{
+    if (!m_client)
+        return nullptr;
+
+    Task::TaskId taskId = generateTaskId();
+
+    auto verifyCodeTask = std::make_shared<VerifyCodeTask>(m_client, taskId, email );
+
+    return std::move(verifyCodeTask);
+}
+
+std::shared_ptr<Task> TaskBuilder::buildResetPasswordTask(const std::string& email, const std::string& newPassword, const std::string& code)
+{
+    if (!m_client)
+        return nullptr;
+
+    Task::TaskId taskId = generateTaskId();
+
+    auto resetPassWordTask = std::make_shared<ResetPasswordTask>(m_client, taskId, email, newPassword,code);
+
+    return std::move(resetPassWordTask);
+}
+
+std::shared_ptr<Task> TaskBuilder::buildHttpResponseTask(std::string responseBody, HttpResponseTask::ResponseFunc responseFunc)
+{
+    if (!m_client)
+        return nullptr;
+
+    Task::TaskId taskId = generateTaskId();
+
+    auto httpResponseTask = std::make_shared<HttpResponseTask>(taskId, 
+        std::move(responseBody), std::move(responseFunc));
+
+    return std::move(httpResponseTask);
+}
+
+std::shared_ptr<Task> TaskBuilder::buildTcpConnectTask(
+    std::string ip, uint16_t port)
+{
+    if (!m_client)
+        return nullptr;
+
+    Task::TaskId taskId = generateTaskId();
+
+    auto tcpConnectTask = std::make_shared<TcpConnectTask>(
+        m_client,taskId,ip,port
+       );
+
+    return std::move(tcpConnectTask);
+}
+
+uint64_t TaskBuilder::generateTaskId()
+{
+    static std::atomic<Task::TaskId> counter{ 1 };
+    return counter.fetch_add(1);
 }

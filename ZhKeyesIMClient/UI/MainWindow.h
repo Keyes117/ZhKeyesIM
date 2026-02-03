@@ -20,7 +20,7 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    MainWindow(std::shared_ptr<IMClient> spClient, QWidget *parent = nullptr);
+    MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
 private slots:
@@ -28,13 +28,8 @@ private slots:
     void switchToResetDlg();
     void switchToLoginDlg();
     void switchToChatDlg();
-
-    void onErrorMsg(QString errorMsg);
-    void onSuccessMsg(QString successMsg);
 private:
     Ui::MainWindowClass m_ui;
-
-    std::shared_ptr<IMClient> m_spClient;
 
     QStackedWidget*     m_stackedWidget;
     ChatDialog*         m_chatDlg;

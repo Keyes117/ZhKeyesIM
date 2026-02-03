@@ -115,7 +115,8 @@
         "qpixmap": "cpp",
         "qdir": "cpp",
         "qscrollbar": "cpp",
-        "qwheelevent": "cpp"
+        "qwheelevent": "cpp",
+        "qmetaobject": "cpp"
     },
     "C_Cpp.default.configurationProvider": "go2sh.cmake-integration",
     "qt.designerPath": "D:/QT/QT6.3/6.3.2/msvc2019_64/bin/designer.exe",

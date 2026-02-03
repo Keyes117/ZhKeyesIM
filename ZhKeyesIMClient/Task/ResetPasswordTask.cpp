@@ -1,60 +1,82 @@
 // ResetPasswordTask.cpp
 #include "ResetPasswordTask.h"
-#include <QMetaObject>
+
 #include "Logger.h"
+
+#include "Task/TaskBuilder.h"
+#include "Task/TaskHandler.h"
 
 ResetPasswordTask::ResetPasswordTask(
     std::shared_ptr<IMClient> client,
+    Task::TaskId id,
     std::string email,
     std::string newPassword,
-    std::string code,
-    QObject* uiReceiver,
-    std::function<void()> onSuccess,
-    std::function<void(const std::string&)> onError)
-    : m_client(std::move(client)),
+    std::string code)
+    :Task(id, Task::TaskType::TASK_TYPE_RESETPASS),
+    m_client(std::move(client)),
     m_email(std::move(email)),
     m_newPassword(std::move(newPassword)),
-    m_code(std::move(code)),
-    m_uiReceiver(uiReceiver),
-    m_onSuccess(std::move(onSuccess)),
-    m_onError(std::move(onError))
+    m_code(std::move(code))
 {
 }
 
 void ResetPasswordTask::doTask() {
     LOG_INFO("ResetPasswordTask: Resetting password for: %s", m_email.c_str());
 
-    auto selfTask = std::static_pointer_cast<ResetPasswordTask>(shared_from_this());
+    nlohmann::json requestJson;
+    requestJson["password"] = m_newPassword;
+    requestJson["email"] = m_email;
+    requestJson["code"] = m_code;
 
-    m_client->requestResetPassword(
-        std::bind(&ResetPasswordTask::onSuccess, selfTask),
-        std::bind(&ResetPasswordTask::onError, selfTask, std::placeholders::_1),
-        m_email, m_newPassword, m_code        
+    m_client->requestResetPassword(requestJson.dump(),
+        std::bind(&ResetPasswordTask::onHttpResponse, this, std::placeholders::_1),
+        std::bind(&ResetPasswordTask::onTaskError, this, std::placeholders::_1)       
     );
 }
 
-void ResetPasswordTask::onSuccess() {
-    LOG_INFO("ResetPasswordTask: Password reset successfully");
+void ResetPasswordTask::onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& response)
+{
+    std::string responseBody = response.getBody();
 
-    if (m_onSuccess && m_uiReceiver) {
-        QMetaObject::invokeMethod(m_uiReceiver,
-            [callback = m_onSuccess]() {
-                callback();
-            },
-            Qt::QueuedConnection
-        );
-    }
-}
+    auto responseFunc = [this](const std::string& responseBody)
+        {
+            auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(responseBody);
+            if (!requestJsonOpt)
+            {
+                onTaskError("重置密码功能返回信息错误");
+                LOG_ERROR("IMClient:onResponseResetPassword:接收返回值格式错误：不是正常的Json格式");
+                return;
+            }
 
-void ResetPasswordTask::onError(const std::string& error) {
-    LOG_ERROR("ResetPasswordTask: Failed: %s", error.c_str());
+            nlohmann::json requestJson = *requestJsonOpt;
+            auto successOpt = ZhKeyes::Util::JsonUtil::getSafe<int>(requestJson, "success");
+            auto msgOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(requestJson, "msg");
+            if (!successOpt || !msgOpt)
+            {
+                onTaskError("重置密码功能返回信息错误");
+                LOG_ERROR("IMClient:onResponseResetPassword:接收返回值格式错误：不是正常的Json格式");
+                return;
+            }
 
-    if (m_onError && m_uiReceiver) {
-        QMetaObject::invokeMethod(m_uiReceiver,
-            [callback = m_onError, error]() {
-                callback(error);
-            },
-            Qt::QueuedConnection
-        );
-    }
+            int success = *successOpt;
+            std::string msg = *msgOpt;
+            if (success == 0)
+            {
+                onTaskError(msg);
+                LOG_ERROR("IMClient:onResponseResetPassword:未成功重置密码");
+            }
+            else if (success == 1)
+            {
+                onTaskSuccess();
+            }
+            return;
+
+        };
+
+
+    auto responseTask = TaskBuilder::getInstance().buildHttpResponseTask(
+        std::move(responseBody),      
+        std::move(responseFunc));     
+
+    TaskHandler::getInstance().registerUITask(std::move(responseTask));
 }

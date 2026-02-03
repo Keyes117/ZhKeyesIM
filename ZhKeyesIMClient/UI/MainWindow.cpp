@@ -5,14 +5,13 @@
 
 #include "Task/TaskHandler.h"
 
-MainWindow::MainWindow(std::shared_ptr<IMClient> spClient,QWidget *parent)
+MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
-    m_spClient(spClient),
     m_stackedWidget(new QStackedWidget(this)),
-    m_chatDlg(new ChatDialog(m_spClient, m_stackedWidget)),
-    m_loginDlg(new LoginDlg(m_spClient,m_stackedWidget)),
-    m_registerDlg(new RegisterDlg(m_spClient,m_stackedWidget)),
-    m_resetDlg(new ResetDlg(m_spClient,m_stackedWidget))
+    m_chatDlg(new ChatDialog( m_stackedWidget)),
+    m_loginDlg(new LoginDlg(m_stackedWidget)),
+    m_registerDlg(new RegisterDlg(m_stackedWidget)),
+    m_resetDlg(new ResetDlg(m_stackedWidget))
 {
     m_ui.setupUi(this);
 
@@ -36,9 +35,6 @@ MainWindow::MainWindow(std::shared_ptr<IMClient> spClient,QWidget *parent)
     connect(m_loginDlg, &LoginDlg::loginSuccess, this, &MainWindow::switchToChatDlg);
     connect(m_registerDlg, &RegisterDlg::switchLoginDlg, this, &MainWindow::switchToLoginDlg);
     connect(m_resetDlg, &ResetDlg::switchLoginDlg, this, &MainWindow::switchToLoginDlg);
-
-    connect(&TaskHandler::getInstance(), &TaskHandler::reportErrorMsg, this, &MainWindow::onErrorMsg);
-    connect(&TaskHandler::getInstance(), &TaskHandler::reportSuccessMsg, this, &MainWindow::onSuccessMsg);
 
 }
 
@@ -68,14 +64,4 @@ void MainWindow::switchToChatDlg()
 {
     if (m_stackedWidget)
         m_stackedWidget->setCurrentWidget(m_chatDlg);
-}
-
-void MainWindow::onErrorMsg(QString errorMsg)
-{
-    QMessageBox::critical(this, "错误", errorMsg,"确认");
-}
-
-void MainWindow::onSuccessMsg(QString successMsg)
-{
-    QMessageBox::information(this, "成功", successMsg, "确认");
 }

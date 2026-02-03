@@ -9,13 +9,13 @@
 #include "Base/UserSession.h"
 #include "UI/ClickedLabel.h"
 #include "Base/global.h"
+
+#include "Task/TaskBuilder.h"
 #include "Task/TaskHandler.h"
-#include "Task/UserLoginTask.h"
 
 
-LoginDlg::LoginDlg(std::shared_ptr<IMClient> spClient,QWidget* parent)
-    :QDialog(parent),
-    m_spClient(spClient)
+LoginDlg::LoginDlg(QWidget* parent)
+    :QDialog(parent)
 {
     m_ui.setupUi(this);
     setUpSignals();
@@ -100,9 +100,8 @@ void LoginDlg::hideFieldError(const QString& fieldName)
 
 void LoginDlg::onLoginButtonClicked()
 {
-    emit loginSuccess();
 
-  /*  if (!checkEmailValid())
+    if (!checkEmailValid())
     {
         return;
     }
@@ -111,21 +110,18 @@ void LoginDlg::onLoginButtonClicked()
     {
         return;
     }
-
    
     QString email = m_ui.lineEdit_accout->text();
     QString password = m_ui.lineEdit_password->text();
 
-    auto loginTask = std::make_shared<UserLoginTask>(
-        m_spClient,
+    auto loginTask = TaskBuilder::getInstance().buildLoginTask(
         email.toStdString(),
-        password.toStdString(),
-        this,
-        std::bind(&LoginDlg::onLoginSuccess, this),
-        std::bind(&LoginDlg::onLoginError, this, std::placeholders::_1)
-    );
+        password.toStdString());
 
-    TaskHandler::getInstance().registerNetTask(std::move(loginTask));*/
+    connect(loginTask.get(), &Task::taskSuccess, this, LoginDlg::onLoginSuccess);
+    connect(loginTask.get(), &Task::taskFinished, this, LoginDlg::onLoginError);
+
+    TaskHandler::getInstance().registerNetTask(std::move(loginTask));
 }
 
 

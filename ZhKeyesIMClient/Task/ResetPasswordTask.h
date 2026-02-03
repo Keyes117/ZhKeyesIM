@@ -29,14 +29,8 @@ public:
 
     void doTask() override;
 
-signals:
-    void resetPasswordSuccess();
-    void resetPasswordFailed(const QString& errorMsg);
-
 private:
     void onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& response);
-    void onHttpError(const std::string& error);
-    void onHttpSuccess();
 
 private:
     std::shared_ptr<IMClient> m_client;

@@ -41,13 +41,8 @@ protected:
         std::string code
     );
 
-signals:
-    void registerSuccess();
-    void registerFailed(const QString& errorMsg);
-
 private:
     void onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& response);
-    void onHttpError(const std::string& error);
     void onHttpSuccess();
 
 private:

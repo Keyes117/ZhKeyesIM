@@ -4,6 +4,7 @@
 #include "Task/UserLoginTask.h"
 #include "Task/VerifyCodeTask.h"
 #include "Task/ResetPasswordTask.h"
+#include "Task/TcpConnectTask.h"
 
 TaskBuilder& TaskBuilder::getInstance()
 {
@@ -65,6 +66,34 @@ std::shared_ptr<Task> TaskBuilder::buildResetPasswordTask(const std::string& ema
     auto resetPassWordTask = std::make_shared<ResetPasswordTask>(m_client, taskId, email, newPassword,code);
 
     return std::move(resetPassWordTask);
+}
+
+std::shared_ptr<Task> TaskBuilder::buildHttpResponseTask(std::string responseBody, HttpResponseTask::ResponseFunc responseFunc)
+{
+    if (!m_client)
+        return nullptr;
+
+    Task::TaskId taskId = generateTaskId();
+
+    auto httpResponseTask = std::make_shared<HttpResponseTask>(taskId, 
+        std::move(responseBody), std::move(responseFunc));
+
+    return std::move(httpResponseTask);
+}
+
+std::shared_ptr<Task> TaskBuilder::buildTcpConnectTask(
+    std::string ip, uint16_t port)
+{
+    if (!m_client)
+        return nullptr;
+
+    Task::TaskId taskId = generateTaskId();
+
+    auto tcpConnectTask = std::make_shared<TcpConnectTask>(
+        m_client,taskId,ip,port
+       );
+
+    return std::move(tcpConnectTask);
 }
 
 uint64_t TaskBuilder::generateTaskId()

@@ -132,7 +132,7 @@ bool HttpClient::postJson(const std::string& url,
     session->sendRequest(request, responseCallback, errorCallback);
 
     return true;
-}
+} 
 
 bool HttpClient::postForm(const std::string& url,
     const std::unordered_map<std::string, std::string>& formData,

@@ -25,7 +25,9 @@ public:
         TASK_TYPE_REGISTER ,
         TASK_TYPE_VERIFYCODE,
         TASK_TYPE_LOGIN,
-        TASK_TYPE_RESETPASS
+        TASK_TYPE_RESETPASS,
+        TASK_TYPE_HTTPRESPONSE,
+        TASK_TYPE_TCPCONNECT
     };
 
     using TaskId = uint64_t;
@@ -39,12 +41,25 @@ public:
 
 signals:
     void taskFinished(Task::TaskId taskId);
+    void taskFailed(const QString& errorMsg);
+    void taskSuccess();
 
 protected:
     Task(TaskId taskId,TaskType type)
         : QObject(), m_taskId(taskId),
         m_taskType(type)
     {}
+
+    virtual void onTaskSuccess()
+    {
+        emit taskSuccess();
+        emit taskFinished(m_taskId);
+    }
+    virtual void onTaskError(const std::string& errorMsg)
+    {
+        emit taskFailed(QString::fromStdString(errorMsg));
+        emit taskFinished(m_taskId);
+    }
 
 private:
     TaskId    m_taskId;

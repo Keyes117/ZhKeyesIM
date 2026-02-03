@@ -42,8 +42,8 @@ private:
     TaskHandler() = default;
     ~TaskHandler() = default;
 
-    void sendThreadProc();
-    void recvThreadProc();
+    void netTaskThreadProc();
+    void uiTaskThreadProc();
 
     void addRunningTask(std::shared_ptr<Task>&& task);
     void removeRunningTask(Task::TaskId taskId);

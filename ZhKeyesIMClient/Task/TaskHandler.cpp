@@ -14,8 +14,8 @@ bool TaskHandler::init()
 {
     m_running = true;
 
-    m_spNetTaskThread = std::make_unique<std::thread>(std::bind(&TaskHandler::sendThreadProc, this));
-    m_spUITaskThread = std::make_unique<std::thread>(std::bind(&TaskHandler::recvThreadProc, this));
+    m_spNetTaskThread = std::make_unique<std::thread>(std::bind(&TaskHandler::netTaskThreadProc, this));
+    m_spUITaskThread = std::make_unique<std::thread>(std::bind(&TaskHandler::uiTaskThreadProc, this));
 
     return true;
 }
@@ -53,7 +53,7 @@ void TaskHandler::registerUITask(std::shared_ptr<Task>&& task)
     m_UICV.notify_one();
 }
 
-void TaskHandler::sendThreadProc()
+void TaskHandler::netTaskThreadProc()
 {
     while (m_running)
     {
@@ -76,7 +76,7 @@ void TaskHandler::sendThreadProc()
 
         if (!isTaskRunning(spTask->getTaskId()))
         {
-            connect(spTask.get(), Task::taskFinished, this, TaskHandler::onTaskFinished);
+            connect(spTask.get(), &Task::taskFinished, this, &TaskHandler::onTaskFinished);
             spTask->doTask();
             addRunningTask(std::move(spTask));
         }
@@ -85,7 +85,7 @@ void TaskHandler::sendThreadProc()
     }
 }
 
-void TaskHandler::recvThreadProc()
+void TaskHandler::uiTaskThreadProc()
 {
     while (m_running)
     {
@@ -100,18 +100,18 @@ void TaskHandler::recvThreadProc()
             m_UICV.wait(guard);
         }
 
-        auto spTask = m_netTasks.front();
+        auto spTask = m_UITasks.front();
 
         if (spTask == nullptr)
             continue;
 
         if (!isTaskRunning(spTask->getTaskId()))
         {
-            connect(spTask.get(), Task::taskFinished, this, TaskHandler::onTaskFinished);
+            connect(spTask.get(), &Task::taskFinished, this, &TaskHandler::onTaskFinished);
             spTask->doTask();
             addRunningTask(std::move(spTask));
         }
-        m_netTasks.pop_front();
+        m_UITasks.pop_front();
     }
 }
 

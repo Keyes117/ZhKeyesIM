@@ -9,9 +9,9 @@
 #include "Base/UserSession.h"
 #include "UI/ClickedLabel.h"
 #include "Base/global.h"
+
 #include "Task/TaskBuilder.h"
 #include "Task/TaskHandler.h"
-#include "Task/UserLoginTask.h"
 
 
 LoginDlg::LoginDlg(QWidget* parent)
@@ -114,14 +114,12 @@ void LoginDlg::onLoginButtonClicked()
     QString email = m_ui.lineEdit_accout->text();
     QString password = m_ui.lineEdit_password->text();
 
-    auto task = TaskBuilder::getInstance().buildLoginTask(
+    auto loginTask = TaskBuilder::getInstance().buildLoginTask(
         email.toStdString(),
         password.toStdString());
 
-    auto loginTask = std::dynamic_pointer_cast<UserLoginTask>(task);
-
-    connect(loginTask.get(), &UserLoginTask::LoginSuccess, this, LoginDlg::onLoginSuccess);
-    connect(loginTask.get(), &UserLoginTask::LoginFailed, this, LoginDlg::onLoginError);
+    connect(loginTask.get(), &Task::taskSuccess, this, LoginDlg::onLoginSuccess);
+    connect(loginTask.get(), &Task::taskFinished, this, LoginDlg::onLoginError);
 
     TaskHandler::getInstance().registerNetTask(std::move(loginTask));
 }

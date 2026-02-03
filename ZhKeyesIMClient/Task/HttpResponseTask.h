@@ -15,7 +15,8 @@ public:
 
     void doTask() override;
 protected:
-    HttpResponseTask(std::string responseBody, ResponseFunc responseFunc);
+    HttpResponseTask(Task::TaskId id,
+        std::string responseBody, ResponseFunc responseFunc);
 
 private:
     std::string m_responseBody;

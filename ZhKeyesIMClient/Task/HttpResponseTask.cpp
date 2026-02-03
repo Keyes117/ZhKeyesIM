@@ -1,7 +1,10 @@
 #include "HttpResponseTask.h"
 
-HttpResponseTask::HttpResponseTask(std::string responseBody, ResponseFunc responseFunc)
-    :m_responseBody(std::move(responseBody)), 
+HttpResponseTask::HttpResponseTask(
+    Task::TaskId id,
+    std::string responseBody, ResponseFunc responseFunc)
+    :Task(id,TaskType::TASK_TYPE_HTTPRESPONSE),
+    m_responseBody(std::move(responseBody)), 
     m_responseFunc(std::move(responseFunc))
 {
 }
@@ -12,4 +15,6 @@ void HttpResponseTask::doTask()
     {
         m_responseFunc(m_responseBody);
     }
+
+    onTaskSuccess();
 }

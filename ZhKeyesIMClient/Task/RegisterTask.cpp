@@ -4,7 +4,8 @@
 #include "Logger.h"
 
 #include "Task/TaskHandler.h"
-#include "Task/HttpResponseTask.h"
+#include "Task/TaskBuilder.h"
+
 
 RegisterTask::RegisterTask(
     std::shared_ptr<IMClient> client,
@@ -31,7 +32,7 @@ void RegisterTask::onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& resp
             auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(responseBody);
             if (!requestJsonOpt)
             {
-                onHttpError("注册功能返回信息错误");
+                onTaskError("注册功能返回信息错误");
                 LOG_WARN("IMClient:onResponseVerificationCode:接收返回值格式错误：不是正常的Json格式");
                 return;
             }
@@ -41,7 +42,7 @@ void RegisterTask::onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& resp
             auto msgOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(requestJson, "msg");
             if (!successOpt || !msgOpt)
             {
-                onHttpError("注册功能返回信息错误");
+                onTaskError("注册功能返回信息错误");
                 LOG_WARN("IMClient:onResponseVerificationCode:接收返回值格式错误：不是正常的Json格式");
                 return;
             }
@@ -50,34 +51,24 @@ void RegisterTask::onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& resp
             std::string msg = *msgOpt;
             if (success == 0)
             {
-                onHttpError(msg);
+                onTaskError(msg);
                 LOG_WARN("IMClient:onResponseVerificationCode:未成功注册用户");
                 return;
             }
             else if (success == 1)
             {
-                onHttpSuccess();
+                onTaskSuccess();
             }
         };
 
 
-    auto responseTask = std::make_shared<HttpResponseTask>(
-        std::move(responseBody),    
-        std::move(responseFunc));   
+    auto responseTask = TaskBuilder::getInstance().buildHttpResponseTask(
+        std::move(responseBody),
+        std::move(responseFunc)
+    );
+       
     TaskHandler::getInstance().registerUITask(std::move(responseTask));
 
-}
-
-void RegisterTask::onHttpError(const std::string& error)
-{
-    emit registerFailed(QString::fromStdString(error));
-    emit taskFinished(getTaskId());
-}
-
-void RegisterTask::onHttpSuccess()
-{
-    emit registerSuccess();
-    emit taskFinished(getTaskId());
 }
 
 void RegisterTask::doTask() 
@@ -95,7 +86,7 @@ void RegisterTask::doTask()
     // 在网络线程调用IMClient
     m_client->requestRegister(requestJson.dump(),
         std::bind(&RegisterTask::onHttpResponse, this, std::placeholders::_1),
-        std::bind(&RegisterTask::onHttpError, this, std::placeholders::_1)
+        std::bind(&RegisterTask::onTaskError, this, std::placeholders::_1)
     );
 }
 

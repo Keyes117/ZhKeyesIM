@@ -15,6 +15,7 @@
 
 #include "NetWork/IMClient.h"
 #include "Task/Task.h"
+#include <Http/HttpResponse.h>
 
 
 class VerifyCodeTask : public Task
@@ -30,8 +31,7 @@ public:
     void doTask() override;
 
 private:
-    void onSuccess();
-    void onError(const std::string& error);
+    void onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& response);
 
 private:
     std::shared_ptr<IMClient> m_spClient;

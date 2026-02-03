@@ -1,9 +1,9 @@
 // ResetPasswordTask.cpp
 #include "ResetPasswordTask.h"
-#include <QMetaObject>
+
 #include "Logger.h"
 
-#include "Task/HttpResponseTask.h"
+#include "Task/TaskBuilder.h"
 #include "Task/TaskHandler.h"
 
 ResetPasswordTask::ResetPasswordTask(
@@ -30,7 +30,7 @@ void ResetPasswordTask::doTask() {
 
     m_client->requestResetPassword(requestJson.dump(),
         std::bind(&ResetPasswordTask::onHttpResponse, this, std::placeholders::_1),
-        std::bind(&ResetPasswordTask::onHttpError, this, std::placeholders::_1)       
+        std::bind(&ResetPasswordTask::onTaskError, this, std::placeholders::_1)       
     );
 }
 
@@ -43,7 +43,7 @@ void ResetPasswordTask::onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse&
             auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(responseBody);
             if (!requestJsonOpt)
             {
-                onHttpError("重置密码功能返回信息错误");
+                onTaskError("重置密码功能返回信息错误");
                 LOG_ERROR("IMClient:onResponseResetPassword:接收返回值格式错误：不是正常的Json格式");
                 return;
             }
@@ -53,7 +53,7 @@ void ResetPasswordTask::onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse&
             auto msgOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(requestJson, "msg");
             if (!successOpt || !msgOpt)
             {
-                onHttpError("重置密码功能返回信息错误");
+                onTaskError("重置密码功能返回信息错误");
                 LOG_ERROR("IMClient:onResponseResetPassword:接收返回值格式错误：不是正常的Json格式");
                 return;
             }
@@ -62,32 +62,21 @@ void ResetPasswordTask::onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse&
             std::string msg = *msgOpt;
             if (success == 0)
             {
-                onHttpError(msg);
+                onTaskError(msg);
                 LOG_ERROR("IMClient:onResponseResetPassword:未成功重置密码");
             }
             else if (success == 1)
             {
-                onHttpSuccess();
+                onTaskSuccess();
             }
             return;
 
         };
 
 
-    auto responseTask = std::make_shared<HttpResponseTask>(
-        std::move(responseBody),      // 移动局部变量
-        std::move(responseFunc));      // 移动 lambda
+    auto responseTask = TaskBuilder::getInstance().buildHttpResponseTask(
+        std::move(responseBody),      
+        std::move(responseFunc));     
+
     TaskHandler::getInstance().registerUITask(std::move(responseTask));
-}
-
-void ResetPasswordTask::onHttpSuccess()
-{
-    emit resetPasswordSuccess();
-    emit taskFinished(getTaskId());        
-}
-
-void ResetPasswordTask::onHttpError(const std::string& error) 
-{
-    emit resetPasswordFailed(QString::fromStdString(error));
-    emit taskFinished(getTaskId());
 }

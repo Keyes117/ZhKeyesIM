@@ -3,13 +3,10 @@
 
 #include <QMessageBox>
 #include <QRegularExpression>
-#include <QTimer>
 
 #include "Base/global.h"
 #include "Task/TaskHandler.h"
 #include "Task/TaskBuilder.h"
-#include "Task/RegisterTask.h"
-#include "Task/VerifyCodeTask.h"
 
 RegisterDlg::RegisterDlg( QWidget* parent)
     : QDialog(parent),
@@ -200,6 +197,9 @@ void RegisterDlg::onRegisterButtonClicked()
         strCode.toStdString()
     );
 
+    connect(regiserTask.get(), Task::taskSuccess, this, &RegisterDlg::onRegisterSuccess);
+    connect(regiserTask.get(), Task::taskFailed, this, &RegisterDlg::onRegisterError);
+
     TaskHandler::getInstance().registerNetTask(std::move(regiserTask));
 
 }
@@ -214,6 +214,9 @@ void RegisterDlg::onCodeButtonClicked()
         auto verifyCodeTask = TaskBuilder::getInstance().buildVerifyCodeTask(
             email.toStdString()
         );       
+
+        connect(verifyCodeTask.get(), Task::taskSuccess, this, &RegisterDlg::onVerifyCodeSuccess);
+        connect(verifyCodeTask.get(), Task::taskFailed, this, &RegisterDlg::onVerifyCodeError);
 
         TaskHandler::getInstance().registerNetTask(std::move(verifyCodeTask));
     }

@@ -6,8 +6,6 @@
 
 #include "Base/global.h"
 
-#include "Task/ResetPasswordTask.h"
-#include "Task/VerifyCodeTask.h"
 #include "Task/TaskHandler.h"
 #include "Task/TaskBuilder.h"
 
@@ -45,18 +43,22 @@ ResetDlg::~ResetDlg()
 
 void ResetDlg::onResetPasswordSuccess()
 {
+
 }
 
 void ResetDlg::onResetPasswordError(const std::string& error)
 {
+
 }
 
 void ResetDlg::onVerifyCodeSuccess()
 {
+
 }
 
 void ResetDlg::onVerifyCodeError(const std::string& error)
 {
+
 }
 
 
@@ -262,6 +264,9 @@ void ResetDlg::onConfirmButtonClicked()
         password.toStdString(),
         code.toStdString());
 
+    connect(resetTask.get(), Task::taskSuccess, this, ResetDlg::onResetPasswordSuccess);
+    connect(resetTask.get(), Task::taskFailed, this, ResetDlg::onResetPasswordError);
+
     TaskHandler::getInstance().registerNetTask(std::move(resetTask));
 }
 
@@ -273,5 +278,9 @@ void ResetDlg::onCodeButtonClicked()
     QString email = m_ui.lineEdit_email->text();
 
     auto codeTask = TaskBuilder::getInstance().buildVerifyCodeTask(email.toStdString());
+
+    connect(codeTask.get(), Task::taskSuccess, this, ResetDlg::onVerifyCodeSuccess);
+    connect(codeTask.get(), Task::taskFailed, this, ResetDlg::onVerifyCodeError);
+
     TaskHandler::getInstance().registerNetTask(std::move(codeTask));
 }

@@ -68,11 +68,11 @@ bool IMClient::connect(const std::string& ip, uint16_t port,
     return m_spTcpManager->connect(ip, port);
 }
 
-void IMClient::requestVerificationCode(SuccessCallback onSuccess,
-    ErrorCallback onError,
-    const std::string& email)
+void IMClient::requestVerificationCode(const std::string& jsonString,
+    ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse,
+    ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError)
 {
-    m_spHttpManager->requestVerificationCode(onSuccess, onError, email);
+    m_spHttpManager->requestVerificationCode(jsonString, onResponse, onError);
 }
 
 void IMClient::requestRegister(const std::string& jsonString,
@@ -89,13 +89,11 @@ void IMClient::requestResetPassword(const std::string& jsonString,
     m_spHttpManager->requestResetPassword(jsonString, onResponse, onError);
 }
 
-void IMClient::requestUserLogin(DataCallback<User> onSuccess,
-    ErrorCallback onError,
-    const std::string& username, 
-    const std::string password)
+void IMClient::requestUserLogin(const std::string& jsonString,
+    ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse,
+    ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError)
 {
-    m_spHttpManager->requestUserLogin(std::move(onSuccess),
-        std::move(onError), username, password);
+    m_spHttpManager->requestUserLogin(jsonString, onResponse, onError);
 }
 
 void IMClient::networkThreadFunc()

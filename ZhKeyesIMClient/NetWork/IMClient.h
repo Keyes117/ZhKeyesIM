@@ -25,9 +25,9 @@ public:
     bool connect(const std::string& ip, uint16_t port, 
         SuccessCallback onSuccess = nullptr, ErrorCallback onError = nullptr);
 
-    void requestVerificationCode(SuccessCallback onSuccess,
-        ErrorCallback onError,
-        const std::string& email);
+    void requestVerificationCode(const std::string& jsonString,
+        ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse,
+        ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError);
 
     void requestRegister(const std::string& jsonStr,
         ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse,
@@ -38,10 +38,9 @@ public:
         ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError
    );
 
-    void requestUserLogin(SuccessCallback onSuccess,
-        ErrorCallback onError,
-        const std::string& username,
-        const std::string password
+    void requestUserLogin(const std::string& jsonString,
+        ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse,
+        ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError
     );
 
     

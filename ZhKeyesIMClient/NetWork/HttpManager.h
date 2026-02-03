@@ -20,9 +20,9 @@ public:
 
     bool init(const ZhKeyes::Util::ConfigManager& config);
 
-    void requestVerificationCode(SuccessCallback onSuccess,
-        ErrorCallback onError,
-        const std::string& email);
+    void requestVerificationCode(const std::string& jsonString,
+        ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse,
+        ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError);
 
     void requestRegister(const std::string& jsonString,
         ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse,
@@ -33,10 +33,9 @@ public:
         ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError
     );
 
-    void requestUserLogin(DataCallback<User> onSuccess,
-        ErrorCallback onError,
-        const std::string& username,
-        const std::string password
+    void requestUserLogin(const std::string& jsonString,
+        ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse,
+        ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError
     );
 
 private:

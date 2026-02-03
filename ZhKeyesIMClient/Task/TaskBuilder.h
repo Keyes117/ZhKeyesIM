@@ -8,6 +8,7 @@
 #include <string>
 
 #include "Task/Task.h"
+#include "Task/HttpResponseTask.h"
 #include "NetWork/IMClient.h"
 
 
@@ -58,7 +59,16 @@ public:
         const std::string& newPassword,
         const std::string& code
    );
+    
+    std::shared_ptr<Task> buildHttpResponseTask(
+        std::string responseBody,
+        HttpResponseTask::ResponseFunc responseFunc
+    );
 
+    std::shared_ptr<Task> buildTcpConnectTask(
+        std::string ip,
+        uint16_t port
+    );
 
 private:
     TaskBuilder() = default;

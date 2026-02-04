@@ -29,6 +29,7 @@ void IMSession::setUserInfo(uint32_t uid, const std::string& token)
 {
     m_uid = uid;
     m_token = token;
+    m_pServer->
 }
 
 uint32_t IMSession::generateID()
@@ -108,7 +109,7 @@ void IMSession::onRead(Buffer& buf)
         auto msg = ZhKeyesIM::Protocol::IMMessage::deserializeFromBuffer(data, readable);
         if (!msg)
             break;
-
+         
         auto self = shared_from_this();
         m_pServer->handleMsg(msg,self);
 

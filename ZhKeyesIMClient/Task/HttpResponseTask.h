@@ -5,18 +5,24 @@
 #include <string>
 #include <Task/Task.h>
 
+class TaskBuilder;
+
 class HttpResponseTask : public Task
 {
-
+    friend class TaskBuilder;
+    Q_OBJECT
 public:
     using ResponseFunc = std::function<void(const std::string& responseBody)>;
      
+    HttpResponseTask(
+        Task::ConstructorKey key,
+        Task::TaskId id,
+        std::string responseBody, ResponseFunc responseFunc);
     ~HttpResponseTask() = default;
 
     void doTask() override;
 protected:
-    HttpResponseTask(Task::TaskId id,
-        std::string responseBody, ResponseFunc responseFunc);
+
 
 private:
     std::string m_responseBody;

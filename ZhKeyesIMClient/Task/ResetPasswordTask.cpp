@@ -1,4 +1,4 @@
-// ResetPasswordTask.cpp
+ï»¿// ResetPasswordTask.cpp
 #include "ResetPasswordTask.h"
 
 #include "Logger.h"
@@ -7,12 +7,13 @@
 #include "Task/TaskHandler.h"
 
 ResetPasswordTask::ResetPasswordTask(
+    Task::ConstructorKey key,
     std::shared_ptr<IMClient> client,
     Task::TaskId id,
     std::string email,
     std::string newPassword,
     std::string code)
-    :Task(id, Task::TaskType::TASK_TYPE_RESETPASS),
+    :Task(key, id, Task::TaskType::TASK_TYPE_RESETPASS),
     m_client(std::move(client)),
     m_email(std::move(email)),
     m_newPassword(std::move(newPassword)),
@@ -43,8 +44,8 @@ void ResetPasswordTask::onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse&
             auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(responseBody);
             if (!requestJsonOpt)
             {
-                onTaskError("ÖØÖÃÃÜÂë¹¦ÄÜ·µ»ØĞÅÏ¢´íÎó");
-                LOG_ERROR("IMClient:onResponseResetPassword:½ÓÊÕ·µ»ØÖµ¸ñÊ½´íÎó£º²»ÊÇÕı³£µÄJson¸ñÊ½");
+                onTaskError("é‡ç½®å¯†ç åŠŸèƒ½è¿”å›ä¿¡æ¯é”™è¯¯");
+                LOG_ERROR("IMClient:onResponseResetPassword:æ¥æ”¶è¿”å›å€¼æ ¼å¼é”™è¯¯ï¼šä¸æ˜¯æ­£å¸¸çš„Jsonæ ¼å¼");
                 return;
             }
 
@@ -53,8 +54,8 @@ void ResetPasswordTask::onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse&
             auto msgOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(requestJson, "msg");
             if (!successOpt || !msgOpt)
             {
-                onTaskError("ÖØÖÃÃÜÂë¹¦ÄÜ·µ»ØĞÅÏ¢´íÎó");
-                LOG_ERROR("IMClient:onResponseResetPassword:½ÓÊÕ·µ»ØÖµ¸ñÊ½´íÎó£º²»ÊÇÕı³£µÄJson¸ñÊ½");
+                onTaskError("é‡ç½®å¯†ç åŠŸèƒ½è¿”å›ä¿¡æ¯é”™è¯¯");
+                LOG_ERROR("IMClient:onResponseResetPassword:æ¥æ”¶è¿”å›å€¼æ ¼å¼é”™è¯¯ï¼šä¸æ˜¯æ­£å¸¸çš„Jsonæ ¼å¼");
                 return;
             }
 
@@ -63,7 +64,7 @@ void ResetPasswordTask::onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse&
             if (success == 0)
             {
                 onTaskError(msg);
-                LOG_ERROR("IMClient:onResponseResetPassword:Î´³É¹¦ÖØÖÃÃÜÂë");
+                LOG_ERROR("IMClient:onResponseResetPassword:æœªæˆåŠŸé‡ç½®å¯†ç ");
             }
             else if (success == 1)
             {

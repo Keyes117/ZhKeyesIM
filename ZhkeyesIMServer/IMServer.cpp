@@ -66,7 +66,6 @@ void IMServer::onConnected(std::shared_ptr<TCPConnection> spConn)
         std::lock_guard<std::mutex> lock(m_sessionMutex);
         m_socketToSession.insert(std::make_pair<SOCKET, IMSession::SessionID>(spConn->getSocket(), spSession->getSessionId()));
         m_sessions.insert(std::make_pair<IMSession::SessionID, std::shared_ptr<IMSession>>(spSession->getSessionId(), std::move(spSession)));
-
     }
 
 }

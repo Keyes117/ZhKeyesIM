@@ -1,4 +1,4 @@
-// LoginTask.cpp
+﻿// LoginTask.cpp
 #include "UserLoginTask.h"
 #include <QMetaObject>
 #include "Logger.h"
@@ -9,11 +9,12 @@
 #include "Task/HttpResponseTask.h"
 
 UserLoginTask::UserLoginTask(
+    Task::ConstructorKey key,
     std::shared_ptr<IMClient> client,
     Task::TaskId id,
     std::string email,
     std::string password)
-    : Task(id, Task::TaskType::TASK_TYPE_LOGIN),
+    : Task(key, id, Task::TaskType::TASK_TYPE_LOGIN),
     m_client(std::move(client)),
     m_email(std::move(email)),
     m_password(std::move(password))

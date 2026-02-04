@@ -14,13 +14,6 @@ public:
     ResetDlg( QWidget* parent = nullptr);
     ~ResetDlg();
 
-
-    void onResetPasswordSuccess();
-    void onResetPasswordError(const std::string& error);
-
-    void onVerifyCodeSuccess();
-    void onVerifyCodeError(const std::string& error);
-
 private:
     // …Ë÷√ ‰»ÎøÚ¥ÌŒÛ◊¥Ã¨
     void setLineEditError(QLineEdit* lineEdit, bool hasError);
@@ -32,6 +25,13 @@ signals:
     void switchLoginDlg();
 
 private slots:
+
+    void onResetPasswordSuccess();
+    void onResetPasswordError(const QString& error);
+
+    void onVerifyCodeSuccess();
+    void onVerifyCodeError(const QString& error);
+
     void onUserTextChanged(const QString& text);
     void onEmailTextChanged(const QString& text);
     void onPasswordTextChanged(const QString& text);

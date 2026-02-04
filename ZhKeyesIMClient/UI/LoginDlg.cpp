@@ -58,11 +58,11 @@ void LoginDlg::onLoginSuccess()
 
 }
 
-void LoginDlg::onLoginError(const std::string& error)
+void LoginDlg::onLoginError(const QString& error)
 {
     QMessageBox::warning(this,
         "注册失败",
-        QString::fromStdString(error));
+        error);
 }
 
 
@@ -118,8 +118,8 @@ void LoginDlg::onLoginButtonClicked()
         email.toStdString(),
         password.toStdString());
 
-    connect(loginTask.get(), &Task::taskSuccess, this, LoginDlg::onLoginSuccess);
-    connect(loginTask.get(), &Task::taskFinished, this, LoginDlg::onLoginError);
+    connect(loginTask.get(), &Task::taskSuccess, this, &LoginDlg::onLoginSuccess);
+    connect(loginTask.get(), &Task::taskFailed, this, &LoginDlg::onLoginError);
 
     TaskHandler::getInstance().registerNetTask(std::move(loginTask));
 }

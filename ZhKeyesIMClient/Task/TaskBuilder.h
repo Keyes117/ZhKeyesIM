@@ -1,4 +1,4 @@
-#ifndef ZHKEYESIMCLIENT_TASK_TASKBUILDER_H_
+ï»¿#ifndef ZHKEYESIMCLIENT_TASK_TASKBUILDER_H_
 #define ZHKEYESIMCLIENT_TASK_TASKBUILDER_H_
 
 #include <atomic>
@@ -13,7 +13,7 @@
 
 
 /**
- * @brief ÈÎÎñÍ³Ò»¹¹½¨Àà
+ * @brief ä»»åŠ¡ç»Ÿä¸€æ„å»ºç±»
  */
 class TaskBuilder
 {
@@ -24,10 +24,10 @@ public:
 
     bool init(std::shared_ptr<IMClient> client);
 
-    // ==================== ÈÎÎñ¹¹½¨·½·¨ ====================
+    // ==================== ä»»åŠ¡æ„å»ºæ–¹æ³• ====================
 
     /**
-     * ×¢²áÈÎÎñ
+     * æ³¨å†Œä»»åŠ¡
      */
     std::shared_ptr<Task> buildRegisterTask(
         const std::string& username,
@@ -37,7 +37,7 @@ public:
     );
 
     /**
-     * µÇÂ¼ÈÎÎñ
+     * ç™»å½•ä»»åŠ¡
      */
     std::shared_ptr<Task> buildLoginTask(
         const std::string& email,
@@ -45,14 +45,14 @@ public:
      );
 
     /**
-     * ÑéÖ¤ÂëÈÎÎñ
+     * éªŒè¯ç ä»»åŠ¡
      */
     std::shared_ptr<Task> buildVerifyCodeTask(
         const std::string& email
     );
 
     /**
-     * ÖØÖÃÃÜÂë
+     * é‡ç½®å¯†ç 
      */
     std::shared_ptr<Task> buildResetPasswordTask(
         const std::string& email,

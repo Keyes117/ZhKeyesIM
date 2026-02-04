@@ -39,23 +39,6 @@ public:
     );
 
 private:
-    void onResponseVerificationCode(SuccessCallback onSuccess,
-        ErrorCallback onError,
-        const ZhKeyesIM::Net::Http::HttpResponse& response);
-
-    void onResponseRegister(DataCallback<int> onSuccess,
-        ErrorCallback onError,
-        const ZhKeyesIM::Net::Http::HttpResponse& response);
-
-    void onResponseUserLogin(DataCallback<User> onSuccess,
-        ErrorCallback onError,
-        const ZhKeyesIM::Net::Http::HttpResponse& response);
-
-    void onResponseResetPassword(SuccessCallback onSuccess,
-        ErrorCallback onError,
-        const ZhKeyesIM::Net::Http::HttpResponse& response);
-
-private:
     std::shared_ptr<EventLoop>              m_spEventLoop;
     std::unique_ptr<ZhKeyesIM::Net::Http::HttpClient>   m_spHttpClient;
 

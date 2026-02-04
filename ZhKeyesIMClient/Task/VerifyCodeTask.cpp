@@ -1,4 +1,4 @@
-// GetVerifyCodeTask.cpp
+ï»¿// GetVerifyCodeTask.cpp
 #include "VerifyCodeTask.h"
 #include <QMetaObject>
 #include "Logger.h"
@@ -7,10 +7,11 @@
 #include "Task/TaskHandler.h"
 
 VerifyCodeTask::VerifyCodeTask(
+    Task::ConstructorKey key,
     std::shared_ptr<IMClient> client,
     Task::TaskId id,
     std::string email)
-    :Task(id,Task::TaskType::TASK_TYPE_VERIFYCODE),
+    :Task(key, id,Task::TaskType::TASK_TYPE_VERIFYCODE),
     m_spClient(std::move(client)),
     m_email(std::move(email))
 {
@@ -39,8 +40,8 @@ void VerifyCodeTask::onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& re
             auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(responseBody);
             if (!requestJsonOpt)
             {
-                onTaskError("ÑéÖ¤Âë½ÓÊÕ´íÎó");
-                LOG_ERROR("IMClient:onResponseVerificationCode:½ÓÊÕ·µ»ØÖµ¸ñÊ½´íÎó£º²»ÊÇÕı³£µÄJson¸ñÊ½");
+                onTaskError("éªŒè¯ç æ¥æ”¶é”™è¯¯");
+                LOG_ERROR("IMClient:onResponseVerificationCode:æ¥æ”¶è¿”å›å€¼æ ¼å¼é”™è¯¯ï¼šä¸æ˜¯æ­£å¸¸çš„Jsonæ ¼å¼");
                 return;
             }
 
@@ -48,16 +49,16 @@ void VerifyCodeTask::onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& re
             auto successOpt = ZhKeyes::Util::JsonUtil::getSafe<int>(requestJson, "success");
             if (!successOpt)
             {
-                onTaskError("ÑéÖ¤Âë½ÓÊÕ´íÎó");
-                LOG_ERROR("IMClient:onResponseVerificationCode:½ÓÊÕ·µ»ØÖµ¸ñÊ½´íÎó£º²»ÊÇÕı³£µÄJson¸ñÊ½");
+                onTaskError("éªŒè¯ç æ¥æ”¶é”™è¯¯");
+                LOG_ERROR("IMClient:onResponseVerificationCode:æ¥æ”¶è¿”å›å€¼æ ¼å¼é”™è¯¯ï¼šä¸æ˜¯æ­£å¸¸çš„Jsonæ ¼å¼");
                 return;
             }
 
             int success = *successOpt;
             if (success == 0)
             {
-                onTaskError("ÑéÖ¤Âë·şÎñ³ö´í");
-                LOG_ERROR("IMClient:onResponseVerificationCode:Î´³É¹¦·¢ËÍÑéÖ¤Âğ");
+                onTaskError("éªŒè¯ç æœåŠ¡å‡ºé”™");
+                LOG_ERROR("IMClient:onResponseVerificationCode:æœªæˆåŠŸå‘é€éªŒè¯å—");
                 return;
             }
 
@@ -66,8 +67,8 @@ void VerifyCodeTask::onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& re
 
 
     auto responseTask = TaskBuilder::getInstance().buildHttpResponseTask(
-        std::move(responseBody),      // ÒÆ¶¯¾Ö²¿±äÁ¿
-        std::move(responseFunc));      // ÒÆ¶¯ lambda
+        std::move(responseBody),      // ç§»åŠ¨å±€éƒ¨å˜é‡
+        std::move(responseFunc));      // ç§»åŠ¨ lambda
     TaskHandler::getInstance().registerUITask(std::move(responseTask));
 }
 

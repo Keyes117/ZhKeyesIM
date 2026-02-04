@@ -109,25 +109,24 @@ void RegisterDlg::hideFieldError(const QString& fieldName)
     }
 }
 
-void RegisterDlg::onRegisterSuccess(int uid)
+void RegisterDlg::onRegisterSuccess()
 {
     //showLoading(false);
 
     QMessageBox::information(this,
         "注册成功",
-        QString("欢迎！您的ID是：%1").arg(uid));
+        "欢迎");
 
-    emit registerSuccess(uid);
     emit switchLoginDlg();
 }
 
-void RegisterDlg::onRegisterError(const std::string& error)
+void RegisterDlg::onRegisterError(const QString& error)
 {
     //showLoading(false);
 
     QMessageBox::warning(this,
         "注册失败",
-        QString::fromStdString(error));
+        error);
 }
 
 void RegisterDlg::onVerifyCodeSuccess()
@@ -142,14 +141,14 @@ void RegisterDlg::onVerifyCodeSuccess()
     //startCountdown();
 }
 
-void RegisterDlg::onVerifyCodeError(const std::string& error) 
+void RegisterDlg::onVerifyCodeError(const QString& error)
 {
     m_ui.button_code->setEnabled(true);
     m_ui.button_code->setText("获取验证码");
 
     QMessageBox::warning(this,
         "错误",
-        QString::fromStdString(error));
+        error);
 }
 
 
@@ -197,8 +196,8 @@ void RegisterDlg::onRegisterButtonClicked()
         strCode.toStdString()
     );
 
-    connect(regiserTask.get(), Task::taskSuccess, this, &RegisterDlg::onRegisterSuccess);
-    connect(regiserTask.get(), Task::taskFailed, this, &RegisterDlg::onRegisterError);
+    connect(regiserTask.get(), &Task::taskSuccess, this, &RegisterDlg::onRegisterSuccess);
+    connect(regiserTask.get(), &Task::taskFailed, this, &RegisterDlg::onRegisterError);
 
     TaskHandler::getInstance().registerNetTask(std::move(regiserTask));
 
@@ -215,8 +214,8 @@ void RegisterDlg::onCodeButtonClicked()
             email.toStdString()
         );       
 
-        connect(verifyCodeTask.get(), Task::taskSuccess, this, &RegisterDlg::onVerifyCodeSuccess);
-        connect(verifyCodeTask.get(), Task::taskFailed, this, &RegisterDlg::onVerifyCodeError);
+        connect(verifyCodeTask.get(), &Task::taskSuccess, this, &RegisterDlg::onVerifyCodeSuccess);
+        connect(verifyCodeTask.get(), &Task::taskFailed, this, &RegisterDlg::onVerifyCodeError);
 
         TaskHandler::getInstance().registerNetTask(std::move(verifyCodeTask));
     }

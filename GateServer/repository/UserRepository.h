@@ -18,8 +18,6 @@ public:
     std::optional<UserInfo> findByEmail(const std::string& email);
     std::optional<UserInfo> findByUid(int uid);
 
-
-
     bool exsitsByUsername(const std::string& username);
     bool exsitsByEmail(const std::string& email);
 

@@ -20,8 +20,11 @@
 
 class VerifyCodeTask : public Task
 {
+    Q_OBJECT
 public:
-    VerifyCodeTask(std::shared_ptr<IMClient> spClient,
+    VerifyCodeTask(
+        Task::ConstructorKey key,
+        std::shared_ptr<IMClient> spClient,
         Task::TaskId id,
         std::string email
      );

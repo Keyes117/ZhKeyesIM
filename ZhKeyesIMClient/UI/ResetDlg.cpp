@@ -46,7 +46,7 @@ void ResetDlg::onResetPasswordSuccess()
 
 }
 
-void ResetDlg::onResetPasswordError(const std::string& error)
+void ResetDlg::onResetPasswordError(const QString& error)
 {
 
 }
@@ -56,7 +56,7 @@ void ResetDlg::onVerifyCodeSuccess()
 
 }
 
-void ResetDlg::onVerifyCodeError(const std::string& error)
+void ResetDlg::onVerifyCodeError(const QString& error)
 {
 
 }
@@ -264,8 +264,8 @@ void ResetDlg::onConfirmButtonClicked()
         password.toStdString(),
         code.toStdString());
 
-    connect(resetTask.get(), Task::taskSuccess, this, ResetDlg::onResetPasswordSuccess);
-    connect(resetTask.get(), Task::taskFailed, this, ResetDlg::onResetPasswordError);
+    connect(resetTask.get(), &Task::taskSuccess, this, &ResetDlg::onResetPasswordSuccess);
+    connect(resetTask.get(), &Task::taskFailed, this, &ResetDlg::onResetPasswordError);
 
     TaskHandler::getInstance().registerNetTask(std::move(resetTask));
 }
@@ -279,8 +279,8 @@ void ResetDlg::onCodeButtonClicked()
 
     auto codeTask = TaskBuilder::getInstance().buildVerifyCodeTask(email.toStdString());
 
-    connect(codeTask.get(), Task::taskSuccess, this, ResetDlg::onVerifyCodeSuccess);
-    connect(codeTask.get(), Task::taskFailed, this, ResetDlg::onVerifyCodeError);
+    connect(codeTask.get(), &Task::taskSuccess, this, &ResetDlg::onVerifyCodeSuccess);
+    connect(codeTask.get(), &Task::taskFailed, this, &ResetDlg::onVerifyCodeError);
 
     TaskHandler::getInstance().registerNetTask(std::move(codeTask));
 }

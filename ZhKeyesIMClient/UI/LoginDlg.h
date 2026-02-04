@@ -39,7 +39,7 @@ private slots:
     void onPasswordTextChanged(const QString& text);
 
     void onLoginSuccess();
-    void onLoginError(const std::string& error);
+    void onLoginError(const QString& error);
 
     bool checkEmailValid();
     bool checkPassValid();

@@ -6,6 +6,7 @@
 namespace ServerParam
 {
     constexpr const char* code_prefix = "code_";
+    constexpr const char* token_prefix = "token_";
 }
 
 namespace ServerStatus

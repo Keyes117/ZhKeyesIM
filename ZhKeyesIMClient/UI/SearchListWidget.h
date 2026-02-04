@@ -21,7 +21,6 @@ protected:
 private:
     void waitPending(bool pending = true);
     void addTipItem();
-    void waitPending(bool pending);
 
 
 private slots:

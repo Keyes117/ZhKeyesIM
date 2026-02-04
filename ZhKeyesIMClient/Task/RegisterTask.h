@@ -1,12 +1,10 @@
-// RegisterTask.h
+ï»¿// RegisterTask.h
 #ifndef ZHKEYESIMCLIENT_TASK_REGISTERTASK_H_
 #define ZHKEYESIMCLIENT_TASK_REGISTERTASK_H_
 
 #include <functional>
 #include <memory>
 #include <string>
-#include <QObject>
-
 
 #include "net/Http/HttpResponse.h"
 
@@ -14,32 +12,38 @@
 #include "NetWork/IMClient.h"
 
 /**
- * ÓÃ»§×¢²áÈÎÎñ
- * ¸ºÔğ´¦ÀíÓÃ»§×¢²áµÄÍøÂçÇëÇó
+ * ç”¨æˆ·æ³¨å†Œä»»åŠ¡
+ * è´Ÿè´£å¤„ç†ç”¨æˆ·æ³¨å†Œçš„ç½‘ç»œè¯·æ±‚
  */
+
 class RegisterTask : public Task
 {
+    Q_OBJECT  
 public:
-    ~RegisterTask() override = default;
-
-    void doTask() override;
-
-protected:
     /**
-    * ¹¹Ôìº¯Êı
-    * @param client ÍøÂç¿Í»§¶Ë
-    * @param username ÓÃ»§Ãû
-    * @param email ÓÊÏä
-    * @param password ÃÜÂë
-    * @param code ÑéÖ¤Âë
+    * æ„é€ å‡½æ•°
+    * @param client ç½‘ç»œå®¢æˆ·ç«¯
+    * @param username ç”¨æˆ·å
+    * @param email é‚®ç®±
+    * @param password å¯†ç 
+    * @param code éªŒè¯ç 
     */
-    RegisterTask(std::shared_ptr<IMClient> client,
-        uint64_t taskId,
+    RegisterTask(
+        Task::ConstructorKey key,
+        std::shared_ptr<IMClient> client,
+        Task::TaskId taskId,
         std::string username,
         std::string email,
         std::string password,
         std::string code
     );
+
+    ~RegisterTask() override = default;
+
+    void doTask() override;
+
+protected:
+
 
 private:
     void onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& response);

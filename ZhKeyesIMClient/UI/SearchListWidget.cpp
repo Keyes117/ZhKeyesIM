@@ -64,10 +64,6 @@ bool SearchListWidget::eventFilter(QObject* watched, QEvent* event)
     return QListWidget::eventFilter(watched, event);
 }
 
-void SearchListWidget::waitPending(bool pending)
-{
-}
-
 void SearchListWidget::addTipItem()
 {
     auto* invalid_item = new QWidget();

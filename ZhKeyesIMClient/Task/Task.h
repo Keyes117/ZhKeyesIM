@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @desc:   任务基类，Task.h
  * @author: ZhKeyes
  * @date:   2025/8/4
@@ -12,13 +12,16 @@
 
 #include <QObject>
 
-class TaskBuilder;
 class Task : public QObject, public std::enable_shared_from_this<Task>
 { 
-    friend class TaskBuilder;
-
     Q_OBJECT
 public:
+    class ConstructorKey {
+    private:
+        ConstructorKey() = default;
+        friend class TaskBuilder;  // 只有 TaskBuilder 能构造这个 key
+    };
+
     enum class TaskType
     {
         TASK_TYPE_UNKNOWN = 0,
@@ -45,7 +48,7 @@ signals:
     void taskSuccess();
 
 protected:
-    Task(TaskId taskId,TaskType type)
+    Task(ConstructorKey, TaskId taskId,TaskType type)
         : QObject(), m_taskId(taskId),
         m_taskType(type)
     {}

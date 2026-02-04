@@ -168,6 +168,77 @@ endif()
 
 # ======================== fmt 配置 ===============================
 
+if(WIN32)
+    # Windows: 分别查找 Debug 和 Release 版本
+    find_library(FMT_LIB_DEBUG
+        NAMES fmtd fmt
+        PATHS 
+            "${FMT_DIR}/lib/Debug"
+        NO_DEFAULT_PATH
+        NO_CMAKE_FIND_ROOT_PATH
+    )
+    
+    find_library(FMT_LIB_RELEASE
+        NAMES fmt
+        PATHS 
+            "${FMT_DIR}/lib/Release"
+        NO_DEFAULT_PATH
+        NO_CMAKE_FIND_ROOT_PATH
+    )
+    
+    if(FMT_LIB_DEBUG OR FMT_LIB_RELEASE)
+        add_library(fmt::fmt SHARED IMPORTED)
+        set_target_properties(fmt::fmt PROPERTIES
+            INTERFACE_INCLUDE_DIRECTORIES "${FMT_DIR}/include"
+        )
+        
+        if(FMT_LIB_DEBUG)
+            set_target_properties(fmt::fmt PROPERTIES
+                IMPORTED_LOCATION_DEBUG "${FMT_LIB_DEBUG}"
+                IMPORTED_IMPLIB_DEBUG "${FMT_LIB_DEBUG}"
+            )
+            message(STATUS "Found fmt Debug library: ${FMT_LIB_DEBUG}")
+        endif()
+        
+        if(FMT_LIB_RELEASE)
+            set_target_properties(fmt::fmt PROPERTIES
+                IMPORTED_LOCATION_RELEASE "${FMT_LIB_RELEASE}"
+                IMPORTED_IMPLIB_RELEASE "${FMT_LIB_RELEASE}"
+                IMPORTED_LOCATION_RELWITHDEBINFO "${FMT_LIB_RELEASE}"
+                IMPORTED_IMPLIB_RELWITHDEBINFO "${FMT_LIB_RELEASE}"
+                IMPORTED_LOCATION_MINSIZEREL "${FMT_LIB_RELEASE}"
+                IMPORTED_IMPLIB_MINSIZEREL "${FMT_LIB_RELEASE}"
+            )
+            message(STATUS "Found fmt Release library: ${FMT_LIB_RELEASE}")
+        endif()
+    else()
+        message(WARNING "Could not find fmt library")
+    endif()
+else()
+    find_library(FMT_LIB
+    NAMES 
+        fmt
+        libfmt.so
+        libfmt.so.10
+        libfmt.so.10.1.10
+        libfmt.a
+    PATHS "${FMT_DIR}/lib"
+    NO_DEFAULT_PATH
+    NO_CMAKE_FIND_ROOT_PATH
+    )
+
+    if(FMT_LIB)
+    add_library(fmt::fmt SHARED IMPORTED)
+    set_target_properties(fmt::fmt PROPERTIES
+        IMPORTED_LOCATION "${FMT_LIB}"
+        INTERFACE_INCLUDE_DIRECTORIES "${FMT_DIR}/include"
+    )
+    message(STATUS "Found fmt library: ${FMT_LIB}")
+    else()
+    message(WARNING "Could not find fmt library")
+    endif()
+endif()
+
 # 查找 fmt 库
 find_library(FMT_LIB
     NAMES 
@@ -181,17 +252,6 @@ find_library(FMT_LIB
     NO_DEFAULT_PATH
     NO_CMAKE_FIND_ROOT_PATH
 )
-
-if(FMT_LIB)
-    add_library(fmt::fmt SHARED IMPORTED)
-    set_target_properties(fmt::fmt PROPERTIES
-        IMPORTED_LOCATION "${FMT_LIB}"
-        INTERFACE_INCLUDE_DIRECTORIES "${FMT_DIR}/include"
-    )
-    message(STATUS "Found fmt library: ${FMT_LIB}")
-else()
-    message(WARNING "Could not find fmt library")
-endif()
 
 function(copy_fmt_dlls_to_target target_name)
    if(WIN32)

@@ -1,4 +1,4 @@
-// RegisterTask.cpp
+ï»¿// RegisterTask.cpp
 #include "RegisterTask.h"
 #include <QMetaObject>
 #include "Logger.h"
@@ -8,13 +8,14 @@
 
 
 RegisterTask::RegisterTask(
+    Task::ConstructorKey key,
     std::shared_ptr<IMClient> client,
     uint64_t taskId,
     std::string username,
     std::string email,
     std::string password,
     std::string code)
-    :  Task(taskId,Task::TaskType::TASK_TYPE_REGISTER),
+    :  Task(key, taskId,Task::TaskType::TASK_TYPE_REGISTER),
     m_client(client),
     m_username(std::move(username)),
     m_email(std::move(email)),
@@ -32,8 +33,8 @@ void RegisterTask::onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& resp
             auto requestJsonOpt = ZhKeyes::Util::JsonUtil::parseSafe(responseBody);
             if (!requestJsonOpt)
             {
-                onTaskError("×¢²á¹¦ÄÜ·µ»ØĞÅÏ¢´íÎó");
-                LOG_WARN("IMClient:onResponseVerificationCode:½ÓÊÕ·µ»ØÖµ¸ñÊ½´íÎó£º²»ÊÇÕı³£µÄJson¸ñÊ½");
+                onTaskError("æ³¨å†ŒåŠŸèƒ½è¿”å›ä¿¡æ¯é”™è¯¯");
+                LOG_WARN("IMClient:onResponseVerificationCode:æ¥æ”¶è¿”å›å€¼æ ¼å¼é”™è¯¯ï¼šä¸æ˜¯æ­£å¸¸çš„Jsonæ ¼å¼");
                 return;
             }
 
@@ -42,8 +43,8 @@ void RegisterTask::onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& resp
             auto msgOpt = ZhKeyes::Util::JsonUtil::getSafe<std::string>(requestJson, "msg");
             if (!successOpt || !msgOpt)
             {
-                onTaskError("×¢²á¹¦ÄÜ·µ»ØĞÅÏ¢´íÎó");
-                LOG_WARN("IMClient:onResponseVerificationCode:½ÓÊÕ·µ»ØÖµ¸ñÊ½´íÎó£º²»ÊÇÕı³£µÄJson¸ñÊ½");
+                onTaskError("æ³¨å†ŒåŠŸèƒ½è¿”å›ä¿¡æ¯é”™è¯¯");
+                LOG_WARN("IMClient:onResponseVerificationCode:æ¥æ”¶è¿”å›å€¼æ ¼å¼é”™è¯¯ï¼šä¸æ˜¯æ­£å¸¸çš„Jsonæ ¼å¼");
                 return;
             }
 
@@ -52,7 +53,7 @@ void RegisterTask::onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& resp
             if (success == 0)
             {
                 onTaskError(msg);
-                LOG_WARN("IMClient:onResponseVerificationCode:Î´³É¹¦×¢²áÓÃ»§");
+                LOG_WARN("IMClient:onResponseVerificationCode:æœªæˆåŠŸæ³¨å†Œç”¨æˆ·");
                 return;
             }
             else if (success == 1)
@@ -83,7 +84,7 @@ void RegisterTask::doTask()
 
     auto selfTask = std::static_pointer_cast<RegisterTask>(shared_from_this());
 
-    // ÔÚÍøÂçÏß³Ìµ÷ÓÃIMClient
+    // åœ¨ç½‘ç»œçº¿ç¨‹è°ƒç”¨IMClient
     m_client->requestRegister(requestJson.dump(),
         std::bind(&RegisterTask::onHttpResponse, this, std::placeholders::_1),
         std::bind(&RegisterTask::onTaskError, this, std::placeholders::_1)

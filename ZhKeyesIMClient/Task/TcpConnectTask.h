@@ -12,8 +12,12 @@
 
 class TcpConnectTask : public Task
 {
+    Q_OBJECT
+
 public:
-    TcpConnectTask(std::shared_ptr<IMClient> client,
+    TcpConnectTask(
+        Task::ConstructorKey key,
+        std::shared_ptr<IMClient> client,
         Task::TaskId id,
         std::string ip,
         uint16_t port);

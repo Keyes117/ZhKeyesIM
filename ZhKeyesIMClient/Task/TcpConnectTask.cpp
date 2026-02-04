@@ -1,8 +1,10 @@
 #include "TcpConnectTask.h"
 
-TcpConnectTask::TcpConnectTask(std::shared_ptr<IMClient> client,
+TcpConnectTask::TcpConnectTask(
+    Task::ConstructorKey key,
+    std::shared_ptr<IMClient> client,
     Task::TaskId id, std::string ip, uint16_t port):
-    Task(id,Task::TaskType::TASK_TYPE_TCPCONNECT),
+    Task(key, id,Task::TaskType::TASK_TYPE_TCPCONNECT),
     m_client(client), m_ip(ip), m_port(port)
 {
 

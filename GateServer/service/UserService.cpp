@@ -39,7 +39,7 @@ void UserService::login(const std::string& email,
                 return;
             }
 
-            // 2. 查询用户（数据库操作，在工作线程中执行）
+            // 2. 查询用户
             auto userInfoOpt = m_spUserRepo->findByEmail(email);
             if (!userInfoOpt)
             {

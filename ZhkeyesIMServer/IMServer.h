@@ -46,7 +46,7 @@ private:
     std::shared_ptr<RedisManager>   m_spRedisManager;
 
     // =============== repository ===================
-
+    std::shared_ptr<IMUserRepository> m_spUserRepo;
 
     // =============== Service ===================
     std::shared_ptr<IMUserService> m_spUserService;

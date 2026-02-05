@@ -55,6 +55,9 @@ bool TcpManager::authenticate(const std::string& token, uint32_t uid)
     }
     else {
         LOG_ERROR("TcpManager: 发送认证消息失败");
+        if (m_connectFailedCallback)
+            m_connectFailedCallback("发送认证消息失败");
+        releaseConnectCallback();
     }
 
     return sent;
@@ -79,41 +82,139 @@ void TcpManager::registerHandler()
     );
 }
 
-void TcpManager::handleAuthResponse(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage>, std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender>)
+void TcpManager::handleAuthResponse(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg, std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender)
 {
-    int i = 0;
+    auto fail = [this](const std::string& reason) {
+        LOG_WARN("TcpManager: AUTH_RESP 失败: %s", reason.c_str());
+        if (m_connectFailedCallback)
+            m_connectFailedCallback(reason);
+        if (m_spTcpClient)
+            m_spTcpClient->disconnect();
+        releaseConnectCallback();
+        };
+
+    if (!msg || !msg->hasBody()) {
+        fail("认证响应为空");
+        return;
+    }
+
+    ZhKeyesIM::Protocol::BinaryReader reader(msg->getBody());
+
+    uint8_t success = 0;
+    uint32_t uid = 0;
+    if (!reader.readUInt8(success) || !reader.readUInt32(uid)) {
+        fail("认证响应解析失败");
+        return;
+    }
+
+    if (success == 0) {
+        std::string err;
+        if (!reader.readString(err))
+            err = "认证失败";
+        fail(err);
+        return;
+    }
+
+    // success == 1，继续解析剩余字段
+    std::string token, name, email, nick, desc, icon, back;
+    uint32_t sex = 0;
+    if (!reader.readString(token) ||
+        !reader.readString(name) ||
+        !reader.readString(email) ||
+        !reader.readString(nick) ||
+        !reader.readString(desc) ||
+        !reader.readUInt32(sex) ||
+        !reader.readString(icon) ||
+        !reader.readString(back)) {
+        fail("认证响应字段不完整");
+        return;
+    }
+
+    LOG_INFO("TcpManager: 认证成功, uid=%u, name=%s", uid, name.c_str());
+
+   /*  TODO: 如有需要，这里可以构造 AuthRsp 并投递到 UI 线程（TaskHandler）*/
+
+    // 最终认为“连接（含认证）成功”
+    if (m_connectionCallback)
+        m_connectionCallback();
+    releaseConnectCallback();
 }
 
-void TcpManager::onTcpResponse(Buffer& recvBuf)
+void TcpManager::onTcpResponse(Buffer& buf)
 {
-    while (true)
+   while (true)
     {
-
-        // 检查是否够一个头部
-        if (recvBuf.readableBytes() < ZhKeyesIM::Protocol::HEADER_SIZE)
+        //如果数据不够一个头部大小，直接退出等待更多数据
+        if (buf.readableBytes() < ZhKeyesIM::Protocol::HEADER_SIZE)
             break;
 
-        // 只peek buf,不移动指针
-        const char* data = recvBuf.peek();
-        size_t      len = recvBuf.readableBytes();
+        const char* data = buf.peek();
+        size_t      readable = buf.readableBytes();
 
-        auto msg = ZhKeyesIM::Protocol::IMMessage::deserializeFromBuffer(data, len);
-        if (!msg)
+        bool foundMagic = false;
+        size_t magicOffset = 0;
+        
+        size_t searchLimit = std::min(readable - ZhKeyesIM::Protocol::HEADER_SIZE + 1, 
+            ZhKeyesIM::Protocol::MAX_PACKET_SIZE);
+
+          // 在可读数据中搜索 magic（最多搜索到 readable - HEADER_SIZE + 1 的位置）
+        //magic 是 uint32_t，需要按字节对齐搜索
+        for (size_t i = 0; i <= searchLimit; ++i)
         {
-            //这里两种情况
-            // 1. 半包 
-            // 2. 格式错误
+            // 检查当前位置是否可能是 magic（需要至少 4 字节）
+            if (i + 4 <= readable)
+            {
+                const uint32_t* magicPtr = reinterpret_cast<const uint32_t*>(data + i);
+                if (*magicPtr == ZhKeyesIM::Protocol::PROTOCOL_MAGIC)
+                {
+                    foundMagic = true;
+                    magicOffset = i;
+                    break;
+                }
+            }
+        }
+        
+        // 如果没找到 magic
+        if (!foundMagic)
+        {
+          // 理论上，如果搜索超过一个最大包的大小还没找到 magic，说明肯定有问题
+            if (readable > ZhKeyesIM::Protocol::MAX_PACKET_SIZE)
+            {                
+                buf.retrieveAll();
+                break;
+            }
+            // 如果数据还不够多，可能 magic 在下一批数据中，等待更多数据
+            // 但为了安全，如果当前数据已经超过 HEADER_SIZE，应该丢弃一个字节继续查找
+            if (readable >= ZhKeyesIM::Protocol::HEADER_SIZE)
+            {
+                // 丢弃一个字节，继续查找
+                buf.retrieve(1);
+                continue;  // 继续下一次循环
+            }
             break;
         }
+        
+        // 找到了 magic，如果不在开头，丢弃前面的垃圾数据
+        if (magicOffset > 0)
+        {
+            LOG_WARN("IMSession::onRead, 发现 %zu 字节垃圾数据，已丢弃", magicOffset);
+            buf.retrieve(magicOffset);
+            // 重新获取数据指针和长度
+            data = buf.peek();
+            readable = buf.readableBytes();
+        }
 
-        //处理业务
-        auto msgType = msg->getType();
+
+        auto msg = ZhKeyesIM::Protocol::IMMessage::deserializeFromBuffer(data, readable);
+        if (!msg)
+            break;
+         
         auto self = shared_from_this();
-        m_dispatcher.dispatch(msg, self);
- 
+        m_dispatcher.dispatch(msg,self);
 
         size_t msgLen = msg->getLength();
-        recvBuf.retrieve(msgLen);
+        buf.retrieve(msgLen);
+
     }
 }
 
@@ -136,12 +237,6 @@ void TcpManager::onConnected(std::shared_ptr<TCPConnection> spConn)
         return;
     }
 
-    // 通知外部连接成功
-    if (m_connectionCallback) {
-        m_connectionCallback();
-
-        releaseConnectCallback();
-    }
 }
 
 void TcpManager::onConnectFailed()

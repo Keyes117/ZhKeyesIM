@@ -3,6 +3,8 @@
 #include "Logger.h"
 
 IMServer::IMServer():
+    m_spRedisManager(std::make_shared<RedisManager>()),
+    m_spMySqlManager(std::make_shared<MySqlManager>()),
     m_spTcpServer(std::make_unique<TCPServer>())
 {
 }
@@ -10,17 +12,19 @@ IMServer::IMServer():
 
 bool IMServer::init(const ZhKeyes::Util::ConfigManager& config)
 {
+    auto serverNameOpt = config.getSafe<std::string>({ "IMServer", "serverName" });
     auto ipOpt = config.getSafe<std::string>({ "IMServer", "ip" });
     auto portOpt = config.getSafe<uint16_t>({ "IMServer", "port" });
     auto threadNumOpt = config.getSafe<int32_t>({ "IMServer", "threadNum" });
     auto IOTypeOpt = config.getSafe<int>({ "IMServer", "IOType" });
 
-    if (!ipOpt || !portOpt || !threadNumOpt || !IOTypeOpt)
+    if (!ipOpt || !portOpt || !threadNumOpt || !IOTypeOpt || !serverNameOpt)
     {
         LOG_ERROR("IMServer 获取配置信息失败");
         return false;
     }
 
+    std::string serverName = *serverNameOpt;
     std::string ip = *ipOpt;
     uint16_t port = *portOpt;
     int threadNum = *threadNumOpt;
@@ -35,15 +39,28 @@ bool IMServer::init(const ZhKeyes::Util::ConfigManager& config)
     m_spTcpServer->setConnectionCallback(std::bind(&IMServer::onConnected, this, std::placeholders::_1));
     m_spTcpServer->setDisConnectionCallback(std::bind(&IMServer::onDisConnected, this, std::placeholders::_1));
     
-    // ================== Repository ==================
+    if (!m_spRedisManager->init(config))
+    {
+        LOG_ERROR("Redis客户端 初始化失败");
+        return false;
+    }
 
+    if (!m_spMySqlManager->init(config))
+    {
+        LOG_ERROR("Mysql客户端 初始化失败");
+        return false;
+    }
+
+    // ================== Repository ==================
+    m_spUserRepo = std::make_shared<IMUserRepository>(m_spRedisManager, m_spMySqlManager);
 
     // ================== Service ==================
-    m_spUserService = std::make_shared<IMUserService>();
+    m_spUserService = std::make_shared<IMUserService>(m_spUserRepo,serverName,ip,port);
 
     // ================== Controller ==================
     m_spUserController = std::make_shared<IMUserController>(m_spUserService);
-
+    
+    registerHandler();
     return true;
 }
 

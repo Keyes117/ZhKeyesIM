@@ -16,39 +16,39 @@ public:
     MySqlManager();
     ~MySqlManager();
 
-    // ��ʼ��
+    // 初始化
     bool init(const ZhKeyes::Util::ConfigManager& config);
 
-    // ===== ���ӹ��� =====
+       // ===== 连接管理 =====
     std::shared_ptr<MySqlConnection> getConnection();
     void returnConnection(std::shared_ptr<MySqlConnection> conn);
 
-    // ===== ������ѯ���������߷�����=====
+      // ===== 数据库查询和操作方法 =====
 
-    // ִ�в�ѯ��SELECT��
+    // 执行查询（SELECT）
     std::unique_ptr<sql::ResultSet> executeQuery(
         std::shared_ptr<MySqlConnection> conn,
         const std::string& sql);
 
-    // ִ�и��£�INSERT/UPDATE/DELETE��
+     // 执行更新（INSERT/UPDATE/DELETE）
     int executeUpdate(
         std::shared_ptr<MySqlConnection> conn,
         const std::string& sql);
 
-    // ����Ԥ�������
+    // 创建预编译语句
     std::unique_ptr<sql::PreparedStatement> prepareStatement(
         std::shared_ptr<MySqlConnection> conn,
         const std::string& sql);
 
-    // ����֧��
+    // 事务支持
     bool beginTransaction(std::shared_ptr<MySqlConnection> conn);
     bool commit(std::shared_ptr<MySqlConnection> conn);
     bool rollback(std::shared_ptr<MySqlConnection> conn);
 
-    // ��ȡ������� ID
+    // 获取最后插入的 ID
     int getLastInsertId(std::shared_ptr<MySqlConnection> conn);
 
-    // ���ӳ�״̬
+    // 连接池状态
     bool isHealthy() const;
     void close();
 

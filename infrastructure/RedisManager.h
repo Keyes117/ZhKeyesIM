@@ -37,6 +37,8 @@ public:
 
     bool HIncrBy(const std::string& key, const std::string& field, int increment);
 
+    bool Expire(const std::string& key, int seconds);
+
     std::map<std::string, std::string> HGetAll(const std::string& key);
 
 private:

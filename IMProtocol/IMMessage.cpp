@@ -14,22 +14,23 @@ ZhKeyesIM::Protocol::IMMessage::IMMessage(MessageType type, uint32_t seqId, cons
 
 std::string ZhKeyesIM::Protocol::IMMessage::serialize() const
 {
-    BinaryWriter writer(HEADER_SIZE + m_body.size());
+    // 确保长度字段是最新的
+    MessageHeader header = m_header;
+    header.length = HEADER_SIZE + m_body.size();
 
-    // 头部固定 16 字节，使用固定长度编码（BinaryWriter 内部已做字节序转换）
-    writer.writeUInt32(m_header.magic);          // Magic
-    writer.writeUInt32(m_header.length);         // Length（含头部）
-    writer.writeUInt16(m_header.type);           // Type
-    writer.writeUInt16(m_header.seqId);          // SeqId
-    writer.writeUInt16(m_header.reserve);        // Reserve
-    writer.writeUInt16(0);
-    // 注意：此时已经写了 4+4+2+2+2 = 14 字节
-    // 但 HEADER_SIZE 定义为 16，所以还有 2 字节空位。
-    // 目前 MessageHeader 结构里只有 14 字节字段（magic+length+type+seqId+reserve，
-    // 这里按顺序再写一个 uint16 即可。
+    BinaryWriter writer(header.length);
 
+    // 按照新协议格式写入头部（18字节）
+    writer.writeUInt32(header.magic);          // Magic: 4 bytes
+    writer.writeUInt32(header.length);         // Length: 4 bytes (包括头部)
+    writer.writeUInt8(header.version);         // Version: 1 byte
+    writer.writeUInt16(header.type);           // Type: 2 bytes
+    writer.writeUInt32(header.seqId);          // SeqId: 4 bytes
+    writer.writeUInt8(header.flags);           // Flags: 1 byte
+    writer.writeUInt16(header.reserve);        // Reserve: 2 bytes
+    // 总计：4+4+1+2+4+1+2 = 18 字节
 
-    // 写入 body（原样字节，不做额外长度前缀）
+    // 写入 body（原始字节，不添加长度前缀）
     if (!m_body.empty()) {
         writer.writeBytes(m_body.data(), m_body.size());
     }
@@ -40,19 +41,21 @@ std::string ZhKeyesIM::Protocol::IMMessage::serialize() const
 bool ZhKeyesIM::Protocol::IMMessage::deserialize(const std::string& data, IMMessage& out)
 {
     if (data.size() < HEADER_SIZE) {
-        return false;
+        return false;  // 数据不足以包含头部
     }
 
     BinaryReader reader(data);
 
     MessageHeader header{};
-    uint16_t empty;
+
+    // 按照新协议格式读取头部（18字节）
     if (!reader.readUInt32(header.magic))   return false;
     if (!reader.readUInt32(header.length))  return false;
+    if (!reader.readUInt8(header.version))  return false;
     if (!reader.readUInt16(header.type))    return false;
-    if (!reader.readUInt16(header.seqId))   return false;
+    if (!reader.readUInt32(header.seqId))  return false;
+    if (!reader.readUInt8(header.flags))    return false;
     if (!reader.readUInt16(header.reserve)) return false;
-    if (!reader.readUInt16(empty)) return false;
 
     // 魔数校验
     if (header.magic != PROTOCOL_MAGIC) {
@@ -63,8 +66,9 @@ bool ZhKeyesIM::Protocol::IMMessage::deserialize(const std::string& data, IMMess
     if (header.length < HEADER_SIZE || header.length > MAX_PACKET_SIZE) {
         return false;
     }
+
+    // 检查数据是否完整（必须刚好是一个完整的消息）
     if (data.size() != header.length) {
-        // 这里要求 data 刚好是一条完整消息
         return false;
     }
 
@@ -78,7 +82,7 @@ bool ZhKeyesIM::Protocol::IMMessage::deserialize(const std::string& data, IMMess
         }
     }
 
-    // 构造输出对象
+    // 设置输出
     out.m_header = header;
     out.m_body = std::move(body);
     return true;
@@ -88,32 +92,39 @@ std::shared_ptr<ZhKeyesIM::Protocol::IMMessage>
         ZhKeyesIM::Protocol::IMMessage::deserializeFromBuffer(const char* data, size_t len)
 {
     if (!data || len < HEADER_SIZE) {
-        return nullptr; // 数据不足以解析头部
+        return nullptr;  // 数据不足以包含头部
     }
 
     BinaryReader reader(data, len);
 
     MessageHeader header{};
 
+    // 按照新协议格式读取头部（18字节）
     if (!reader.readUInt32(header.magic))   return nullptr;
     if (!reader.readUInt32(header.length))  return nullptr;
+    if (!reader.readUInt8(header.version))  return nullptr;
     if (!reader.readUInt16(header.type))    return nullptr;
-    if (!reader.readUInt16(header.seqId))   return nullptr;
+    if (!reader.readUInt32(header.seqId))   return nullptr;
+    if (!reader.readUInt8(header.flags))    return nullptr;
     if (!reader.readUInt16(header.reserve)) return nullptr;
 
+    // 魔数校验
     if (header.magic != PROTOCOL_MAGIC) {
         return nullptr;
     }
 
+    // 长度校验
     if (header.length < HEADER_SIZE || header.length > MAX_PACKET_SIZE) {
         return nullptr;
     }
 
+    // 检查缓冲区是否包含完整的消息
     if (len < header.length) {
-        // 缓冲区里还没有一整条消息，调用方应继续等待更多数据
+        // 缓冲区还没有一个完整的消息，返回 nullptr 表示需要等待更多数据
         return nullptr;
     }
 
+    // 读取 Body
     size_t bodyLen = header.length - HEADER_SIZE;
     std::string body;
     if (bodyLen > 0) {
@@ -123,6 +134,7 @@ std::shared_ptr<ZhKeyesIM::Protocol::IMMessage>
         }
     }
 
+    // 创建消息对象
     auto msg = std::make_shared<IMMessage>();
     msg->m_header = header;
     msg->m_body = std::move(body);

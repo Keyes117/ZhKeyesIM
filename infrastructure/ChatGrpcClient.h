@@ -42,10 +42,10 @@ private:
 
 
 private:
-    StatusGrpcClient(const StatusGrpcClient&) = delete;
-    StatusGrpcClient& operator=(const StatusGrpcClient&) = delete;
-    StatusGrpcClient(StatusGrpcClient&&) = delete;
-    StatusGrpcClient& operator=(StatusGrpcClient&&) = delete;
+    ChatGrpcClient(const ChatGrpcClient&) = delete;
+    ChatGrpcClient& operator=(const ChatGrpcClient&) = delete;
+    ChatGrpcClient(ChatGrpcClient&&) = delete;
+    ChatGrpcClient& operator=(ChatGrpcClient&&) = delete;
 
     
 };

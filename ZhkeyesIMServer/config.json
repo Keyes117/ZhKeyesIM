@@ -6,6 +6,7 @@
         "connNumber":10
     },
     "IMServer":{
+        "serverName":"chatServer1",
         "threadNum":4,
         "ip":"127.0.0.1",
         "port":9000,

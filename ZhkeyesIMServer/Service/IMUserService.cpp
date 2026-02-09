@@ -128,5 +128,7 @@ void IMUserService::auth(uint32_t uid, const std::string& token, std::shared_ptr
 
         msg.setBody(writer.getData());
 
+
+        sender->sendMessage(msg);
     }
 }

@@ -23,14 +23,14 @@ class ResetPasswordTask : public Task
 public:
     ResetPasswordTask(
         Task::ConstructorKey key,
-        std::shared_ptr<IMClient> client,
         Task::TaskId id,
+        std::shared_ptr<IMClient> client, 
         std::string email,
         std::string newPassword,
         std::string code
   );
 
-    ~ResetPasswordTask() override = default;
+    virtual ~ResetPasswordTask() override = default;
 
     void doTask() override;
 

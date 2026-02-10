@@ -11,12 +11,12 @@
 class SearchInfo {
 public:
     SearchInfo(int uid, QString name, QString nick, QString desc, int sex, QString icon = "");
-	int     m_uid;
-	QString m_name;
-	QString m_nick;
-	QString m_desc;
-	int     m_sex;
-    QString m_icon;
+	uint32_t        m_uid;
+	QString         m_name;
+	QString         m_nick;
+	QString         m_desc;
+	uint32_t        m_sex;
+    QString         m_icon;
 };
 
 class AddFriendApply {
@@ -176,5 +176,13 @@ struct TextChatMsg{
     std::vector<std::shared_ptr<TextChatData>> _chat_msgs;
 };
 
+Q_DECLARE_METATYPE(SearchInfo)
+Q_DECLARE_METATYPE(ApplyInfo)
+Q_DECLARE_METATYPE(AuthInfo)
+Q_DECLARE_METATYPE(AuthRsp)
+Q_DECLARE_METATYPE(FriendInfo)
+Q_DECLARE_METATYPE(UserInfo)
+Q_DECLARE_METATYPE(TextChatData)
+Q_DECLARE_METATYPE(TextChatMsg)
 
 #endif  

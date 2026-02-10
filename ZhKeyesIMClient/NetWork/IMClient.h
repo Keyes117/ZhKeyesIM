@@ -10,6 +10,7 @@
 #include "util/ConfigManager.h"
 #include "Base/global.h"
 
+
 class IMClient
 {
 public:
@@ -21,9 +22,6 @@ public:
     ~IMClient();
 
     bool init(const ZhKeyes::Util::ConfigManager& config);
-
-    bool connect(const std::string& ip, uint16_t port, 
-        SuccessCallback onSuccess = nullptr, ErrorCallback onError = nullptr);
 
     void requestVerificationCode(const std::string& jsonString,
         ZhKeyesIM::Net::Http::HttpClient::ResponseCallback onResponse,
@@ -43,7 +41,19 @@ public:
         ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError
     );
 
-    
+    // ==================== Tcp =============================
+
+    bool tcpConnect(const std::string& ip, uint16_t port,
+        SuccessCallback onSuccess = nullptr, ErrorCallback onError = nullptr);
+
+    void tcpDisconnect();
+
+    void auth(uint32_t uid, const std::string& token, 
+        TcpManager::TcpResponseHandler onResponse = nullptr, ErrorCallback onError = nullptr);
+
+    void applyFriend(uint32_t uid,TcpManager::TcpResponseHandler onResponse, ErrorCallback onError =nullptr);
+
+    void searchUser(uint32_t uid, TcpManager::TcpResponseHandler onResponse, ErrorCallback onError = nullptr);
 
 private:
     void networkThreadFunc();
@@ -54,8 +64,8 @@ private:
 
     std::shared_ptr<EventLoop>              m_spMainEventLoop;
     std::unique_ptr<std::thread>            m_networkThread;
-    std::unique_ptr<TcpManager>             m_spTcpManager;
-    std::unique_ptr<HttpManager>            m_spHttpManager;
+    std::shared_ptr<TcpManager>             m_spTcpManager;
+    std::shared_ptr<HttpManager>            m_spHttpManager;
 
     std::string m_httpBaseUrl;
 };

@@ -10,8 +10,8 @@
 
 UserLoginTask::UserLoginTask(
     Task::ConstructorKey key,
-    std::shared_ptr<IMClient> client,
     Task::TaskId id,
+    std::shared_ptr<IMClient> client,
     std::string email,
     std::string password)
     : Task(key, id, Task::TaskType::TASK_TYPE_LOGIN),
@@ -120,12 +120,12 @@ void UserLoginTask::onHttpSuccess(const User& data)
     );
 
     connect(tcpConnectTask.get(), &Task::taskSuccess, this, [this]() {
-        this->onTaskSuccess();
+        onTaskSuccess(); 
         });
-    connect(tcpConnectTask.get(), &Task::taskFailed, this, [this](const QString& errorMsg) {
-        this->onTaskError(errorMsg.toStdString());
+    connect(tcpConnectTask.get(), &Task::taskFailed, this, [this](const QString& error) {
+        onTaskError(error.toStdString());
         });
-
+ 
     TaskHandler::getInstance().registerNetTask(std::move(tcpConnectTask));
 }
 

@@ -20,7 +20,7 @@ std::string ZhKeyesIM::Protocol::IMMessage::serialize() const
 
     BinaryWriter writer(header.length);
 
-    // 按照新协议格式写入头部（18字节）
+    // 按照协议格式写入头部
     writer.writeUInt32(header.magic);          // Magic: 4 bytes
     writer.writeUInt32(header.length);         // Length: 4 bytes (包括头部)
     writer.writeUInt8(header.version);         // Version: 1 byte
@@ -30,7 +30,7 @@ std::string ZhKeyesIM::Protocol::IMMessage::serialize() const
     writer.writeUInt16(header.reserve);        // Reserve: 2 bytes
     // 总计：4+4+1+2+4+1+2 = 18 字节
 
-    // 写入 body（原始字节，不添加长度前缀）
+    // 写入 body
     if (!m_body.empty()) {
         writer.writeBytes(m_body.data(), m_body.size());
     }
@@ -57,7 +57,7 @@ bool ZhKeyesIM::Protocol::IMMessage::deserialize(const std::string& data, IMMess
     if (!reader.readUInt8(header.flags))    return false;
     if (!reader.readUInt16(header.reserve)) return false;
 
-    // 魔数校验
+    // magic校验
     if (header.magic != PROTOCOL_MAGIC) {
         return false;
     }

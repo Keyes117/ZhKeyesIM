@@ -162,7 +162,8 @@ set(CLIENT_TASK_SOURCE
     Task/UserLoginTask.cpp
     Task/TcpConnectTask.h
     Task/TcpConnectTask.cpp
-
+    Task/SearchUserTask.h
+    Task/SearchUserTask.cpp
 )
 
 # Qt配置

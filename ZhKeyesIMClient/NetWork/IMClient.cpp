@@ -41,7 +41,7 @@ bool IMClient::init(const ZhKeyes::Util::ConfigManager& config)
         return false;
     }
    
-    m_spHttpManager = std::make_unique<HttpManager>(m_spMainEventLoop);
+    m_spHttpManager = std::make_shared<HttpManager>(m_spMainEventLoop);
     if (!m_spHttpManager->init(config));
     {
         LOG_ERROR("IMClient: 初始化 HttpManager 失败");
@@ -57,15 +57,20 @@ bool IMClient::init(const ZhKeyes::Util::ConfigManager& config)
     return true;
 }
 
-bool IMClient::connect(const std::string& ip, uint16_t port,
+bool IMClient::tcpConnect(const std::string& ip, uint16_t port,
     SuccessCallback onSuccess /*= nullptr */, ErrorCallback onError /*= nullptr */)
 {
-    m_spTcpManager = std::make_unique<TcpManager>(m_spMainEventLoop);
+    m_spTcpManager = std::make_shared<TcpManager>(m_spMainEventLoop);
 
     m_spTcpManager->setConnectCallback(std::move(onSuccess));
     m_spTcpManager->setConnectFailedCallback(std::move(onError));
 
     return m_spTcpManager->connect(ip, port);
+}
+
+void IMClient::tcpDisconnect()
+{
+    m_spTcpManager->disconnect();
 }
 
 void IMClient::requestVerificationCode(const std::string& jsonString,
@@ -94,6 +99,23 @@ void IMClient::requestUserLogin(const std::string& jsonString,
     ZhKeyesIM::Net::Http::HttpClient::ErrorCallback onError)
 {
     m_spHttpManager->requestUserLogin(jsonString, onResponse, onError);
+}
+
+void IMClient::auth(uint32_t uid, const std::string& token,
+    TcpManager::TcpResponseHandler onResponse, ErrorCallback onError/* = nullptr*/)
+{
+    m_spTcpManager->authenticate(uid, token, std::move(onResponse),std::move(onError));
+}
+
+void IMClient::applyFriend(uint32_t uid, TcpManager::TcpResponseHandler onResponse,
+    ErrorCallback onError)
+{
+    m_spTcpManager->applyFriend(uid, std::move(onResponse), std::move(onError));
+}
+
+void IMClient::searchUser(uint32_t uid, TcpManager::TcpResponseHandler onResponse, ErrorCallback onError)
+{
+    m_spTcpManager->searchUser(uid, onResponse, onError);
 }
 
 void IMClient::networkThreadFunc()

@@ -6,6 +6,8 @@
 #include <memory>
 #include <functional>
 #include <string>
+#include <type_traits>
+#include <utility>
 
 #include "Task/Task.h"
 #include "Task/HttpResponseTask.h"
@@ -25,6 +27,10 @@ public:
     bool init(std::shared_ptr<IMClient> client);
 
     // ==================== 任务构建方法 ====================
+    
+    template<class TaskT, typename... Args>
+    std::shared_ptr<TaskT> buildTask(Args&&... args);
+
 
     /**
      * 注册任务
@@ -70,6 +76,10 @@ public:
         uint16_t port
     );
 
+    std::shared_ptr<Task> buildSearchUserTask(
+        uint32_t uid
+    );
+
 private:
     TaskBuilder() = default;
     Task::TaskId generateTaskId();
@@ -78,3 +88,18 @@ private:
 };
 
 #endif
+
+template<class TaskT, typename ...Args>
+inline std::shared_ptr<TaskT> TaskBuilder::buildTask(Args && ...args)
+{
+    static_assert(std::is_base_of<Task, TaskT>::valude,
+        "TaskT must derive from Task");
+
+    Task::TaskId taskId = generateTaskId();
+
+    return std::make_shared<TaskT>(
+        Task::ConstructorKey{},
+        taskId,
+        std::forward<Args>(args...)
+    );
+}

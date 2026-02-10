@@ -13,7 +13,7 @@ class SearchListWidget : public QListWidget
 public:
     SearchListWidget(QWidget* parent = nullptr);
     void closeFindDlg();
-    void setSearchEdit(QWidget* eidt);
+    void setSearchEdit(QWidget* edit);
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event);

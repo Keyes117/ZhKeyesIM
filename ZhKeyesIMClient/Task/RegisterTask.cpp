@@ -9,8 +9,8 @@
 
 RegisterTask::RegisterTask(
     Task::ConstructorKey key,
+    Task::TaskId taskId,
     std::shared_ptr<IMClient> client,
-    uint64_t taskId,
     std::string username,
     std::string email,
     std::string password,

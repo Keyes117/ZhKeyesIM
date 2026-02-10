@@ -4,12 +4,14 @@
 #include <QWheelEvent>
 #include <QScrollBar>
 
+#include "Base/UserData.h"
 #include "UI/AddUserItem.h"
 #include "UI/CustomizeEdit.h"
 #include "UI/LoadingDialog.h"
 #include "UI/FindSuccessDialog.h"
-
-#include "Base/UserData.h"
+#include "Task/TaskBuilder.h"
+#include "Task/TaskHandler.h"
+#include "Task/SearchUserTask.h"
 
 SearchListWidget::SearchListWidget(QWidget* parent):
     QListWidget(parent)
@@ -33,8 +35,9 @@ void SearchListWidget::closeFindDlg()
 {
 }
 
-void SearchListWidget::setSearchEdit(QWidget* eidt)
+void SearchListWidget::setSearchEdit(QWidget* edit)
 {
+    m_searchEdit = edit;
 }
 
 bool SearchListWidget::eventFilter(QObject* watched, QEvent* event)
@@ -131,8 +134,15 @@ void SearchListWidget::onItemClicked(QListWidgetItem* item)
         waitPending(true);
         
         auto searchEdit = dynamic_cast<CustomizeEdit*>(m_searchEdit);
-
         auto strUid = searchEdit->text();
+
+        uint32_t uid = strUid.toUInt();
+        auto task = TaskBuilder::getInstance().buildTask<SearchUserTask>(uid);
+
+        connect(task.get(), &SearchUserTask::userSearched, this, &SearchListWidget::onUserSearch);
+
+        TaskHandler::getInstance().registerNetTask(std::move(task));
+
 
     }
 

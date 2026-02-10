@@ -21,8 +21,8 @@ class UserLoginTask : public Task
 public:
     UserLoginTask(
         Task::ConstructorKey key,
-        std::shared_ptr<IMClient> client,
         Task::TaskId id,
+        std::shared_ptr<IMClient> client,
         std::string email,
         std::string password);
 
@@ -33,6 +33,7 @@ public:
 private:
     void onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& response);
     void onHttpSuccess(const User& data);
+
 
 private:
     std::shared_ptr<IMClient> m_client;

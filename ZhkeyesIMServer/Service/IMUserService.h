@@ -20,7 +20,8 @@ public:
 
     ~IMUserService() = default;
 
-    void auth(uint32_t uid, const std::string& token, std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender);
+    void auth(uint32_t uid, const std::string& token, uint64_t seqId,
+        std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender);
 
     
 

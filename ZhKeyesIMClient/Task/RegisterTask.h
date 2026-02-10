@@ -30,8 +30,8 @@ public:
     */
     RegisterTask(
         Task::ConstructorKey key,
-        std::shared_ptr<IMClient> client,
         Task::TaskId taskId,
+        std::shared_ptr<IMClient> client,
         std::string username,
         std::string email,
         std::string password,

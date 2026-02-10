@@ -30,7 +30,8 @@ public:
         TASK_TYPE_LOGIN,
         TASK_TYPE_RESETPASS,
         TASK_TYPE_HTTPRESPONSE,
-        TASK_TYPE_TCPCONNECT
+        TASK_TYPE_TCPCONNECT,
+        TASK_TYPE_SEARCHFRIEND
     };
 
     using TaskId = uint64_t;
@@ -47,11 +48,13 @@ signals:
     void taskFailed(const QString& errorMsg);
     void taskSuccess();
 
+
 protected:
     Task(ConstructorKey, TaskId taskId,TaskType type)
         : QObject(), m_taskId(taskId),
         m_taskType(type)
     {}
+
 
     virtual void onTaskSuccess()
     {

@@ -17,8 +17,8 @@ class TcpConnectTask : public Task
 public:
     TcpConnectTask(
         Task::ConstructorKey key,
-        std::shared_ptr<IMClient> client,
         Task::TaskId id,
+        std::shared_ptr<IMClient> client,
         std::string ip,
         uint16_t port);
 
@@ -27,6 +27,10 @@ public:
 
     virtual void doTask() override;
 
+    void onTcpConnected();
+
+    void onAuthResponse(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage>,
+        std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender>);
 
 private:
     std::shared_ptr<IMClient> m_client;

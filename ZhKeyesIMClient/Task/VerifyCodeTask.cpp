@@ -8,8 +8,8 @@
 
 VerifyCodeTask::VerifyCodeTask(
     Task::ConstructorKey key,
-    std::shared_ptr<IMClient> client,
     Task::TaskId id,
+    std::shared_ptr<IMClient> client,
     std::string email)
     :Task(key, id,Task::TaskType::TASK_TYPE_VERIFYCODE),
     m_spClient(std::move(client)),

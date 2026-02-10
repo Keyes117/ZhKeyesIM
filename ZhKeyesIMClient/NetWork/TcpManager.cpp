@@ -30,11 +30,19 @@ bool TcpManager::connect(const std::string& ip, uint16_t port)
     return m_spTcpClient->connect();
 }
 
-bool TcpManager::authenticate(const std::string& token, uint32_t uid)
+void TcpManager::disconnect()
+{
+    m_spTcpClient->disconnect();
+}
+
+bool TcpManager::authenticate(uint32_t uid, const std::string& token,
+    TcpResponseHandler onResponse, ErrorCallback onError/* = nullptr*/)
 {
     if (!m_spTcpClient || !m_spTcpClient->isConnected())
     {
         LOG_ERROR("TcpManager: 未连接，无法发送认证消息");
+        if(onError)
+            onError("未建立连接,无法发送认证消息");
         return false;
     }
 
@@ -44,23 +52,63 @@ bool TcpManager::authenticate(const std::string& token, uint32_t uid)
 
     ZhKeyesIM::Protocol::IMMessage authMsg(
         ZhKeyesIM::Protocol::MessageType::AUTH_REQ,
-        0,
+        generateSeqId(),
         bodyWriter.getData()
     );
 
     bool sent = sendMessage(authMsg);
 
-    if (sent) {
+    if (sent)
+    {
+        addPendingRequest(authMsg.getSeqId(), std::move(onResponse));
         LOG_INFO("TcpManager: 认证消息已发送, uid=%d", uid);
     }
-    else {
-        LOG_ERROR("TcpManager: 发送认证消息失败");
-        if (m_connectFailedCallback)
-            m_connectFailedCallback("发送认证消息失败");
-        releaseConnectCallback();
+    else 
+    {
+        if (onError)
+            onError("消息发送失败，请检查网络问题");
+    }
+    return sent;
+}
+
+bool TcpManager::applyFriend(uint32_t uid, TcpResponseHandler onResponse,ErrorCallback onError)
+{
+    return false;
+}
+
+bool TcpManager::searchUser(uint32_t uid, TcpResponseHandler onResponse, ErrorCallback onError)
+{
+    if (!m_spTcpClient || !m_spTcpClient->isConnected())
+    {
+        LOG_ERROR("TcpManager: 未连接，无法发送认证消息");
+        if (onError)
+            onError("网络未连接");
+        return false;
     }
 
+    ZhKeyesIM::Protocol::BinaryWriter bodyWriter;
+    bodyWriter.writeUInt32(uid);
+
+    ZhKeyesIM::Protocol::IMMessage authMsg(
+        ZhKeyesIM::Protocol::MessageType::AUTH_REQ,
+        generateSeqId(),
+        bodyWriter.getData()
+    );
+
+    bool sent = sendMessage(authMsg);
+
+    if (sent)
+    {
+        addPendingRequest(authMsg.getSeqId(), std::move(onResponse));
+        LOG_INFO("TcpManager: 认证消息已发送, uid=%d", uid);
+    }
+    else
+    {
+        if (onError)
+            onError("消息发送失败，请检查网络问题");
+    }
     return sent;
+
 }
 
 bool TcpManager::sendMessage(const ZhKeyesIM::Protocol::IMMessage& msg)
@@ -75,70 +123,61 @@ void TcpManager::releaseConnectCallback()
     m_connectionCallback = nullptr;
 }
 
-void TcpManager::registerHandler()
+uint64_t TcpManager::generateSeqId()
 {
-    m_dispatcher.registerHandler(ZhKeyesIM::Protocol::MessageType::AUTH_RESP,
-        std::bind(&TcpManager::handleAuthResponse, this, std::placeholders::_1, std::placeholders::_2)
-    );
+    static std::atomic<uint64_t> counter{ 1 };
+    return counter.fetch_add(1);
 }
 
-void TcpManager::handleAuthResponse(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg, std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender)
+void TcpManager::registerHandler(ZhKeyesIM::Protocol::MessageType type, TcpResponseHandler&& handler)
 {
-    auto fail = [this](const std::string& reason) {
-        LOG_WARN("TcpManager: AUTH_RESP 失败: %s", reason.c_str());
-        if (m_connectFailedCallback)
-            m_connectFailedCallback(reason);
-        if (m_spTcpClient)
-            m_spTcpClient->disconnect();
-        releaseConnectCallback();
-        };
-
-    if (!msg || !msg->hasBody()) {
-        fail("认证响应为空");
-        return;
+    if (m_dispatcher.hasRegistered(type))
+    {
+        m_dispatcher.updateHandler(type, std::move(handler));
+    }
+    else
+    {
+        m_dispatcher.registerHandler(type, std::move(handler));
     }
 
-    ZhKeyesIM::Protocol::BinaryReader reader(msg->getBody());
-
-    uint8_t success = 0;
-    uint32_t uid = 0;
-    if (!reader.readUInt8(success) || !reader.readUInt32(uid)) {
-        fail("认证响应解析失败");
-        return;
-    }
-
-    if (success == 0) {
-        std::string err;
-        if (!reader.readString(err))
-            err = "认证失败";
-        fail(err);
-        return;
-    }
-
-    // success == 1，继续解析剩余字段
-    std::string token, name, email, nick, desc, icon, back;
-    uint32_t sex = 0;
-    if (!reader.readString(token) ||
-        !reader.readString(name) ||
-        !reader.readString(email) ||
-        !reader.readString(nick) ||
-        !reader.readString(desc) ||
-        !reader.readUInt32(sex) ||
-        !reader.readString(icon) ||
-        !reader.readString(back)) {
-        fail("认证响应字段不完整");
-        return;
-    }
-
-    LOG_INFO("TcpManager: 认证成功, uid=%u, name=%s", uid, name.c_str());
-
-   /*  TODO: 如有需要，这里可以构造 AuthRsp 并投递到 UI 线程（TaskHandler）*/
-
-    // 最终认为“连接（含认证）成功”
-    if (m_connectionCallback)
-        m_connectionCallback();
-    releaseConnectCallback();
 }
+
+void TcpManager::addPendingRequest(uint64_t seqId, TcpResponseHandler&& handler)
+{
+    std::lock_guard<std::mutex> lock(m_pendingMutex);
+    m_pendingRequests[seqId] = PendingRequest{ std::move(handler) };
+}
+
+bool TcpManager::handleResponseBySeqId(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg, std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender)
+{
+    if (!msg) return false;
+
+    uint32_t seqId = msg->getSeqId();
+    if (seqId == 0) {
+        // 约定：0 表示无 seqId，交给 type-dispatcher 处理
+        return false;
+    }
+
+    TcpResponseHandler handler;
+
+    {
+        std::lock_guard<std::mutex> lock(m_pendingMutex);
+        auto it = m_pendingRequests.find(seqId);
+        if (it == m_pendingRequests.end())
+            return false;
+
+        handler = std::move(it->second.handler);
+        m_pendingRequests.erase(it);
+    }
+
+    if (handler)
+    {
+        handler(std::move(msg), std::move(sender));
+        return true;
+    }
+    return false;
+}
+
 
 void TcpManager::onTcpResponse(Buffer& buf)
 {
@@ -208,9 +247,16 @@ void TcpManager::onTcpResponse(Buffer& buf)
         auto msg = ZhKeyesIM::Protocol::IMMessage::deserializeFromBuffer(data, readable);
         if (!msg)
             break;
-         
+             
+
         auto self = shared_from_this();
-        m_dispatcher.dispatch(msg,self);
+
+        // 如果没有人等待这个SeqId 的回复， 则统一进行Dispatch
+        if (!handleResponseBySeqId(msg, self))
+        {
+            m_dispatcher.dispatch(msg, self);
+        }
+        
 
         size_t msgLen = msg->getLength();
         buf.retrieve(msgLen);
@@ -220,22 +266,13 @@ void TcpManager::onTcpResponse(Buffer& buf)
 
 void TcpManager::onConnected(std::shared_ptr<TCPConnection> spConn)
 {
+    spConn->setReadCallback(std::bind(&TcpManager::onTcpResponse, this, std::placeholders::_1)); 
+  
 
-    spConn->setReadCallback(std::bind(&TcpManager::onTcpResponse, this, std::placeholders::_1));
-
-    const std::string token = UserSession::getInstance().getToken();
-    int64_t uid = UserSession::getInstance().getUid();
-    if (!token.empty() && uid > 0) {
-        authenticate(token, uid);
-    }
-    else {
-        LOG_ERROR("TcpManager: Token 或 UID 未设置，无法认证");
-        if(m_connectFailedCallback)
-            m_connectFailedCallback("用户信息错误，认证失败");
-        m_spTcpClient->disconnect();
-        releaseConnectCallback();
-        return;
-    }
+    if (m_connectionCallback)
+        m_connectionCallback();
+    releaseConnectCallback();
+    return;   
 
 }
 

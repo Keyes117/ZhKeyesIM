@@ -5,6 +5,7 @@
 #include "Task/VerifyCodeTask.h"
 #include "Task/ResetPasswordTask.h"
 #include "Task/TcpConnectTask.h"
+#include "Task/SearchUserTask.h"
 
 TaskBuilder& TaskBuilder::getInstance()
 {
@@ -106,6 +107,21 @@ std::shared_ptr<Task> TaskBuilder::buildTcpConnectTask(
         Task::ConstructorKey{},
         m_client,taskId,ip,port
        );
+
+    return std::move(tcpConnectTask);
+}
+
+std::shared_ptr<Task> TaskBuilder::buildSearchUserTask(uint32_t uid)
+{
+    if (!m_client)
+        return nullptr;
+
+    Task::TaskId taskId = generateTaskId();
+
+    auto tcpConnectTask = std::make_shared<SearchUserTask>(
+        Task::ConstructorKey{}, taskId,
+        m_client, uid
+    );
 
     return std::move(tcpConnectTask);
 }

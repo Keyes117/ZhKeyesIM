@@ -13,11 +13,12 @@ void IMUserController::auth(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg,
 
     ZhKeyesIM::Protocol::BinaryReader reader(msgBody);
     
+    uint64_t seqId = msg->getSeqId();
     uint32_t uid;
     std::string token;
 
     reader.readUInt32(uid);
     reader.readString(token);
 
-    m_spUserService->auth(uid, token, sender);    
+    m_spUserService->auth(uid, token,seqId, sender);    
 }

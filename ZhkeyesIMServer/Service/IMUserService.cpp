@@ -19,10 +19,11 @@ IMUserService::IMUserService(std::shared_ptr<IMUserRepository> userRepo,
 {
 }
 
-void IMUserService::auth(uint32_t uid, const std::string& token, std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender)
+void IMUserService::auth(uint32_t uid, const std::string& token, uint64_t seqId,
+    std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender)
 {
     ZhKeyesIM::Protocol::IMMessage msg;
-    msg.setSeqId(0);
+    msg.setSeqId(seqId);
     msg.setType(ZhKeyesIM::Protocol::MessageType::AUTH_RESP);
 
     auto session = std::dynamic_pointer_cast<IMSession>(sender);

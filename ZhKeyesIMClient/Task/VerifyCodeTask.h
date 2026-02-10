@@ -24,8 +24,8 @@ class VerifyCodeTask : public Task
 public:
     VerifyCodeTask(
         Task::ConstructorKey key,
-        std::shared_ptr<IMClient> spClient,
         Task::TaskId id,
+        std::shared_ptr<IMClient> spClient, 
         std::string email
      );
 

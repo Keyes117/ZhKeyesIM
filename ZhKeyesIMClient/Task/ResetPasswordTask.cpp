@@ -75,7 +75,7 @@ void ResetPasswordTask::onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse&
         };
 
 
-    auto responseTask = TaskBuilder::getInstance().buildHttpResponseTask(
+    auto responseTask = TaskFactory::getInstance().buildTask<HttpResponseTask>(
         std::move(responseBody),      
         std::move(responseFunc));     
 

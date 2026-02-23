@@ -131,7 +131,7 @@ void TcpConnectTask::onAuthResponse(std::shared_ptr<ZhKeyesIM::Protocol::IMMessa
 
     LOG_INFO("TcpManager: 认证成功, uid=%u, name=%s", uid, name.c_str());
 
-    /*  TODO:这里构造 AuthRsp 并投递到 UI 线程（TaskHandler）*/
+    onTaskSuccess();
 
 }
 

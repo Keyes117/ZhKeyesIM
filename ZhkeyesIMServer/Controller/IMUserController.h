@@ -13,7 +13,14 @@ public:
     IMUserController(std::shared_ptr<IMUserService> UserService);
     virtual ~IMUserController() = default;
 
-    void auth(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage>, std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender>);
+    void auth(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage>,
+        std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender>);
+
+    void searchUser(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage>, 
+        std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender>);
+
+    void applyFriend(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage>,
+        std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender>);
 
 private:
     std::shared_ptr<IMUserService> m_spUserService;

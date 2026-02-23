@@ -66,7 +66,7 @@ void VerifyCodeTask::onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& re
         };
 
 
-    auto responseTask = TaskBuilder::getInstance().buildHttpResponseTask(
+    auto responseTask = TaskFactory::getInstance(). buildTask<HttpResponseTask>(
         std::move(responseBody),      // 移动局部变量
         std::move(responseFunc));      // 移动 lambda
     TaskHandler::getInstance().registerUITask(std::move(responseTask));

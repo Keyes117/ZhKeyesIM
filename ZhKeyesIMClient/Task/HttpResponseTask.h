@@ -5,11 +5,8 @@
 #include <string>
 #include <Task/Task.h>
 
-class TaskBuilder;
-
 class HttpResponseTask : public Task
 {
-    friend class TaskBuilder;
     Q_OBJECT
 public:
     using ResponseFunc = std::function<void(const std::string& responseBody)>;

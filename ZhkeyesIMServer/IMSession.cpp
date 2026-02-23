@@ -29,7 +29,7 @@ void IMSession::setUserInfo(uint32_t uid, const std::string& token)
 {
     m_uid = uid;
     m_token = token;
-    //m_pServer->
+    m_pServer->setUserSession(uid, std::dynamic_pointer_cast<IMSession>(shared_from_this()));
 }
 
 uint32_t IMSession::generateID()
@@ -69,7 +69,7 @@ void IMSession::onRead(Buffer& buf)
                 uint32_t magicValue;
                 std::memcpy(&magicValue, data + i, 4);
                 // 将读取的值转换为网络字节序（因为网络数据是大端序）
-                magicValue = ZhKeyes::Util::ByteOrder::hostToNetwork32(magicValue);
+                magicValue = ZhKeyes::Util::ByteOrder::networkToHost32(magicValue);
                 if (magicValue == ZhKeyesIM::Protocol::PROTOCOL_MAGIC)
                 {
                     foundMagic = true;
@@ -114,11 +114,13 @@ void IMSession::onRead(Buffer& buf)
         if (!msg)
             break;
 
+        size_t msgLen = msg->getLength();
+        buf.retrieve(msgLen);
+
         auto self = shared_from_this();
         m_pServer->handleMsg(msg, self);
 
-        size_t msgLen = msg->getLength();
-        buf.retrieve(msgLen);
+
 
     }
 

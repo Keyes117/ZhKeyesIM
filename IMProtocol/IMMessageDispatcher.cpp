@@ -10,7 +10,7 @@ bool ZhKeyesIM::Protocol::IMMessageDispatcher::registerHandler(MessageType type,
     }
 
     m_messageHandlers[type] = std::move(handler);
-
+    return true;
 }
 
 bool ZhKeyesIM::Protocol::IMMessageDispatcher::hasRegistered(MessageType type)

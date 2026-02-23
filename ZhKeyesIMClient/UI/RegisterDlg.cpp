@@ -7,6 +7,8 @@
 #include "Base/global.h"
 #include "Task/TaskHandler.h"
 #include "Task/TaskBuilder.h"
+#include <Task/RegisterTask.h>
+#include <Task/VerifyCodeTask.h>
 
 RegisterDlg::RegisterDlg( QWidget* parent)
     : QDialog(parent),
@@ -189,7 +191,7 @@ void RegisterDlg::onRegisterButtonClicked()
     QString strPassword = m_ui.lineEdit_password->text();
     QString strCode = m_ui.lineEdit_code->text();
 
-    auto regiserTask = TaskBuilder::getInstance().buildRegisterTask(
+    auto regiserTask = TaskFactory::getInstance().buildTask<RegisterTask>(
         strUser.toStdString(),
         strEmail.toStdString(),
         strPassword.toStdString(),
@@ -210,7 +212,7 @@ void RegisterDlg::onCodeButtonClicked()
     if (match)
     {
         //发送验证码
-        auto verifyCodeTask = TaskBuilder::getInstance().buildVerifyCodeTask(
+        auto verifyCodeTask = TaskFactory::getInstance().buildTask<VerifyCodeTask>(
             email.toStdString()
         );       
 

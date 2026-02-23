@@ -11,13 +11,7 @@ namespace Protocol {
 class IMMessage
 {
 public:
-    /**
-     * @brief ??????
-     * @param type IMProtocol.h ?????
-     * @param seqId ???
-     * @param body //???????????BInaryWrite ?????????
-     */
-    IMMessage(MessageType type = MessageType::UNKNOWN, uint32_t seqId = INT_MAX, const std::string& body = " ");
+    IMMessage(MessageType type = MessageType::UNKNOWN, uint32_t seqId = INT_MAX, const std::string& body = "");
 
 
     // Getter/Setter

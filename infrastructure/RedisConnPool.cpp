@@ -87,7 +87,7 @@ void RedisConnPool::returnConnection(redisContext* context)
 
 void RedisConnPool::close()
 {
-    m_bStop = true;
+    m_bStop.store(true);
     m_cv.notify_all();
 }
 

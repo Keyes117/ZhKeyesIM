@@ -54,7 +54,11 @@ namespace ZhKeyesIM {
             //群聊(200-299)
 
             //好友(300-399)
-
+            SEARCH_USER_REQ = 300,          //搜索好友 
+            SEARCH_USER_RESP = 301,         //搜索好友 
+            APPLY_USER_REQ = 302,           //申请好友
+            APPLY_USER_RESP = 303,          //申请好友
+            NOTIFY_FRIEND_APPLY = 304,  // 服务端推送：有人申请加你为好友
             //用户状态(400-499)
 
             //错误(900)
@@ -149,7 +153,25 @@ namespace ZhKeyesIM {
         
         
     */
+        /*
+        APPLY_USER_REQ(302) — 客户端 → 服务端
 
+            字段	类型	说明
+            toUid	uint32_t	目标用户UID
+            APPLY_USER_RESP(303) — 服务端 → 客户端（申请人）
+
+            成功：
+            字段	类型	说明
+            success	uint8_t	1
+            toUid	uint32_t	目标用户UID
+
+            失败：
+            字段	类型	说明
+            success	uint8_t	0
+            toUid	uint32_t	目标用户UID
+            errorMsg	string	错误信息
+
+        */
     } //Protocol
 }   //ZhKeyesIM
   

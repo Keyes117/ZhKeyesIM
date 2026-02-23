@@ -68,7 +68,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    if (!TaskBuilder::getInstance().init(spIMClient))
+    if (!TaskFactory::getInstance().init(spIMClient))
     {
         LOG_ERROR("TaskBuilder 初始化失败....");
         return 1;            

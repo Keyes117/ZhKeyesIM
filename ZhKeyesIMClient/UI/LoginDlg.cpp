@@ -100,8 +100,8 @@ void LoginDlg::hideFieldError(const QString& fieldName)
 
 void LoginDlg::onLoginButtonClicked()
 {
-    emit loginSuccess();
-    return;
+    //emit loginSuccess();
+    //return;
 
     if (!checkEmailValid())
     {
@@ -116,7 +116,7 @@ void LoginDlg::onLoginButtonClicked()
     QString email = m_ui.lineEdit_accout->text();
     QString password = m_ui.lineEdit_password->text();
 
-    auto loginTask = TaskBuilder::getInstance().buildLoginTask(
+    auto loginTask = TaskFactory::getInstance().buildTask<UserLoginTask>(
         email.toStdString(),
         password.toStdString());
 

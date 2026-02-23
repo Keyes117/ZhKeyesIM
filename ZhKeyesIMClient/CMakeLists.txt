@@ -164,6 +164,8 @@ set(CLIENT_TASK_SOURCE
     Task/TcpConnectTask.cpp
     Task/SearchUserTask.h
     Task/SearchUserTask.cpp
+    Task/AddFriendTask.h
+    Task/AddFriendTask.cpp
 )
 
 # Qt配置

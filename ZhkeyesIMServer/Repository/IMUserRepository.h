@@ -21,6 +21,7 @@ struct ServerInfo {
     std::string serverName;
     std::string serverIp;
     int32_t serverPort;
+    int32_t grpcPort;
     int64_t connectTime;
     std::string sessionId;
 };
@@ -38,7 +39,7 @@ public:
     std::optional<UserInfo> getUserInfo(int32_t uid);
 
     bool setUserServerMapping(int32_t uid, const std::string& serverName,
-        const std::string& serverIp, int32_t serverPort,
+        const std::string& serverIp, int32_t serverPort, int32_t grpcPort,
         const std::string& sessionId);
 
     /**
@@ -77,6 +78,30 @@ public:
      * @return 连接数，如果不存在返回 nullopt
      */
     std::optional<int> getServerConnectionCount(const std::string& serverName);
+
+    // ========== 好友申请相关 ==========
+
+  /**
+   * @brief 检查是否已存在待处理的好友申请
+   * @param fromUid 申请人UID
+   * @param toUid 目标用户UID
+   * @return true 已存在待处理申请
+   */
+    bool hasPendingApply(int32_t fromUid, int32_t toUid);
+
+    /**
+     * @brief 保存好友申请到数据库
+     * @param fromUid 申请人UID
+     * @param toUid 目标用户UID
+     * @return true 保存成功
+     */
+    bool saveFriendApply(int32_t fromUid, int32_t toUid);
+
+    /**
+    * @brief 检查两个用户是否已经是好友
+    */
+    bool areFriends(int32_t uid1, int32_t uid2);
+
 
 private:
     std::shared_ptr<RedisManager> m_spRedis;

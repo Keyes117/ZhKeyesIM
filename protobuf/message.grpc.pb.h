@@ -442,6 +442,213 @@ class StatusService final {
   typedef WithStreamedUnaryMethod_GetChatServer<Service > StreamedService;
 };
 
+class ChatService final {
+ public:
+  static constexpr char const* service_full_name() {
+    return "message.ChatService";
+  }
+  class StubInterface {
+   public:
+    virtual ~StubInterface() {}
+    virtual ::grpc::Status ForwardMessage(::grpc::ClientContext* context, const ::message::ForwardMessageRequest& request, ::message::ForwardMessageResponse* response) = 0;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::message::ForwardMessageResponse>> AsyncForwardMessage(::grpc::ClientContext* context, const ::message::ForwardMessageRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::message::ForwardMessageResponse>>(AsyncForwardMessageRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::message::ForwardMessageResponse>> PrepareAsyncForwardMessage(::grpc::ClientContext* context, const ::message::ForwardMessageRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReaderInterface< ::message::ForwardMessageResponse>>(PrepareAsyncForwardMessageRaw(context, request, cq));
+    }
+    class async_interface {
+     public:
+      virtual ~async_interface() {}
+      virtual void ForwardMessage(::grpc::ClientContext* context, const ::message::ForwardMessageRequest* request, ::message::ForwardMessageResponse* response, std::function<void(::grpc::Status)>) = 0;
+      virtual void ForwardMessage(::grpc::ClientContext* context, const ::message::ForwardMessageRequest* request, ::message::ForwardMessageResponse* response, ::grpc::ClientUnaryReactor* reactor) = 0;
+    };
+    typedef class async_interface experimental_async_interface;
+    virtual class async_interface* async() { return nullptr; }
+    class async_interface* experimental_async() { return async(); }
+   private:
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::message::ForwardMessageResponse>* AsyncForwardMessageRaw(::grpc::ClientContext* context, const ::message::ForwardMessageRequest& request, ::grpc::CompletionQueue* cq) = 0;
+    virtual ::grpc::ClientAsyncResponseReaderInterface< ::message::ForwardMessageResponse>* PrepareAsyncForwardMessageRaw(::grpc::ClientContext* context, const ::message::ForwardMessageRequest& request, ::grpc::CompletionQueue* cq) = 0;
+  };
+  class Stub final : public StubInterface {
+   public:
+    Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options = ::grpc::StubOptions());
+    ::grpc::Status ForwardMessage(::grpc::ClientContext* context, const ::message::ForwardMessageRequest& request, ::message::ForwardMessageResponse* response) override;
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::message::ForwardMessageResponse>> AsyncForwardMessage(::grpc::ClientContext* context, const ::message::ForwardMessageRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::message::ForwardMessageResponse>>(AsyncForwardMessageRaw(context, request, cq));
+    }
+    std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::message::ForwardMessageResponse>> PrepareAsyncForwardMessage(::grpc::ClientContext* context, const ::message::ForwardMessageRequest& request, ::grpc::CompletionQueue* cq) {
+      return std::unique_ptr< ::grpc::ClientAsyncResponseReader< ::message::ForwardMessageResponse>>(PrepareAsyncForwardMessageRaw(context, request, cq));
+    }
+    class async final :
+      public StubInterface::async_interface {
+     public:
+      void ForwardMessage(::grpc::ClientContext* context, const ::message::ForwardMessageRequest* request, ::message::ForwardMessageResponse* response, std::function<void(::grpc::Status)>) override;
+      void ForwardMessage(::grpc::ClientContext* context, const ::message::ForwardMessageRequest* request, ::message::ForwardMessageResponse* response, ::grpc::ClientUnaryReactor* reactor) override;
+     private:
+      friend class Stub;
+      explicit async(Stub* stub): stub_(stub) { }
+      Stub* stub() { return stub_; }
+      Stub* stub_;
+    };
+    class async* async() override { return &async_stub_; }
+
+   private:
+    std::shared_ptr< ::grpc::ChannelInterface> channel_;
+    class async async_stub_{this};
+    ::grpc::ClientAsyncResponseReader< ::message::ForwardMessageResponse>* AsyncForwardMessageRaw(::grpc::ClientContext* context, const ::message::ForwardMessageRequest& request, ::grpc::CompletionQueue* cq) override;
+    ::grpc::ClientAsyncResponseReader< ::message::ForwardMessageResponse>* PrepareAsyncForwardMessageRaw(::grpc::ClientContext* context, const ::message::ForwardMessageRequest& request, ::grpc::CompletionQueue* cq) override;
+    const ::grpc::internal::RpcMethod rpcmethod_ForwardMessage_;
+  };
+  static std::unique_ptr<Stub> NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options = ::grpc::StubOptions());
+
+  class Service : public ::grpc::Service {
+   public:
+    Service();
+    virtual ~Service();
+    virtual ::grpc::Status ForwardMessage(::grpc::ServerContext* context, const ::message::ForwardMessageRequest* request, ::message::ForwardMessageResponse* response);
+  };
+  template <class BaseClass>
+  class WithAsyncMethod_ForwardMessage : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithAsyncMethod_ForwardMessage() {
+      ::grpc::Service::MarkMethodAsync(0);
+    }
+    ~WithAsyncMethod_ForwardMessage() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status ForwardMessage(::grpc::ServerContext* /*context*/, const ::message::ForwardMessageRequest* /*request*/, ::message::ForwardMessageResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestForwardMessage(::grpc::ServerContext* context, ::message::ForwardMessageRequest* request, ::grpc::ServerAsyncResponseWriter< ::message::ForwardMessageResponse>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(0, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  typedef WithAsyncMethod_ForwardMessage<Service > AsyncService;
+  template <class BaseClass>
+  class WithCallbackMethod_ForwardMessage : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithCallbackMethod_ForwardMessage() {
+      ::grpc::Service::MarkMethodCallback(0,
+          new ::grpc::internal::CallbackUnaryHandler< ::message::ForwardMessageRequest, ::message::ForwardMessageResponse>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::message::ForwardMessageRequest* request, ::message::ForwardMessageResponse* response) { return this->ForwardMessage(context, request, response); }));}
+    void SetMessageAllocatorFor_ForwardMessage(
+        ::grpc::MessageAllocator< ::message::ForwardMessageRequest, ::message::ForwardMessageResponse>* allocator) {
+      ::grpc::internal::MethodHandler* const handler = ::grpc::Service::GetHandler(0);
+      static_cast<::grpc::internal::CallbackUnaryHandler< ::message::ForwardMessageRequest, ::message::ForwardMessageResponse>*>(handler)
+              ->SetMessageAllocator(allocator);
+    }
+    ~WithCallbackMethod_ForwardMessage() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status ForwardMessage(::grpc::ServerContext* /*context*/, const ::message::ForwardMessageRequest* /*request*/, ::message::ForwardMessageResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerUnaryReactor* ForwardMessage(
+      ::grpc::CallbackServerContext* /*context*/, const ::message::ForwardMessageRequest* /*request*/, ::message::ForwardMessageResponse* /*response*/)  { return nullptr; }
+  };
+  typedef WithCallbackMethod_ForwardMessage<Service > CallbackService;
+  typedef CallbackService ExperimentalCallbackService;
+  template <class BaseClass>
+  class WithGenericMethod_ForwardMessage : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithGenericMethod_ForwardMessage() {
+      ::grpc::Service::MarkMethodGeneric(0);
+    }
+    ~WithGenericMethod_ForwardMessage() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status ForwardMessage(::grpc::ServerContext* /*context*/, const ::message::ForwardMessageRequest* /*request*/, ::message::ForwardMessageResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+  };
+  template <class BaseClass>
+  class WithRawMethod_ForwardMessage : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawMethod_ForwardMessage() {
+      ::grpc::Service::MarkMethodRaw(0);
+    }
+    ~WithRawMethod_ForwardMessage() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status ForwardMessage(::grpc::ServerContext* /*context*/, const ::message::ForwardMessageRequest* /*request*/, ::message::ForwardMessageResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    void RequestForwardMessage(::grpc::ServerContext* context, ::grpc::ByteBuffer* request, ::grpc::ServerAsyncResponseWriter< ::grpc::ByteBuffer>* response, ::grpc::CompletionQueue* new_call_cq, ::grpc::ServerCompletionQueue* notification_cq, void *tag) {
+      ::grpc::Service::RequestAsyncUnary(0, context, request, response, new_call_cq, notification_cq, tag);
+    }
+  };
+  template <class BaseClass>
+  class WithRawCallbackMethod_ForwardMessage : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithRawCallbackMethod_ForwardMessage() {
+      ::grpc::Service::MarkMethodRawCallback(0,
+          new ::grpc::internal::CallbackUnaryHandler< ::grpc::ByteBuffer, ::grpc::ByteBuffer>(
+            [this](
+                   ::grpc::CallbackServerContext* context, const ::grpc::ByteBuffer* request, ::grpc::ByteBuffer* response) { return this->ForwardMessage(context, request, response); }));
+    }
+    ~WithRawCallbackMethod_ForwardMessage() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable synchronous version of this method
+    ::grpc::Status ForwardMessage(::grpc::ServerContext* /*context*/, const ::message::ForwardMessageRequest* /*request*/, ::message::ForwardMessageResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    virtual ::grpc::ServerUnaryReactor* ForwardMessage(
+      ::grpc::CallbackServerContext* /*context*/, const ::grpc::ByteBuffer* /*request*/, ::grpc::ByteBuffer* /*response*/)  { return nullptr; }
+  };
+  template <class BaseClass>
+  class WithStreamedUnaryMethod_ForwardMessage : public BaseClass {
+   private:
+    void BaseClassMustBeDerivedFromService(const Service* /*service*/) {}
+   public:
+    WithStreamedUnaryMethod_ForwardMessage() {
+      ::grpc::Service::MarkMethodStreamed(0,
+        new ::grpc::internal::StreamedUnaryHandler<
+          ::message::ForwardMessageRequest, ::message::ForwardMessageResponse>(
+            [this](::grpc::ServerContext* context,
+                   ::grpc::ServerUnaryStreamer<
+                     ::message::ForwardMessageRequest, ::message::ForwardMessageResponse>* streamer) {
+                       return this->StreamedForwardMessage(context,
+                         streamer);
+                  }));
+    }
+    ~WithStreamedUnaryMethod_ForwardMessage() override {
+      BaseClassMustBeDerivedFromService(this);
+    }
+    // disable regular version of this method
+    ::grpc::Status ForwardMessage(::grpc::ServerContext* /*context*/, const ::message::ForwardMessageRequest* /*request*/, ::message::ForwardMessageResponse* /*response*/) override {
+      abort();
+      return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+    }
+    // replace default version of method with streamed unary
+    virtual ::grpc::Status StreamedForwardMessage(::grpc::ServerContext* context, ::grpc::ServerUnaryStreamer< ::message::ForwardMessageRequest,::message::ForwardMessageResponse>* server_unary_streamer) = 0;
+  };
+  typedef WithStreamedUnaryMethod_ForwardMessage<Service > StreamedUnaryService;
+  typedef Service SplitStreamedService;
+  typedef WithStreamedUnaryMethod_ForwardMessage<Service > StreamedService;
+};
+
 }  // namespace message
 
 

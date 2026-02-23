@@ -7,6 +7,8 @@
 
 #include "infrastructure/MySqlManager.h"
 #include "infrastructure/RedisManager.h"
+#include "infrastructure/ChatGrpcClient.h"
+#include "infrastructure/ChatGrpcServer.h"
 
 #include "IMSession.h"
 #include "util/ConfigManager.h"
@@ -32,10 +34,21 @@ public:
 
     void setUserSession(uint32_t uid, std::weak_ptr<IMSession>);
 
+    void removeUserSession(uint32_t uid);
+
+    /**
+     * @brief 通知用户（本地推送 / 跨服务器转发）
+     * @return true 已成功发送（本地或远端），false 用户离线
+     */
+    bool notifyUser(uint32_t targetUid, const ZhKeyesIM::Protocol::IMMessage& msg);
+
+
 private:
     void onConnected(std::shared_ptr<TCPConnection> spConn);
     void onDisConnected(SOCKET socket);
 
+    bool onForwardMessage(uint32_t targetUid, const std::string& messageData);
+    
     void registerHandler();
 
 private:
@@ -44,6 +57,8 @@ private:
     // =============== infrastructure ===================
     std::shared_ptr<MySqlManager>   m_spMySqlManager;
     std::shared_ptr<RedisManager>   m_spRedisManager;
+    std::shared_ptr<ChatGrpcClient>     m_spChatGrpcClient;
+    std::unique_ptr<ChatGrpcServer>     m_spChatGrpcServer;
 
     // =============== repository ===================
     std::shared_ptr<IMUserRepository> m_spUserRepo;
@@ -59,8 +74,15 @@ private:
     std::unordered_map<IMSession::SessionID, std::shared_ptr<IMSession>>    m_sessions;
     std::unordered_map<SOCKET, IMSession::SessionID> m_socketToSession;
     std::vector<std::shared_ptr<IMSession>> m_pendingToDeleteSessions;
+
+    std::mutex              m_userMutex;
     mutable std::mutex      m_sessionMutex;
 
+    // =============== 服务器信息 ===================
+    std::string m_serverName;
+    std::string m_serverIp;
+    uint16_t    m_serverPort;
+    uint16_t    m_grpcPort;
 };
 
 

@@ -19,19 +19,20 @@ public:
     class ConstructorKey {
     private:
         ConstructorKey() = default;
-        friend class TaskBuilder;  // 只有 TaskBuilder 能构造这个 key
+        friend class TaskFactory;  // 只有 TaskBuilder 能构造这个 key
     };
 
     enum class TaskType
     {
         TASK_TYPE_UNKNOWN = 0,
-        TASK_TYPE_REGISTER ,
+        TASK_TYPE_REGISTER,
         TASK_TYPE_VERIFYCODE,
         TASK_TYPE_LOGIN,
         TASK_TYPE_RESETPASS,
         TASK_TYPE_HTTPRESPONSE,
         TASK_TYPE_TCPCONNECT,
-        TASK_TYPE_SEARCHFRIEND
+        TASK_TYPE_SEARCHFRIEND,
+        TASK_TYPE_APPLYFRIEND
     };
 
     using TaskId = uint64_t;

@@ -63,7 +63,7 @@ void RegisterTask::onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& resp
         };
 
 
-    auto responseTask = TaskBuilder::getInstance().buildHttpResponseTask(
+    auto responseTask = TaskFactory::getInstance().buildTask<HttpResponseTask>(
         std::move(responseBody),
         std::move(responseFunc)
     );

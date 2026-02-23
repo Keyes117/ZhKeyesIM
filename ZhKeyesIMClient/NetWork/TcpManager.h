@@ -59,7 +59,7 @@ private:
         TcpResponseHandler&& handler);
 
     //注册到 pendingResponse
-    void addPendingRequest(uint64_t seqId, TcpResponseHandler&& handler);
+    void addPendingRequest(uint32_t seqId, TcpResponseHandler&& handler);
 
     bool handleResponseBySeqId(
         std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg,

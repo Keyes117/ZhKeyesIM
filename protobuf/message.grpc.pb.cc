@@ -143,5 +143,66 @@ StatusService::Service::~Service() {
 }
 
 
+static const char* ChatService_method_names[] = {
+  "/message.ChatService/ForwardMessage",
+};
+
+std::unique_ptr< ChatService::Stub> ChatService::NewStub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options) {
+  (void)options;
+  std::unique_ptr< ChatService::Stub> stub(new ChatService::Stub(channel, options));
+  return stub;
+}
+
+ChatService::Stub::Stub(const std::shared_ptr< ::grpc::ChannelInterface>& channel, const ::grpc::StubOptions& options)
+  : channel_(channel), rpcmethod_ForwardMessage_(ChatService_method_names[0], options.suffix_for_stats(),::grpc::internal::RpcMethod::NORMAL_RPC, channel)
+  {}
+
+::grpc::Status ChatService::Stub::ForwardMessage(::grpc::ClientContext* context, const ::message::ForwardMessageRequest& request, ::message::ForwardMessageResponse* response) {
+  return ::grpc::internal::BlockingUnaryCall< ::message::ForwardMessageRequest, ::message::ForwardMessageResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), rpcmethod_ForwardMessage_, context, request, response);
+}
+
+void ChatService::Stub::async::ForwardMessage(::grpc::ClientContext* context, const ::message::ForwardMessageRequest* request, ::message::ForwardMessageResponse* response, std::function<void(::grpc::Status)> f) {
+  ::grpc::internal::CallbackUnaryCall< ::message::ForwardMessageRequest, ::message::ForwardMessageResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_ForwardMessage_, context, request, response, std::move(f));
+}
+
+void ChatService::Stub::async::ForwardMessage(::grpc::ClientContext* context, const ::message::ForwardMessageRequest* request, ::message::ForwardMessageResponse* response, ::grpc::ClientUnaryReactor* reactor) {
+  ::grpc::internal::ClientCallbackUnaryFactory::Create< ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(stub_->channel_.get(), stub_->rpcmethod_ForwardMessage_, context, request, response, reactor);
+}
+
+::grpc::ClientAsyncResponseReader< ::message::ForwardMessageResponse>* ChatService::Stub::PrepareAsyncForwardMessageRaw(::grpc::ClientContext* context, const ::message::ForwardMessageRequest& request, ::grpc::CompletionQueue* cq) {
+  return ::grpc::internal::ClientAsyncResponseReaderHelper::Create< ::message::ForwardMessageResponse, ::message::ForwardMessageRequest, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(channel_.get(), cq, rpcmethod_ForwardMessage_, context, request);
+}
+
+::grpc::ClientAsyncResponseReader< ::message::ForwardMessageResponse>* ChatService::Stub::AsyncForwardMessageRaw(::grpc::ClientContext* context, const ::message::ForwardMessageRequest& request, ::grpc::CompletionQueue* cq) {
+  auto* result =
+    this->PrepareAsyncForwardMessageRaw(context, request, cq);
+  result->StartCall();
+  return result;
+}
+
+ChatService::Service::Service() {
+  AddMethod(new ::grpc::internal::RpcServiceMethod(
+      ChatService_method_names[0],
+      ::grpc::internal::RpcMethod::NORMAL_RPC,
+      new ::grpc::internal::RpcMethodHandler< ChatService::Service, ::message::ForwardMessageRequest, ::message::ForwardMessageResponse, ::grpc::protobuf::MessageLite, ::grpc::protobuf::MessageLite>(
+          [](ChatService::Service* service,
+             ::grpc::ServerContext* ctx,
+             const ::message::ForwardMessageRequest* req,
+             ::message::ForwardMessageResponse* resp) {
+               return service->ForwardMessage(ctx, req, resp);
+             }, this)));
+}
+
+ChatService::Service::~Service() {
+}
+
+::grpc::Status ChatService::Service::ForwardMessage(::grpc::ServerContext* context, const ::message::ForwardMessageRequest* request, ::message::ForwardMessageResponse* response) {
+  (void) context;
+  (void) request;
+  (void) response;
+  return ::grpc::Status(::grpc::StatusCode::UNIMPLEMENTED, "");
+}
+
+
 }  // namespace message
 

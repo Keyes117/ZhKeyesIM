@@ -6,6 +6,7 @@
 #include "Base/UserSession.h"
 #include "Task/TaskBuilder.h"
 #include "Task/TaskHandler.h"
+#include "Task/TcpConnectTask.h"
 #include "Task/HttpResponseTask.h"
 
 UserLoginTask::UserLoginTask(
@@ -29,12 +30,17 @@ void UserLoginTask::doTask()
     requestJson["email"] = m_email;
     requestJson["password"] = m_password;
 
-    auto selfTask = std::static_pointer_cast<UserLoginTask>(shared_from_this());
+    auto self = std::static_pointer_cast<UserLoginTask>(shared_from_this());
+    std::weak_ptr<UserLoginTask> weakSelf = self;
 
     m_client->requestUserLogin(
         requestJson.dump(),
-        std::bind(&UserLoginTask::onHttpResponse, this, std::placeholders::_1),
-        std::bind(&UserLoginTask::onTaskError, this, std::placeholders::_1)
+        [weakSelf](const ZhKeyesIM::Net::Http::HttpResponse& response) {
+            if (auto s = weakSelf.lock()) s->onHttpResponse(response);
+        },
+        [weakSelf](const std::string& err) {
+            if (auto s = weakSelf.lock()) s->onTaskError(err);
+        }
     );
 }
 
@@ -102,7 +108,7 @@ void UserLoginTask::onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& res
         };
 
 
-    auto responseTask = TaskBuilder::getInstance().buildHttpResponseTask(
+    auto responseTask = TaskFactory::getInstance().buildTask<HttpResponseTask>(
         std::move(responseBody),      // 移动局部变量
         std::move(responseFunc));      // 移动 lambda
 
@@ -115,7 +121,7 @@ void UserLoginTask::onHttpSuccess(const User& data)
 
     UserSession::getInstance().setUser(data);
 
-    auto tcpConnectTask = TaskBuilder::getInstance().buildTcpConnectTask(
+    auto tcpConnectTask = TaskFactory::getInstance().buildTask<TcpConnectTask>(
         data.chatServerHost, data.chatSevrerPort
     );
 

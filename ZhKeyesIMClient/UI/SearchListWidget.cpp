@@ -3,6 +3,7 @@
 #include <QEvent>
 #include <QWheelEvent>
 #include <QScrollBar>
+#include <QMessageBox>
 
 #include "Base/UserData.h"
 #include "UI/AddUserItem.h"
@@ -137,7 +138,7 @@ void SearchListWidget::onItemClicked(QListWidgetItem* item)
         auto strUid = searchEdit->text();
 
         uint32_t uid = strUid.toUInt();
-        auto task = TaskBuilder::getInstance().buildTask<SearchUserTask>(uid);
+        auto task = TaskFactory::getInstance().buildTask<SearchUserTask>(uid);
 
         connect(task.get(), &SearchUserTask::userSearched, this, &SearchListWidget::onUserSearch);
 
@@ -151,5 +152,21 @@ void SearchListWidget::onItemClicked(QListWidgetItem* item)
 
 void SearchListWidget::onUserSearch(std::shared_ptr<SearchInfo> info)
 {
+    waitPending(false);
+    if (info == nullptr)
+    {
+        //TODO:查找失败
+        //m_findDialog = std::make_shared
+        QMessageBox::information(nullptr, "查询结果", "查询失败,该用户未注册", "确定");
+    }
+    else
+    {
 
+        //TODO: 查找是否已经是好友
+        //查找成功
+        m_findDialog = std::make_shared<FindSuccessDialog>(this);
+        std::dynamic_pointer_cast<FindSuccessDialog>(m_findDialog)->SetSearchInfo(info);
+
+        m_findDialog->show();
+    }
 }

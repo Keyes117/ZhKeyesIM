@@ -50,12 +50,18 @@ void SearchUserTask::onSearchUserResponse(std::shared_ptr<ZhKeyesIM::Protocol::I
         !reader.readUInt32(sex) ||
         !reader.readString(icon))
     {
+        emit userSearched(nullptr);
         onTaskError("响应字段不完整");
         return;
     }
 
     auto searchInfo = std::make_shared<SearchInfo>(
-        uid, name, nick, desc, sex, icon
+        uid, 
+        QString::fromStdString(name),
+        QString::fromStdString(nick),
+        QString::fromStdString(desc),
+        sex,
+        QString::fromStdString(icon)
     );
 
     emit userSearched(searchInfo);

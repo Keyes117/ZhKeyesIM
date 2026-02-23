@@ -80,8 +80,7 @@ std::optional<UserInfo> IMUserRepository::getUserInfo(int32_t uid)
         try
         {
             auto spStmt = m_spMysql->prepareStatement(spConn,
-                "SELECT uid, name, email, pwd, nick, desc, sex, icon, back "
-                "FROM user WHERE uid = ?"
+                "SELECT uid, name, email, pwd, nick, `desc`, sex, icon, back FROM user WHERE uid = ?"
             );
             spStmt->setInt(1, uid);
             std::unique_ptr<sql::ResultSet> res(spStmt->executeQuery());
@@ -139,7 +138,8 @@ std::optional<UserInfo> IMUserRepository::getUserInfo(int32_t uid)
     return std::nullopt;
 }
 
-bool IMUserRepository::setUserServerMapping(int32_t uid, const std::string& serverName, const std::string& serverIp, int32_t serverPort, const std::string& sessionId)
+bool IMUserRepository::setUserServerMapping(int32_t uid, const std::string& serverName, const std::string& serverIp, 
+    int32_t serverPort, int32_t grpcPort, const std::string& sessionId)
 {
     if(!m_spRedis)
         return false;
@@ -155,6 +155,7 @@ bool IMUserRepository::setUserServerMapping(int32_t uid, const std::string& serv
         success = success && m_spRedis->HSet(userServerKey, "server_name", serverName);
         success = success && m_spRedis->HSet(userServerKey, "server_ip", serverIp);
         success = success && m_spRedis->HSet(userServerKey, "server_port", std::to_string(serverPort));
+        success = success && m_spRedis->HSet(userServerKey, "grpc_port", std::to_string(grpcPort));  
         success = success && m_spRedis->HSet(userServerKey, "connect_time", std::to_string(connectTime));
         success = success && m_spRedis->HSet(userServerKey, "session_id", sessionId);
 
@@ -168,6 +169,7 @@ bool IMUserRepository::setUserServerMapping(int32_t uid, const std::string& serv
         m_spRedis->HSet(defaultKey, "server_name", serverName);
         m_spRedis->HSet(defaultKey, "server_ip", serverIp);
         m_spRedis->HSet(defaultKey, "server_port", std::to_string(serverPort));
+        m_spRedis->HSet(defaultKey, "grpc_port", std::to_string(grpcPort));
         m_spRedis->HSet(defaultKey, "session_id", sessionId);
         m_spRedis->HSet(defaultKey, "connect_time", std::to_string(connectTime));
         m_spRedis->Expire(defaultKey, 24 * 3600);
@@ -195,6 +197,7 @@ std::optional<ServerInfo> IMUserRepository::getUserServerMapping(int32_t uid)
 
         std::string serverIp = m_spRedis->HGet(key, "server_ip");
         std::string serverPortStr = m_spRedis->HGet(key, "server_port");
+        std::string grpcPortStr = m_spRedis->HGet(key, "grpc_port");
         std::string sessionId = m_spRedis->HGet(key, "session_id");
         std::string connectTimeStr = m_spRedis->HGet(key, "connect_time");
 
@@ -205,6 +208,7 @@ std::optional<ServerInfo> IMUserRepository::getUserServerMapping(int32_t uid)
 
         try {
             info.serverPort = std::stoi(serverPortStr);
+            info.grpcPort = grpcPortStr.empty() ? 0 : std::stoi(grpcPortStr);
             info.connectTime = std::stoll(connectTimeStr);
         }
         catch (...) {
@@ -293,4 +297,115 @@ std::optional<int> IMUserRepository::getServerConnectionCount(const std::string&
         LOG_ERROR("IMUserRepository: 解析连接数失败: %s", e.what());
         return std::nullopt;
     }
+}
+
+bool IMUserRepository::hasPendingApply(int32_t fromUid, int32_t toUid)
+{
+    if (!m_spMysql)
+        return false;
+
+    auto spConn = m_spMysql->getConnection();
+    if (!spConn)
+        return false;
+
+    ZhKeyes::Util::Defer def([this, &spConn]() {
+        m_spMysql->returnConnection(spConn);
+        });
+
+
+    try
+    {
+        auto spStmt = m_spMysql->prepareStatement(spConn,
+            "SELECT COUNT(*) AS cnt FROM friend_apply "
+            "WHERE from_uid = ? AND to_uid = ? AND status = 0"
+        );
+        spStmt->setInt(1, fromUid);
+        spStmt->setInt(2, toUid);
+        std::unique_ptr<sql::ResultSet> res(spStmt->executeQuery());
+
+        if (res->next())
+        {
+            return res->getInt("cnt") > 0;
+        }
+    }
+    catch (sql::SQLException& e)
+    {
+        LOG_ERROR("IMUserRepository::hasPendingApply failed: %s", e.what());
+    }
+
+    return false;
+}
+
+bool IMUserRepository::saveFriendApply(int32_t fromUid, int32_t toUid)
+{
+    if (!m_spMysql)
+        return false;
+
+    auto spConn = m_spMysql->getConnection();
+    if (!spConn)
+        return false;
+
+    ZhKeyes::Util::Defer def([this, &spConn]() {
+        m_spMysql->returnConnection(spConn);
+        });
+
+    try
+    {
+        int64_t now = static_cast<int64_t>(std::time(nullptr));
+
+        // 使用 INSERT ... ON DUPLICATE KEY UPDATE 处理重复申请的情况
+        // 如果之前被拒绝了，再次申请时更新状态为待处理
+        auto spStmt = m_spMysql->prepareStatement(spConn,
+            "INSERT INTO friend_apply (from_uid, to_uid, status, apply_time) "
+            "VALUES (?, ?, 0, ?) "
+            "ON DUPLICATE KEY UPDATE status = 0, apply_time = VALUES(apply_time)"
+        );
+        spStmt->setInt(1, fromUid);
+        spStmt->setInt(2, toUid);
+        spStmt->setInt64(3, now);
+        spStmt->executeUpdate();
+
+        return true;
+    }
+    catch (sql::SQLException& e)
+    {
+        LOG_ERROR("IMUserRepository::saveFriendApply failed: %s", e.what());
+        return false;
+    }
+}
+
+bool IMUserRepository::areFriends(int32_t uid1, int32_t uid2)
+{
+    if (!m_spMysql)
+        return false;
+
+    auto spConn = m_spMysql->getConnection();
+    if (!spConn)
+        return false;
+
+    ZhKeyes::Util::Defer def([this, &spConn]() {
+        m_spMysql->returnConnection(spConn);
+        });
+
+    try
+    {
+        auto spStmt = m_spMysql->prepareStatement(spConn,
+            "SELECT COUNT(*) AS cnt FROM friend "
+            "WHERE uid = ? AND friend_uid = ?"
+        );
+        spStmt->setInt(1, uid1);
+        spStmt->setInt(2, uid2);
+        std::unique_ptr<sql::ResultSet> res(spStmt->executeQuery());
+
+        if (res->next())
+        {
+            return res->getInt("cnt") > 0;
+        }
+    }
+    catch (sql::SQLException& e)
+    {
+        LOG_ERROR("IMUserRepository::areFriends failed: %s", e.what());
+    }
+
+    return false;
 }

@@ -42,7 +42,7 @@ bool IMClient::init(const ZhKeyes::Util::ConfigManager& config)
     }
    
     m_spHttpManager = std::make_shared<HttpManager>(m_spMainEventLoop);
-    if (!m_spHttpManager->init(config));
+    if (!m_spHttpManager->init(config))
     {
         LOG_ERROR("IMClient: 初始化 HttpManager 失败");
     }
@@ -70,7 +70,10 @@ bool IMClient::tcpConnect(const std::string& ip, uint16_t port,
 
 void IMClient::tcpDisconnect()
 {
-    m_spTcpManager->disconnect();
+    m_spMainEventLoop->registerCustomTask([this]()
+        {
+            m_spTcpManager->disconnect();
+        });
 }
 
 void IMClient::requestVerificationCode(const std::string& jsonString,

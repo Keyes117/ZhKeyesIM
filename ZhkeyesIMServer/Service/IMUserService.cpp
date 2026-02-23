@@ -1,4 +1,4 @@
-#include "IMUserService.h"
+ï»¿#include "IMUserService.h"
 
 #include "IMSession.h"
 #include <memory>
@@ -11,11 +11,13 @@
 IMUserService::IMUserService(std::shared_ptr<IMUserRepository> userRepo,
     std::string serverName,
     std::string serverIp, 
-    uint16_t    serverPort):
+    uint16_t    serverPort,
+    uint16_t    grpcPort):
     m_spUserRepo(userRepo),
     m_serverName(serverName),
     m_serverIp(serverIp),
-    m_serverPort(serverPort)
+    m_serverPort(serverPort),
+    m_grpcPort(grpcPort)
 {
 }
 
@@ -38,7 +40,7 @@ void IMUserService::auth(uint32_t uid, const std::string& token, uint64_t seqId,
         auto tokenOpt = m_spUserRepo->getToken(uid);
         if (!tokenOpt)
         {
-            //ÉèÖÃ·µ»Ø´íÎóĞÅÏ¢
+            //è®¾ç½®è¿”å›é”™è¯¯ä¿¡æ¯
             LOG_ERROR("IMUserService::auth: sender is not IMSession, uid=%u", uid);
             ZhKeyesIM::Protocol::BinaryWriter writer;
             writer.writeUInt8(0);
@@ -52,7 +54,7 @@ void IMUserService::auth(uint32_t uid, const std::string& token, uint64_t seqId,
         std::string userToken = *tokenOpt;
         if (userToken != token)
         {
-            //ÉèÖÃ·µ»Ø´íÎóĞÅÏ¢
+            //è®¾ç½®è¿”å›é”™è¯¯ä¿¡æ¯
             LOG_WARN("IMUserService::auth: token not found, uid=%u", uid);
             ZhKeyesIM::Protocol::BinaryWriter writer;
             writer.writeUInt8(0);           // success = false
@@ -65,7 +67,94 @@ void IMUserService::auth(uint32_t uid, const std::string& token, uint64_t seqId,
         auto userInfoOpt = m_spUserRepo->getUserInfo(uid);
         if (!userInfoOpt)
         {
-            //ÉèÖÃ·µ»Ø´íÎóĞÅÏ¢
+            //è®¾ç½®è¿”å›é”™è¯¯ä¿¡æ¯
+            LOG_WARN("IMUserService::auth: user info not found, uid=%u", uid);
+            ZhKeyesIM::Protocol::BinaryWriter writer;
+            writer.writeUInt8(0);           // success = false
+            writer.writeUInt32(uid);
+            writer.writeString("User info not found");
+            msg.setBody(writer.getData());
+            return;
+
+        }
+
+        UserInfo userInfo = *userInfoOpt;
+        
+        //è®¾ç½®å½“å‰ç”¨æˆ·æ‰€åœ¨æœåŠ¡çš„ ip å’Œ session
+        std::string sessionId = std::to_string(session->getSessionId());
+
+        bool mappingOk = m_spUserRepo->setUserServerMapping(
+            static_cast<int32_t>(uid),
+            m_serverName,
+            m_serverIp,
+            m_serverPort,
+            m_grpcPort,
+            sessionId
+        );
+
+        if (!mappingOk)
+        {
+            LOG_ERROR("IMUserService::auth: setUserServerMapping failed, uid=%u", uid);
+            // æ˜ å°„å¤±è´¥å¯ä»¥è§†ä¸ºä¸¥é‡é—®é¢˜ï¼Œè¿™é‡Œä»ç„¶è¿”å›å¤±è´¥ï¼Œé¿å…åç»­è·¯ç”±é”™è¯¯
+            ZhKeyesIM::Protocol::BinaryWriter writer;
+            writer.writeUInt8(0);           // success = false
+            writer.writeUInt32(uid);
+            writer.writeString("Failed to set user-server mapping");
+            msg.setBody(writer.getData());
+            return;
+        }
+
+        bool incOk = m_spUserRepo->incrementServerConnectionCount(m_serverName);
+        if (!incOk)
+        {
+            LOG_WARN("IMUserService::auth: incrementServerConnectionCount failed, server=%s",
+                m_serverName.c_str());
+            // è¿æ¥æ•°ç»Ÿè®¡å¤±è´¥ä¸å½±å“æ ¸å¿ƒåŠŸèƒ½ï¼Œè¿™é‡Œä»…æ‰“æ—¥å¿—ï¼Œä¸å½±å“æˆåŠŸå“åº”
+        }
+
+        LOG_INFO("IMUserService::auth: auth success, uid=%u, server=%s(%s:%d), session=%s",
+            uid, m_serverName.c_str(), m_serverIp.c_str(), m_serverPort, sessionId.c_str());
+
+        // 5. æ„é€ æˆåŠŸå“åº”åŒ…ä½“
+        ZhKeyesIM::Protocol::BinaryWriter writer;
+        writer.writeUInt8(1);                          // success = true
+        writer.writeUInt32(uid);                       // userId
+        writer.writeString(token);                     // token
+
+        // ç”¨æˆ·ä¿¡æ¯
+        writer.writeString(userInfo.name);             // ç”¨æˆ·å
+        writer.writeString(userInfo.email);            // é‚®ç®±
+        writer.writeString(userInfo.nick);             // æ˜µç§°
+        writer.writeString(userInfo.desc);             // ä¸ªæ€§ç­¾å/ç®€ä»‹
+        writer.writeUInt32(userInfo.sex);              // æ€§åˆ«
+        writer.writeString(userInfo.icon);             // å¤´åƒ URL
+        writer.writeString(userInfo.back);             // èƒŒæ™¯å›¾ URL
+
+        msg.setBody(writer.getData());
+
+    }
+}
+
+void IMUserService::searchUser(uint32_t uid, uint64_t seqId,
+    std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender)
+{
+    ZhKeyesIM::Protocol::IMMessage msg;
+    msg.setSeqId(seqId);
+    msg.setType(ZhKeyesIM::Protocol::MessageType::SEARCH_USER_RESP);
+
+    auto session = std::dynamic_pointer_cast<IMSession>(sender);
+    if (session)
+    {
+        ZhKeyes::Util::Defer def([this, &msg, &sender]() {
+            sender->sendMessage(msg);
+            });
+
+        m_spUserRepo->getUserInfo(uid);
+
+        auto userInfoOpt = m_spUserRepo->getUserInfo(uid);
+        if (!userInfoOpt)
+        {
+            //è®¾ç½®è¿”å›é”™è¯¯ä¿¡æ¯
             LOG_WARN("IMUserService::auth: user info not found, uid=%u", uid);
             ZhKeyesIM::Protocol::BinaryWriter writer;
             writer.writeUInt8(0);           // success = false
@@ -78,58 +167,130 @@ void IMUserService::auth(uint32_t uid, const std::string& token, uint64_t seqId,
 
         UserInfo userInfo = *userInfoOpt;
 
-        std::string sessionId = std::to_string(session->getSessionId());
-
-        bool mappingOk = m_spUserRepo->setUserServerMapping(
-            static_cast<int32_t>(uid),
-            m_serverName,
-            m_serverIp,
-            m_serverPort,
-            sessionId
-        );
-
-        if (!mappingOk)
-        {
-            LOG_ERROR("IMUserService::auth: setUserServerMapping failed, uid=%u", uid);
-            // Ó³ÉäÊ§°Ü¿ÉÒÔÊÓÎªÑÏÖØÎÊÌâ£¬ÕâÀïÈÔÈ»·µ»ØÊ§°Ü£¬±ÜÃâºóĞøÂ·ÓÉ´íÎó
-            ZhKeyesIM::Protocol::BinaryWriter writer;
-            writer.writeUInt8(0);           // success = false
-            writer.writeUInt32(uid);
-            writer.writeString("Failed to set user-server mapping");
-            msg.setBody(writer.getData());
-            sender->sendMessage(msg);
-            return;
-        }
-
-        bool incOk = m_spUserRepo->incrementServerConnectionCount(m_serverName);
-        if (!incOk)
-        {
-            LOG_WARN("IMUserService::auth: incrementServerConnectionCount failed, server=%s",
-                m_serverName.c_str());
-            // Á¬½ÓÊıÍ³¼ÆÊ§°Ü²»Ó°ÏìºËĞÄ¹¦ÄÜ£¬ÕâÀï½ö´òÈÕÖ¾£¬²»Ó°Ïì³É¹¦ÏìÓ¦
-        }
-
-        LOG_INFO("IMUserService::auth: auth success, uid=%u, server=%s(%s:%d), session=%s",
-            uid, m_serverName.c_str(), m_serverIp.c_str(), m_serverPort, sessionId.c_str());
-
-        // 5. ¹¹Ôì³É¹¦ÏìÓ¦°üÌå
         ZhKeyesIM::Protocol::BinaryWriter writer;
         writer.writeUInt8(1);                          // success = true
         writer.writeUInt32(uid);                       // userId
-        writer.writeString(token);                     // token
 
-        // ÓÃ»§ĞÅÏ¢
-        writer.writeString(userInfo.name);             // ÓÃ»§Ãû
-        writer.writeString(userInfo.email);            // ÓÊÏä
-        writer.writeString(userInfo.nick);             // êÇ³Æ
-        writer.writeString(userInfo.desc);             // ¸öĞÔÇ©Ãû/¼ò½é
-        writer.writeUInt32(userInfo.sex);              // ĞÔ±ğ
-        writer.writeString(userInfo.icon);             // Í·Ïñ URL
-        writer.writeString(userInfo.back);             // ±³¾°Í¼ URL
+        // ç”¨æˆ·ä¿¡æ¯
+        writer.writeString(userInfo.name);             // ç”¨æˆ·å
+        writer.writeString(userInfo.nick);             // æ˜µç§°
+        writer.writeString(userInfo.desc);             // ä¸ªæ€§ç­¾å/ç®€ä»‹
+        writer.writeUInt32(userInfo.sex);              // æ€§åˆ«
+        writer.writeString(userInfo.icon);             // å¤´åƒ URL
 
         msg.setBody(writer.getData());
+    }
+}
 
+void IMUserService::applyFriend(uint32_t toUid, uint64_t seqId, std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender)
+{
+    ZhKeyesIM::Protocol::IMMessage msg;
+    msg.setSeqId(seqId);
+    msg.setType(ZhKeyesIM::Protocol::MessageType::APPLY_USER_RESP);
 
+    auto session = std::dynamic_pointer_cast<IMSession>(sender);
+    if (!session)
+    {
+        LOG_ERROR("IMUserService::applyFriend: sender is not IMSession");
+        return;
+    }
+
+    ZhKeyes::Util::Defer def([&msg, &sender]() {
         sender->sendMessage(msg);
+        });
+
+    uint32_t fromUid = session->getUid();
+
+    // 1. ä¸èƒ½åŠ è‡ªå·±ä¸ºå¥½å‹
+    if (fromUid == toUid)
+    {
+        LOG_WARN("IMUserService::applyFriend: cannot apply self, uid=%u", fromUid);
+        ZhKeyesIM::Protocol::BinaryWriter writer;
+        writer.writeUInt8(0);           // success = false
+        writer.writeUInt32(toUid);
+        writer.writeString("Cannot add yourself as friend");
+        msg.setBody(writer.getData());
+        return;
+    }
+
+    // 2. æ£€æŸ¥ç›®æ ‡ç”¨æˆ·æ˜¯å¦å­˜åœ¨
+    auto targetUserOpt = m_spUserRepo->getUserInfo(toUid);
+    if (!targetUserOpt)
+    {
+        LOG_WARN("IMUserService::applyFriend: target user not found, toUid=%u", toUid);
+        ZhKeyesIM::Protocol::BinaryWriter writer;
+        writer.writeUInt8(0);           // success = false
+        writer.writeUInt32(toUid);
+        writer.writeString("Target user not found");
+        msg.setBody(writer.getData());
+        return;
+    }
+
+    // 3. æ£€æŸ¥æ˜¯å¦å·²æœ‰å¾…å¤„ç†çš„ç”³è¯·
+    if (m_spUserRepo->hasPendingApply(fromUid, toUid))
+    {
+        LOG_WARN("IMUserService::applyFriend: already has pending apply, from=%u to=%u", fromUid, toUid);
+        ZhKeyesIM::Protocol::BinaryWriter writer;
+        writer.writeUInt8(0);           // success = false
+        writer.writeUInt32(toUid);
+        writer.writeString("Already has pending friend request");
+        msg.setBody(writer.getData());
+        return;
+    }
+
+    // 4. ä¿å­˜å¥½å‹ç”³è¯·åˆ°æ•°æ®åº“
+    if (!m_spUserRepo->saveFriendApply(fromUid, toUid))
+    {
+        LOG_ERROR("IMUserService::applyFriend: save apply failed, from=%u to=%u", fromUid, toUid);
+        ZhKeyesIM::Protocol::BinaryWriter writer;
+        writer.writeUInt8(0);           // success = false
+        writer.writeUInt32(toUid);
+        writer.writeString("Failed to save friend request");
+        msg.setBody(writer.getData());
+        return;
+    }
+
+    LOG_INFO("IMUserService::applyFriend: success, from=%u to=%u", fromUid, toUid);
+
+    // 6. æ„é€ æˆåŠŸå“åº”ç»™ç”³è¯·äºº
+    {
+        ZhKeyesIM::Protocol::BinaryWriter writer;
+        writer.writeUInt8(1);
+        writer.writeUInt32(toUid);
+        msg.setBody(writer.getData());
+    }
+
+    // 7. æ¨é€é€šçŸ¥ç»™ç›®æ ‡ç”¨æˆ·ï¼ˆæœ¬åœ°/è·¨æœåŠ¡å™¨ï¼‰
+    if (m_notifyCallback)
+    {
+        // æŸ¥è¯¢ç”³è¯·äººä¿¡æ¯ï¼Œæ„é€ æ¨é€æ¶ˆæ¯
+        auto fromUserOpt = m_spUserRepo->getUserInfo(static_cast<int32_t>(fromUid));
+        if (fromUserOpt)
+        {
+            UserInfo& fromUser = *fromUserOpt;
+
+            ZhKeyesIM::Protocol::IMMessage notifyMsg;
+            notifyMsg.setType(ZhKeyesIM::Protocol::MessageType::NOTIFY_FRIEND_APPLY);
+            notifyMsg.setSeqId(0);  // æœåŠ¡ç«¯æ¨é€ï¼ŒseqId=0
+
+            ZhKeyesIM::Protocol::BinaryWriter nw;
+            nw.writeUInt32(fromUser.uid);           // from_uid
+            nw.writeString(fromUser.name);          // name
+            nw.writeString(fromUser.nick);          // nick
+            nw.writeString(fromUser.desc);          // desc
+            nw.writeUInt32(fromUser.sex);           // sex
+            nw.writeString(fromUser.icon);          // icon
+            notifyMsg.setBody(nw.getData());
+
+            bool notified = m_notifyCallback(toUid, notifyMsg);
+            if (notified)
+            {
+                LOG_INFO("IMUserService::applyFriend: notification sent to uid=%u", toUid);
+            }
+            else
+            {
+                LOG_INFO("IMUserService::applyFriend: target uid=%u offline, will load from DB on login", toUid);
+            }
+        }
     }
 }

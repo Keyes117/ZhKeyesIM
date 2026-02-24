@@ -50,7 +50,7 @@ LoginDlg::~LoginDlg()
 
 void LoginDlg::onLoginSuccess()
 {
-    //m_ui.button_login->setEnabled(true);
+    m_ui.button_logon->setEnabled(true);
     QMessageBox::information(this, "成功",
         QString("欢迎回来，%1！").arg(QString::fromStdString(UserSession::getInstance().getUsername())));
 
@@ -60,6 +60,7 @@ void LoginDlg::onLoginSuccess()
 
 void LoginDlg::onLoginError(const QString& error)
 {
+    m_ui.button_logon->setEnabled(true);
     QMessageBox::warning(this,
         "注册失败",
         error);
@@ -115,6 +116,8 @@ void LoginDlg::onLoginButtonClicked()
    
     QString email = m_ui.lineEdit_accout->text();
     QString password = m_ui.lineEdit_password->text();
+
+    m_ui.button_logon->setEnabled(false);
 
     auto loginTask = TaskFactory::getInstance().buildTask<UserLoginTask>(
         email.toStdString(),

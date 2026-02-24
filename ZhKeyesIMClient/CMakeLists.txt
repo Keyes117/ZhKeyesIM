@@ -137,6 +137,9 @@ set(CLIENT_UI_SOURCE
     UI/ApplyFriendItem.ui
     UI/ApplyFriendList.h
     UI/ApplyFriendList.cpp
+    UI/AuthenFriendDialog.cpp
+    UI/AuthenFriendDialog.h
+    UI/AuthenFriendDialog.ui
 
     UI/resource.qrc
     UI/style/styleSheet.qss

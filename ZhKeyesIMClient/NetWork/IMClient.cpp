@@ -55,13 +55,16 @@ bool IMClient::init(const ZhKeyes::Util::ConfigManager& config)
     }
     LOG_INFO("网络线程已启动: %d", m_networkThread->get_id());
 
+    registerMessageHandlers();
+
     return true;
 }
 
 bool IMClient::tcpConnect(const std::string& ip, uint16_t port,
     SuccessCallback onSuccess /*= nullptr */, ErrorCallback onError /*= nullptr */)
 {
-    m_spTcpManager = std::make_shared<TcpManager>(m_spMainEventLoop);
+    if(!m_spTcpManager)
+        m_spTcpManager = std::make_shared<TcpManager>(m_spMainEventLoop);
 
     m_spTcpManager->setConnectCallback(std::move(onSuccess));
     m_spTcpManager->setConnectFailedCallback(std::move(onError));
@@ -166,7 +169,12 @@ void IMClient::onNotifyApplyFriend(std::shared_ptr<ZhKeyesIM::Protocol::IMMessag
     LOG_INFO("收到好友申请通知, fromUid=%u, name=%s", fromUid, name.c_str());
 
     auto friendApply = std::make_shared<AddFriendApply>(
-        fromUid, name, desc, icon, nick, sex
+        fromUid, 
+        QString::fromStdString(name),
+        QString::fromStdString(desc),
+        QString::fromStdString(icon),
+        QString::fromStdString(nick),
+        sex
     );
     emit friendApplyReceived( friendApply);
 }

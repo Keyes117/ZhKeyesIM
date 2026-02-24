@@ -21,14 +21,14 @@ public:
 
 class AddFriendApply {
 public:
-    AddFriendApply(int from_uid, QString name, QString desc,
-                   QString icon, QString nick, int sex);
-	int _from_uid;
+    AddFriendApply(uint32_t from_uid, QString name, QString desc,
+                   QString icon, QString nick, uint32_t sex);
+    uint32_t _from_uid;
 	QString _name;
 	QString _desc;
     QString _icon;
     QString _nick;
-    int     _sex;
+    uint32_t _sex;
 };
 
 struct ApplyInfo {

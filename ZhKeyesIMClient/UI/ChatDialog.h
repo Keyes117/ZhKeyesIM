@@ -36,6 +36,9 @@ private:
     void showSearch(bool bsearch = false);
     void handleGlobalMousePress(QMouseEvent* event);
 
+
+public slots:
+    void onFriendApplyReceived(std::shared_ptr<AddFriendApply> info);
 private slots:
     void onLineEditSearchChanged(const QString& text);
     void onClearActionTriggered();
@@ -47,6 +50,8 @@ private slots:
 
 
     void onSwitchApplyFriendPage();
+
+
 private:
     Ui::ChatDialogClass ui;
     QList<StateWidget*>   m_labelList;

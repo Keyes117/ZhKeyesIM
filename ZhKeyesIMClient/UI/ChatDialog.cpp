@@ -260,3 +260,8 @@ void ChatDialog::onSwitchApplyFriendPage()
 {
     ui.stackedWidget_chat->setCurrentWidget(ui.page_applyFriend);
 }
+
+void ChatDialog::onFriendApplyReceived(std::shared_ptr<AddFriendApply> info)
+{
+
+}

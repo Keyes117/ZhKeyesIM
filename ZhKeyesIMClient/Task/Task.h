@@ -32,7 +32,8 @@ public:
         TASK_TYPE_HTTPRESPONSE,
         TASK_TYPE_TCPCONNECT,
         TASK_TYPE_SEARCHFRIEND,
-        TASK_TYPE_APPLYFRIEND
+        TASK_TYPE_APPLYFRIEND,
+        TASK_TYPE_NOTIFYAPPLYFRIEND
     };
 
     using TaskId = uint64_t;

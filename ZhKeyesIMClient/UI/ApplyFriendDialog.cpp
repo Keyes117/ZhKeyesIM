@@ -454,16 +454,10 @@ void ApplyFriendDialog::onLabelTipClickedOnce(QString text)
 
 void ApplyFriendDialog::onApplyConfirm()
 {
-
     auto uid = m_searchInfo->m_uid;
     auto addFriendTask = TaskFactory::getInstance().buildTask<AddFriendTask>(uid);
-
     TaskHandler::getInstance().registerNetTask(std::move(addFriendTask));
-
-    this->hide();
-    
-
-
+    this->hide();  
     deleteLater();
 }
 

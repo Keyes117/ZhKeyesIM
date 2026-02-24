@@ -7,6 +7,7 @@
 #include "ApiRoutes.h"
 #include "JsonUtil.h"
 #include "fmt/format.h"
+#include "IMProtocol/BinaryReader.h"
 
 IMClient::IMClient()
 {
@@ -126,4 +127,46 @@ void IMClient::networkThreadFunc()
     m_eventLoopRunning.store(true);
     m_spMainEventLoop->run();
     m_eventLoopRunning.store(false);
+}
+
+void IMClient::registerMessageHandlers()
+{
+    if (!m_spTcpManager)
+        return;
+
+    m_spTcpManager->registerHandler(
+        ZhKeyesIM::Protocol::MessageType::NOTIFY_FRIEND_APPLY,
+        std::bind(&IMClient::onNotifyApplyFriend, this,
+            std::placeholders::_1, std::placeholders::_2)
+    );
+}
+
+void IMClient::onNotifyApplyFriend(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg, 
+    std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender)
+{
+    if (!msg || !msg->hasBody()) return;
+
+    ZhKeyesIM::Protocol::BinaryReader reader(msg->getBody());
+
+    uint32_t fromUid = 0;
+    std::string name, nick, desc, icon;
+    uint32_t sex = 0;
+
+    if (!reader.readUInt32(fromUid) ||
+        !reader.readString(name) ||
+        !reader.readString(nick) ||
+        !reader.readString(desc) ||
+        !reader.readUInt32(sex) ||
+        !reader.readString(icon))
+    {
+        LOG_WARN("IMClient::onNotifyApplyFriend: 解析失败");
+        return;
+    }
+
+    LOG_INFO("收到好友申请通知, fromUid=%u, name=%s", fromUid, name.c_str());
+
+    auto friendApply = std::make_shared<AddFriendApply>(
+        fromUid, name, desc, icon, nick, sex
+    );
+    emit friendApplyReceived( friendApply);
 }

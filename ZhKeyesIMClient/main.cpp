@@ -75,6 +75,7 @@ int main(int argc, char* argv[])
     }
 
     MainWindow mainWindow;
+    QObject::connect(spIMClient.get(), &IMClient::friendApplyReceived, &mainWindow, &MainWindow::friendApplyReceived);
     mainWindow.setBaseSize(300, 500);
     //mainWindow.setMaximumSize(300, 500);
     mainWindow.show();

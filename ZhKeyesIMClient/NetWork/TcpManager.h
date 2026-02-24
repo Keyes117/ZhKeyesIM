@@ -48,15 +48,13 @@ public:
 
     virtual bool sendMessage(const ZhKeyesIM::Protocol::IMMessage& msg);
 
-
+    //注册到dispatcher 
+    void registerHandler(ZhKeyesIM::Protocol::MessageType type,
+        TcpResponseHandler&& handler);
 private:
     void releaseConnectCallback();
 
     uint64_t generateSeqId();
-
-    //注册到dispatcher 
-    void registerHandler(ZhKeyesIM::Protocol::MessageType type,
-        TcpResponseHandler&& handler);
 
     //注册到 pendingResponse
     void addPendingRequest(uint32_t seqId, TcpResponseHandler&& handler);

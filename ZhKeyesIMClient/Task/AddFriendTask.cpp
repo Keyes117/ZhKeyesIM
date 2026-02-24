@@ -1,5 +1,7 @@
-#include "AddFriendTask.h"
+﻿#include "AddFriendTask.h"
 
+#include "IMProtocol/BinaryReader.h"
+#include "Log/Logger.h"
 
 AddFriendTask::AddFriendTask(Task::ConstructorKey key, 
     Task::TaskId id, 
@@ -38,5 +40,35 @@ void AddFriendTask::doTask()
 void AddFriendTask::onAddFriendResponse(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg, 
     std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender)
 {
-     
+    auto fail = [this](const std::string& reason)
+        {
+            LOG_WARN("TcpManager: AUTH_RESP 失败: %s", reason.c_str());
+            onTaskError(reason);
+        };
+
+    if (!msg || !msg->hasBody()) {
+        fail("申请失败");
+        return;
+    }
+
+    ZhKeyesIM::Protocol::BinaryReader reader(msg->getBody());
+
+    uint8_t success = 0;
+    uint32_t uid = 0;
+    if (!reader.readUInt8(success) || !reader.readUInt32(uid)) {
+        fail("申请响应解析失败");
+        return;
+    }
+
+    if (success == 0) {
+        std::string err;
+        if (!reader.readString(err))
+            err = "好友申请失败";
+        fail(err);
+        return;
+    }
+
+    LOG_INFO("好友申请成功");
+    onTaskSuccess();
+
 }

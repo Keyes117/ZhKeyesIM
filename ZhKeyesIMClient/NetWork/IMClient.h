@@ -1,6 +1,8 @@
 #ifndef ZHKEYESIMCLIENT_IMCLIENT_H_
 #define ZHKEYESIMCLIENT_IMCLIENT_H_
 
+#include <QObject>
+
 #include <cstdint>
 
 #include <string>
@@ -9,10 +11,12 @@
 #include "NetWork/TcpManager.h"
 #include "util/ConfigManager.h"
 #include "Base/global.h"
+#include "Base/UserData.h"
 
 
-class IMClient
+class IMClient : public QObject
 {
+    Q_OBJECT
 public:
     using SuccessCallback = std::function<void()>;
     using ErrorCallback = std::function<void(const std::string&)>;
@@ -57,6 +61,15 @@ public:
 
 private:
     void networkThreadFunc();
+
+    void registerMessageHandlers();
+
+signals:
+    void friendApplyReceived(std::shared_ptr< AddFriendApply> applyInfo);
+
+private:
+    void onNotifyApplyFriend(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg,
+        std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender);
 
 private:
 

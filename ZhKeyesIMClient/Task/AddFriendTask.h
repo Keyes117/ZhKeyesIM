@@ -24,10 +24,6 @@ public:
 
     void doTask() override;
 
-signals:
-    void applySuccess(std::shared_ptr<AddFriendApply> searchInfo);
-    void applyFailed(const QString& reason);
-
 private:
     void onAddFriendResponse(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg,
         std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender);

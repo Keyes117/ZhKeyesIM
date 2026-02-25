@@ -39,6 +39,9 @@ private:
 
 public slots:
     void onFriendApplyReceived(std::shared_ptr<AddFriendApply> info);
+
+    void onFriendApplyAuthened(std::shared_ptr< AuthenApplyNotification> info);
+
 private slots:
     void onLineEditSearchChanged(const QString& text);
     void onClearActionTriggered();

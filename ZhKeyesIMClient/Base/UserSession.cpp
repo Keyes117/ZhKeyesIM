@@ -118,3 +118,24 @@ void UserSession::addApply(std::shared_ptr<ApplyInfo>&& applyInfo)
     std::lock_guard<std::mutex> lock(m_mutex);
     m_applyList.emplace_back(std::move(applyInfo));
 }
+bool UserSession::hasFriend(int uid) const
+{
+    auto it = m_friend_map.find(uid);
+    return it != m_friend_map.end();
+}
+
+void UserSession::addFriend(std::shared_ptr<FriendInfo> friendInfo)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (hasFriend(friendInfo->_uid))
+        return;
+
+    m_friend_list.push_back(friendInfo);
+    m_friend_map.insert(friendInfo->_uid, friendInfo);
+}
+
+void UserSession::addFriend(std::shared_ptr<AuthenApplyNotification> authRsp)
+{
+    auto spFriend = std::make_shared<FriendInfo>(authRsp);
+    addFriend(spFriend);
+}

@@ -1,4 +1,4 @@
-ï»¿#include "Task/AuthenFriendApplyTask.h"
+#include "Task/AuthenFriendApplyTask.h"
 
 #include "IMProtocol/BinaryReader.h"
 
@@ -21,7 +21,7 @@ void AuthenFriendApplyTask::doTask()
     auto self = std::static_pointer_cast<AuthenFriendApplyTask>(shared_from_this());
     std::weak_ptr<AuthenFriendApplyTask> weakSelf = self;
 
-    // è°ƒç”¨ IMClient çš„æ–¹æ³•å‘é€è¯·æ±‚
+    // µ÷ÓÃ IMClient µÄ·½·¨·¢ËÍÇëÇó
     m_spClient->authenFriendApply(
         m_fromUid,m_toUid,m_decision,m_backName,
         [weakSelf](std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg,
@@ -42,12 +42,12 @@ void AuthenFriendApplyTask::onAuthenFriendApplyResponse(std::shared_ptr<ZhKeyesI
 {
     auto fail = [this](const std::string& reason)
         {
-            LOG_WARN("AuthenFriendApplyTask:  å¤±è´¥: %s", reason.c_str());
+            LOG_WARN("AuthenFriendApplyTask:  Ê§°Ü: %s", reason.c_str());
             onTaskError(reason);
         };
 
     if (!msg || !msg->hasBody()) {
-        fail("ç½‘ç»œå¼‚å¸¸");
+        fail("ÍøÂçÒì³£");
         return;
     }
 
@@ -61,14 +61,14 @@ void AuthenFriendApplyTask::onAuthenFriendApplyResponse(std::shared_ptr<ZhKeyesI
         !reader.readUInt32(toUid)   
        )
     {
-        fail("ç”³è¯·å“åº”è§£æžå¤±è´¥");
+        fail("ÉêÇëÏìÓ¦½âÎöÊ§°Ü");
         return;
     }
 
     if (success == 0) {
         std::string err;
         if (!reader.readString(err))
-            err = "æ”¶å–é”™è¯¯ä¿¡æ¯å¤±è´¥";
+            err = "ÊÕÈ¡´íÎóÐÅÏ¢Ê§°Ü";
         fail(err);
         return;
     }

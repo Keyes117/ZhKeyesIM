@@ -27,6 +27,8 @@ public:
 signals:
     void friendApplyReceived(std::shared_ptr<AddFriendApply> info);
 
+    void authFriendApplyReceived(std::shared_ptr< AuthenApplyNotification> note);
+
 private slots:
     void switchToRegisterDlg();
     void switchToResetDlg();

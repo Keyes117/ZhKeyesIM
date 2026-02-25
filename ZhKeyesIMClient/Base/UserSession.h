@@ -91,6 +91,13 @@ public:
 
     void addApply(std::shared_ptr<ApplyInfo>&& applyInfo);
 
+    // 判断是否已经存在某个好友
+    bool hasFriend(int uid) const;
+
+    // 从服务端 / 认证通知里新增好友
+    void addFriend(std::shared_ptr<FriendInfo> friendInfo);
+    void addFriend(std::shared_ptr<AuthenApplyNotification> authRsp);
+
 private:
     UserSession() = default;
     ~UserSession() = default;

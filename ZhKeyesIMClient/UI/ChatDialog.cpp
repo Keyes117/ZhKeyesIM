@@ -215,6 +215,35 @@ void ChatDialog::onLineEditSearchChanged(const QString& text)
     }
 
 }
+void ChatDialog::onFriendApplyAuthened(std::shared_ptr<AuthenApplyNotification> authRsp)
+{
+    // 1. 判断是否已经是好友，避免重复
+    auto& session = UserSession::getInstance();
+    // 下面用我们新加的 UserSession::hasFriend 来判断（后面给实现）
+    if (session.alreadyApply(static_cast<uint32_t>(authRsp->_uid)))
+    {
+        // 这里也可以用 hasFriend，而 alreadyApply 是“是否已申请”的意思，看你后面怎么设计
+    }
+
+    // 2. 写入 Session 的好友列表（下面会给 UserSession::addFriend 的实现）
+    session.addFriend(authRsp);
+
+    // 3. 加到“聊天列表”（左侧最近聊天的那个 List）
+    int randomValue = QRandomGenerator::global()->bounded(100);
+    int str_i = randomValue % strs.size();
+    int head_i = randomValue % heads.size();
+
+    auto* chat_user_wid = new ChatUserItem();
+    auto user_info = std::make_shared<UserInfo>(authRsp);
+    chat_user_wid->setInfo(user_info->_name, heads[head_i], strs[str_i]);
+
+    QListWidgetItem* item = new QListWidgetItem;
+    item->setSizeHint(chat_user_wid->sizeHint());
+    m_chatUserListWidget->insertItem(0, item);
+    m_chatUserListWidget->setItemWidget(item, chat_user_wid);
+}
+
+
 void ChatDialog::onClearActionTriggered()
 {
     ui.lineEdit_search->clear();

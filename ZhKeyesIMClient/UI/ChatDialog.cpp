@@ -261,7 +261,15 @@ void ChatDialog::onSwitchApplyFriendPage()
     ui.stackedWidget_chat->setCurrentWidget(ui.page_applyFriend);
 }
 
-void ChatDialog::onFriendApplyReceived(std::shared_ptr<AddFriendApply> info)
+void ChatDialog::onFriendApplyReceived(std::shared_ptr<AddFriendApply> apply)
 {
 
+    bool b_already = UserSession::getInstance().alreadyApply(apply->_from_uid);
+    if (b_already) {
+        return;
+    }
+
+    ui.label_side_contact->showRedPoint(true);
+    ui.label_side_chat->showRedPoint(true);
+    ui.page_applyFriend->addNewApply(apply);
 }

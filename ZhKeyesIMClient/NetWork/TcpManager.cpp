@@ -140,6 +140,76 @@ bool TcpManager::searchUser(uint32_t uid, TcpResponseHandler onResponse, ErrorCa
 
 }
 
+bool TcpManager::fetchFriendApplyList(uint32_t uid, TcpResponseHandler onResponse, ErrorCallback onError)
+{
+    if (!m_spTcpClient || !m_spTcpClient->isConnected())
+    {
+        LOG_ERROR("TcpManager: 未连接，无法发送获取好友申请列表消息");
+        if (onError)
+            onError("网络未连接");
+        return false;
+    }
+
+    // 请求体为空，只需要消息类型
+    ZhKeyesIM::Protocol::IMMessage msg(
+        ZhKeyesIM::Protocol::MessageType::FETCH_FRIEND_APPLY_LIST_REQ,
+        generateSeqId(),
+        ""  // 空消息体
+    );
+
+    bool sent = sendMessage(msg);
+
+    if (sent)
+    {
+        addPendingRequest(msg.getSeqId(), std::move(onResponse));
+        LOG_INFO("TcpManager: 获取好友申请列表消息已发送");
+    }
+    else
+    {
+        if (onError)
+            onError("消息发送失败，请检查网络问题");
+    }
+    return sent;
+}
+
+bool TcpManager::authenFriendApply(uint32_t uid, uint32_t toUid, uint8_t decision,
+    const std::string backName, TcpManager::TcpResponseHandler onResponse, ErrorCallback onError)
+{
+    if (!m_spTcpClient || !m_spTcpClient->isConnected())
+    {
+        LOG_ERROR("TcpManager: 未连接，无法发送获取好友申请列表消息");
+        if (onError)
+            onError("网络未连接");
+        return false;
+    }
+
+    ZhKeyesIM::Protocol::BinaryWriter bodyWriter;
+    bodyWriter.writeUInt32(uid);
+    bodyWriter.writeUInt32(toUid);
+    bodyWriter.writeString(backName);
+
+    // 请求体为空，只需要消息类型
+    ZhKeyesIM::Protocol::IMMessage msg(
+        ZhKeyesIM::Protocol::MessageType::AUTH_FRIEND_APPLY_REQ,
+        generateSeqId(),
+        bodyWriter.getData()
+    );
+
+    bool sent = sendMessage(msg);
+
+    if (sent)
+    {
+        addPendingRequest(msg.getSeqId(), std::move(onResponse));
+        LOG_INFO("TcpManager: 获取好友申请列表消息已发送");
+    }
+    else
+    {
+        if (onError)
+            onError("消息发送失败，请检查网络问题");
+    }
+    return sent;
+}
+
 bool TcpManager::sendMessage(const ZhKeyesIM::Protocol::IMMessage& msg)
 {
     return m_spTcpClient->send(msg.serialize());

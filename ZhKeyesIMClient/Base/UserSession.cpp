@@ -28,7 +28,7 @@ std::string UserSession::getToken() const
     return m_currentUser.token;
 }
 
-int64_t UserSession::getUid() const
+uint32_t UserSession::getUid() const
 {
     std::lock_guard<std::mutex> lock(m_mutex);
     return m_currentUser.uid;
@@ -101,4 +101,20 @@ void UserSession::UpdateContactLoadedCount()
     }
 
     m_contact_loaded = end;
+}
+
+bool UserSession::alreadyApply(uint32_t uid)
+{
+    for (auto& apply : m_applyList)
+    {
+        if (apply->m_uid == uid)
+            return true;
+    }
+    return false;
+}
+
+void UserSession::addApply(std::shared_ptr<ApplyInfo>&& applyInfo)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_applyList.emplace_back(std::move(applyInfo));
 }

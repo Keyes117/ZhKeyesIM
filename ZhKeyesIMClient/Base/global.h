@@ -44,7 +44,7 @@ static std::vector<QString> names = {
  * 登录数据结构
  */
 struct User {
-    uint64_t uid = 0;
+    uint32_t uid = 0;
     std::string username;
     std::string email;
     std::string token;

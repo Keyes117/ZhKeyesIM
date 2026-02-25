@@ -22,6 +22,10 @@ public:
     void applyFriend(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage>,
         std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender>);
 
+    void getFriendApplyList(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage>,
+        std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender>);
+
+    
 private:
     std::shared_ptr<IMUserService> m_spUserService;
 };

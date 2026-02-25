@@ -53,6 +53,10 @@ public slots:
     //处理取消回调
     void onButtonCancelClicked();
    
+
+    void onAuthenFriendTaskSuccess();
+    void onAuthenFriendTaskFailed();
+
 private:
  	std::shared_ptr<ApplyInfo> m_apply_info;
     Ui::AuthenFriendDialog *m_ui;

@@ -41,6 +41,8 @@ private slots:
     void onLoginSuccess();
     void onLoginError(const QString& error);
 
+    void onFetchApplyListError(const QString& error);
+
     bool checkEmailValid();
     bool checkPassValid();
 

@@ -108,22 +108,36 @@ void IMClient::requestUserLogin(const std::string& jsonString,
     m_spHttpManager->requestUserLogin(jsonString, onResponse, onError);
 }
 
-void IMClient::auth(uint32_t uid, const std::string& token,
+bool IMClient::auth(uint32_t uid, const std::string& token,
     TcpManager::TcpResponseHandler onResponse, ErrorCallback onError/* = nullptr*/)
 {
-    m_spTcpManager->authenticate(uid, token, std::move(onResponse),std::move(onError));
+    return m_spTcpManager->authenticate(uid, token, std::move(onResponse),std::move(onError));
 }
 
-void IMClient::applyFriend(uint32_t uid, TcpManager::TcpResponseHandler onResponse,
+bool IMClient::applyFriend(uint32_t uid, TcpManager::TcpResponseHandler onResponse,
     ErrorCallback onError)
 {
-    m_spTcpManager->applyFriend(uid, std::move(onResponse), std::move(onError));
+    return m_spTcpManager->applyFriend(uid, std::move(onResponse), std::move(onError));
 }
 
-void IMClient::searchUser(uint32_t uid, TcpManager::TcpResponseHandler onResponse, ErrorCallback onError)
+bool IMClient::searchUser(uint32_t uid, TcpManager::TcpResponseHandler onResponse, ErrorCallback onError)
 {
-    m_spTcpManager->searchUser(uid, onResponse, onError);
+    return m_spTcpManager->searchUser(uid, onResponse, onError);
 }
+
+bool IMClient::fetchFriendApplyList(uint32_t uid, TcpManager::TcpResponseHandler onResponse,
+    ErrorCallback onError)
+{
+    return m_spTcpManager->fetchFriendApplyList(uid, std::move(onResponse), std::move(onError));
+}
+
+bool IMClient::authenFriendApply(uint32_t uid, uint32_t toUid, uint8_t decision,
+            const std::string backName, TcpManager::TcpResponseHandler onResponse, ErrorCallback onError)
+{
+    return m_spTcpManager->authenFriendApply(uid, toUid, decision, backName, std::move(onResponse), std::move(onError));
+}
+
+
 
 void IMClient::networkThreadFunc()
 {

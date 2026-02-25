@@ -409,3 +409,159 @@ bool IMUserRepository::areFriends(int32_t uid1, int32_t uid2)
 
     return false;
 }
+
+std::vector<FriendApplyInfo> IMUserRepository::getFriendAppliesForUser(int32_t toUid)
+{
+    std::vector<FriendApplyInfo> result;
+
+    if (!m_spMysql)
+        return result;
+
+    auto spConn = m_spMysql->getConnection();
+    if (!spConn)
+        return result;
+
+    ZhKeyes::Util::Defer def([this, &spConn]() {
+        m_spMysql->returnConnection(spConn);
+        });
+
+    try
+    {
+        // 只查我作为 to_uid 收到的申请；如只要待处理，可加 AND fa.status = 0
+        auto spStmt = m_spMysql->prepareStatement(spConn,
+            "SELECT fa.from_uid, fa.status, "
+            "       u.name, u.nick, u.`desc`, u.sex, u.icon "
+            "FROM friend_apply fa "
+            "JOIN user u ON fa.from_uid = u.uid "
+            "WHERE fa.to_uid = ? "
+            "ORDER BY fa.apply_time DESC"
+        );
+        spStmt->setInt(1, toUid);
+        std::unique_ptr<sql::ResultSet> res(spStmt->executeQuery());
+
+        while (res->next())
+        {
+            FriendApplyInfo row;
+            row.fromUid = res->getInt("from_uid");
+            row.status = res->getInt("status");
+
+            row.name = res->getString("name");
+
+            if (!res->isNull("desc"))
+                row.desc = res->getString("desc");
+            if (!res->isNull("icon"))
+                row.icon = res->getString("icon");
+            if (!res->isNull("nick"))
+                row.nick = res->getString("nick");
+            if (!res->isNull("sex"))
+                row.sex = res->getUInt("sex");
+            else
+                row.sex = 0;
+
+            result.emplace_back(std::move(row));
+        }
+    }
+    catch (sql::SQLException& e)
+    {
+        LOG_ERROR("IMUserRepository::getFriendApplyInfosForUser failed: %s", e.what());
+    }
+
+    return result;
+}
+
+bool IMUserRepository::acceptFriendApply(int32_t fromUid, int32_t toUid)
+{
+    if (!m_spMysql)
+        return false;
+
+    auto spConn = m_spMysql->getConnection();
+    if (!spConn)
+        return false;
+
+    ZhKeyes::Util::Defer def([this, &spConn]() {
+        m_spMysql->returnConnection(spConn);
+        });
+
+    try
+    {
+        // 开启事务（如果你有封装事务接口可以用封装）
+        spConn->m_spConn->setAutoCommit(false);
+
+        // 1. 更新申请状态为已同意（只更新当前仍为待处理的记录）
+        {
+            auto spStmt = m_spMysql->prepareStatement(spConn,
+                "UPDATE friend_apply "
+                "SET status = 1 "
+                "WHERE from_uid = ? AND to_uid = ? AND status = 0"
+            );
+            spStmt->setInt(1, fromUid);
+            spStmt->setInt(2, toUid);
+            int affected = spStmt->executeUpdate();
+            if (affected == 0)
+            {
+                // 没有待处理记录，可能已处理过
+                spConn->m_spConn->rollback();
+                return false;
+            }
+        }
+
+        // 2. 插入双向好友关系（忽略重复）
+        {
+            auto spStmt = m_spMysql->prepareStatement(spConn,
+                "INSERT IGNORE INTO friend (uid, friend_uid) VALUES (?, ?)"
+            );
+            spStmt->setInt(1, fromUid);
+            spStmt->setInt(2, toUid);
+            spStmt->executeUpdate();
+
+            spStmt->setInt(1, toUid);
+            spStmt->setInt(2, fromUid);
+            spStmt->executeUpdate();
+        }
+
+        spConn->m_spConn->commit();
+        spConn->m_spConn->setAutoCommit(true);
+        return true;
+    }
+    catch (sql::SQLException& e)
+    {
+        LOG_ERROR("IMUserRepository::acceptFriendApply failed: %s", e.what());
+        try { spConn->m_spConn->rollback(); }
+        catch (...) {}
+        return false;
+    }
+}
+
+bool IMUserRepository::rejectFriendApply(int32_t fromUid, int32_t toUid)
+{
+    if (!m_spMysql)
+        return false;
+
+    auto spConn = m_spMysql->getConnection();
+    if (!spConn)
+        return false;
+
+    ZhKeyes::Util::Defer def([this, &spConn]() {
+        m_spMysql->returnConnection(spConn);
+        });
+
+    try
+    {
+        auto spStmt = m_spMysql->prepareStatement(spConn,
+            "UPDATE friend_apply "
+            "SET status = 2 "              // 2 = 已拒绝
+            "WHERE from_uid = ? AND to_uid = ? AND status = 0"
+        );
+        spStmt->setInt(1, fromUid);
+        spStmt->setInt(2, toUid);
+        int affected = spStmt->executeUpdate();
+
+        // 没有受影响行，说明没有“待处理”的这条申请，视为失败
+        return affected > 0;
+    }
+    catch (sql::SQLException& e)
+    {
+        LOG_ERROR("IMUserRepository::rejectFriendApply failed: %s", e.what());
+        return false;
+    }
+}

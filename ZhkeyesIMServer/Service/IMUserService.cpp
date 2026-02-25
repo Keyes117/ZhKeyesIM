@@ -294,3 +294,220 @@ void IMUserService::applyFriend(uint32_t toUid, uint64_t seqId, std::shared_ptr<
         }
     }
 }
+
+void IMUserService::fetchFriendApplyList(uint32_t uid, uint64_t seqId, 
+    std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender)
+{
+    ZhKeyesIM::Protocol::IMMessage msg;
+    msg.setSeqId(seqId);
+    msg.setType(ZhKeyesIM::Protocol::MessageType::FETCH_FRIEND_APPLY_LIST_RESP);
+
+    ZhKeyes::Util::Defer def([&msg, &sender]() {
+        sender->sendMessage(msg);
+        });
+
+    auto session = std::dynamic_pointer_cast<IMSession>(sender);
+    if (!session)
+    {
+        LOG_ERROR("IMUserService::getFriendApplyList: sender is not IMSession");
+        ZhKeyesIM::Protocol::BinaryWriter writer;
+        writer.writeUInt8(0);  // success = false
+        writer.writeString("Internal server error");
+        msg.setBody(writer.getData());
+        return;
+    }
+
+    uint32_t uid = session->getUid();
+    if (uid == 0)
+    {
+        LOG_WARN("IMUserService::getFriendApplyList: uid=0 (not authed)");
+        ZhKeyesIM::Protocol::BinaryWriter writer;
+        writer.writeUInt8(0);  // success = false
+        writer.writeString("User not authed");
+        msg.setBody(writer.getData());
+        return;
+    }
+
+    auto infos = m_spUserRepo->getFriendAppliesForUser(static_cast<int32_t>(uid));
+
+    ZhKeyesIM::Protocol::BinaryWriter writer;
+    writer.writeUInt8(1);  // success = true
+    writer.writeUInt32(static_cast<uint32_t>(infos.size()));
+
+    // 注意顺序严格对应 ApplyInfo 构造函数：
+    // ApplyInfo(int uid, QString name, QString desc,
+    //           QString icon, QString nick, int sex, int status)
+    for (const auto& info : infos)
+    {
+        writer.writeUInt32(static_cast<uint32_t>(info.fromUid)); // uid
+        writer.writeString(info.name);                           // name
+        writer.writeString(info.desc);                           // desc
+        writer.writeString(info.icon);                           // icon
+        writer.writeString(info.nick);                           // nick
+        writer.writeUInt32(info.sex);                            // sex
+        writer.writeUInt32(info.status);                         // status
+    }
+
+    msg.setBody(writer.getData());
+}
+
+void IMUserService::authFriendApply(uint32_t fromUid, uint32_t toUid,
+    uint8_t decision,
+    const std::string backName,
+    uint64_t seqId, 
+    std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender)
+{
+    ZhKeyesIM::Protocol::IMMessage respMsg;
+    respMsg.setSeqId(seqId);
+    respMsg.setType(ZhKeyesIM::Protocol::MessageType::AUTH_FRIEND_APPLY_RESP);
+
+    auto session = std::dynamic_pointer_cast<IMSession>(sender);
+    if (!session)
+    {
+        LOG_ERROR("IMUserService::authFriendApply: sender is not IMSession");
+        ZhKeyesIM::Protocol::BinaryWriter writer;
+        writer.writeUInt8(0);
+        writer.writeUInt32(fromUid);
+        writer.writeUInt32(toUid);
+        writer.writeString("Internal server error");
+        respMsg.setBody(writer.getData());
+        sender->sendMessage(respMsg);
+        return;
+    }
+
+    uint32_t currentUid = session->getUid();
+    if (currentUid == 0 || currentUid != toUid)
+    {
+        LOG_WARN("IMUserService::authFriendApply: uid mismatch, sessionUid=%u, toUid=%u",
+            currentUid, toUid);
+        ZhKeyesIM::Protocol::BinaryWriter writer;
+        writer.writeUInt8(0);
+        writer.writeUInt32(fromUid);
+        writer.writeUInt32(toUid);
+        writer.writeString("User not authed or invalid toUid");
+        respMsg.setBody(writer.getData());
+        sender->sendMessage(respMsg);
+        return;
+    }
+
+    if (fromUid == toUid)
+    {
+        LOG_WARN("IMUserService::authFriendApply: fromUid == toUid, uid=%u", fromUid);
+        ZhKeyesIM::Protocol::BinaryWriter writer;
+        writer.writeUInt8(0);
+        writer.writeUInt32(fromUid);
+        writer.writeUInt32(toUid);
+        writer.writeString("Cannot auth self as friend");
+        respMsg.setBody(writer.getData());
+        sender->sendMessage(respMsg);
+        return;
+    }
+
+    // 仅支持 1=同意, 2=拒绝
+    if (decision != 0 && decision != 1)
+    {
+        ZhKeyesIM::Protocol::BinaryWriter writer;
+        writer.writeUInt8(0);
+        writer.writeUInt32(fromUid);
+        writer.writeUInt32(toUid);
+        writer.writeString("Invalid decision");
+        respMsg.setBody(writer.getData());
+        sender->sendMessage(respMsg);
+        return;
+    }
+
+    bool ok = false;
+    if (decision == 1)
+    {
+        // 同意：更新申请状态+建立好友关系
+        ok = m_spUserRepo->acceptFriendApply(static_cast<int32_t>(fromUid),
+            static_cast<int32_t>(toUid));
+        if (!ok)
+        {
+            LOG_WARN("IMUserService::authFriendApply: acceptFriendApply failed, from=%u to=%u",
+                fromUid, toUid);
+        }
+    }
+    else // decision == 2
+    {
+        // 拒绝：仅更新申请状态
+        ok = m_spUserRepo->rejectFriendApply(static_cast<int32_t>(fromUid),
+            static_cast<int32_t>(toUid));
+        if (!ok)
+        {
+            LOG_WARN("IMUserService::authFriendApply: rejectFriendApply failed, from=%u to=%u",
+                fromUid, toUid);
+        }
+    }
+
+    if (!ok)
+    {
+        ZhKeyesIM::Protocol::BinaryWriter writer;
+        writer.writeUInt8(0);
+        writer.writeUInt32(fromUid);
+        writer.writeUInt32(toUid);
+        writer.writeString("Failed to process friend apply");
+        respMsg.setBody(writer.getData());
+        sender->sendMessage(respMsg);
+        return;
+    }
+
+    // 给当前客户端的成功响应
+    {
+        ZhKeyesIM::Protocol::BinaryWriter writer;
+        writer.writeUInt8(1);           // success = 1
+        writer.writeUInt32(fromUid);
+        writer.writeUInt32(toUid);
+        writer.writeUInt8(decision);    // 回传下决策（1=同意,2=拒绝）
+        respMsg.setBody(writer.getData());
+        sender->sendMessage(respMsg);
+    }
+
+    LOG_INFO("IMUserService::authFriendApply: success, decision=%u, from=%u to=%u",
+        decision, fromUid, toUid);
+
+    // ===== 通知对方客户端 =====
+    if (m_notifyCallback)
+    {
+        // 获取当前用户（被申请人）的信息，用于通知对方
+        auto selfUserOpt = m_spUserRepo->getUserInfo(static_cast<int32_t>(toUid));
+        if (selfUserOpt)
+        {
+            const UserInfo& selfUser = *selfUserOpt;
+
+            ZhKeyesIM::Protocol::IMMessage notifyMsg;
+            notifyMsg.setType(ZhKeyesIM::Protocol::MessageType::NOTIFY_FRIEND_AUTH);
+            notifyMsg.setSeqId(0); // 服务端推送，seqId=0
+
+            ZhKeyesIM::Protocol::BinaryWriter nw;
+            // 谁给谁的结果
+            nw.writeUInt32(fromUid);             // 原申请人 uid（接收通知一方）
+            nw.writeUInt32(toUid);               // 处理方 uid（当前用户）
+            nw.writeUInt8(decision);             // 1=同意,2=拒绝
+
+            // 处理方的用户信息，方便对方更新本地 UI / 好友列表
+            nw.writeUInt32(selfUser.uid);
+            nw.writeString(selfUser.name);
+            nw.writeString(selfUser.nick);
+            nw.writeString(selfUser.desc);
+            nw.writeUInt32(selfUser.sex);
+            nw.writeString(selfUser.icon);
+
+            notifyMsg.setBody(nw.getData());
+
+            bool notified = m_notifyCallback(fromUid, notifyMsg);
+            if (notified)
+            {
+                LOG_INFO("IMUserService::authFriendApply: result notified to fromUid=%u", fromUid);
+            }
+            else
+            {
+                LOG_INFO("IMUserService::authFriendApply: fromUid=%u offline, will sync on login", fromUid);
+            }
+        }
+        else
+        {
+            LOG_WARN("IMUserService::authFriendApply: user info not found for toUid=%u, skip notify", toUid);
+        }
+    }
+}

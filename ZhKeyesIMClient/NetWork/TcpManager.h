@@ -1,4 +1,4 @@
-#ifndef ZHKEYESIMCLIENT_NETWORK_TCPMANAGER_H_
+﻿#ifndef ZHKEYESIMCLIENT_NETWORK_TCPMANAGER_H_
 #define ZHKEYESIMCLIENT_NETWORK_TCPMANAGER_H_
 
 
@@ -15,6 +15,11 @@
 class TcpManager : public ZhKeyesIM::Protocol::IMMessageSender
 {
 public:
+
+    using TcpResponseHandler = std::function<void(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage>,
+        std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender>)>;
+    using ErrorCallback = std::function<void(const std::string& errorMsg)>;
+
     using ConnectionCallback = std::function<void()>;
     using ConnectionFailedCallback = std::function<void(const std::string&)>;
 
@@ -23,7 +28,19 @@ public:
 
     bool connect(const std::string& ip, uint16_t port);
 
-    bool authenticate(const std::string& token, uint32_t uid);
+    void disconnect();
+
+    bool authenticate(uint32_t uid, const std::string& token,
+        TcpManager::TcpResponseHandler onResponse, ErrorCallback onError = nullptr);
+
+    bool applyFriend(uint32_t uid, TcpResponseHandler onResponse, ErrorCallback onError = nullptr);
+
+    bool searchUser(uint32_t uid, TcpResponseHandler onResponse, ErrorCallback onError = nullptr);
+
+    bool fetchFriendApplyList(uint32_t uid, TcpResponseHandler onResponse, ErrorCallback onError = nullptr);
+
+    bool authenFriendApply(uint32_t uid, uint32_t toUid, uint8_t decision, const std::string backName,
+        TcpManager::TcpResponseHandler onResponse, ErrorCallback onError = nullptr);
 
     void setConnectCallback(ConnectionCallback&& onSuccess)
     {
@@ -36,14 +53,22 @@ public:
 
     virtual bool sendMessage(const ZhKeyesIM::Protocol::IMMessage& msg);
 
-
+    //注册到dispatcher 
+    void registerHandler(ZhKeyesIM::Protocol::MessageType type,
+        TcpResponseHandler&& handler);
 private:
     void releaseConnectCallback();
 
-    void registerHandler();
+    uint64_t generateSeqId();
 
-    void handleAuthResponse(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage>, 
-        std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender>);
+    //注册到 pendingResponse
+    void addPendingRequest(uint32_t seqId, TcpResponseHandler&& handler);
+
+    bool handleResponseBySeqId(
+        std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg,
+        std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender
+    );
+
 private:
 
     void onTcpResponse(Buffer& recvBuf);
@@ -51,6 +76,13 @@ private:
     void onConnected(std::shared_ptr<TCPConnection> spConn);
     void onConnectFailed();
 private:
+
+    struct PendingRequest
+    {
+        TcpResponseHandler handler;
+        
+    };
+
     std::shared_ptr<EventLoop>  m_spEventLoop;
     std::unique_ptr<TCPClient>  m_spTcpClient;
 
@@ -58,6 +90,9 @@ private:
 
     ConnectionCallback m_connectionCallback;
     ConnectionFailedCallback m_connectFailedCallback;
+
+    std::mutex m_pendingMutex;
+    std::unordered_map<uint32_t, PendingRequest> m_pendingRequests;
 };
 
 

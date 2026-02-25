@@ -5,6 +5,8 @@
 
 #include "Base/UserSession.h"
 
+#include "UI/AuthenFriendDialog.h"
+
 ApplyFriendPage::ApplyFriendPage(QWidget *parent)
     : QWidget(parent)
 {
@@ -21,6 +23,7 @@ ApplyFriendPage::~ApplyFriendPage()
 
 void ApplyFriendPage::addNewApply(std::shared_ptr<AddFriendApply> apply)
 {
+    //TODO:这里先模拟头像随机, 之后在考虑资源服务
     int randomValue = QRandomGenerator::global()->bounded(100);
 
     int headIndex = randomValue % heads.size();
@@ -38,8 +41,10 @@ void ApplyFriendPage::addNewApply(std::shared_ptr<AddFriendApply> apply)
     applyItem->showButtonAdd(true);
 
     connect(applyItem, &ApplyFriendItem::authFriend, [this](std::shared_ptr<ApplyInfo> applyInfo) {
-        
-            
+        auto* authenFriendDialog = new AuthenFriendDialog(this);
+        authenFriendDialog->setModal(true);
+        authenFriendDialog->SetApplyInfo(applyInfo);
+        authenFriendDialog->show();            
         });
 }
 
@@ -67,7 +72,7 @@ void ApplyFriendPage::loadApplyList()
         item->setFlags(item->flags() & ~Qt::ItemIsEnabled & ~Qt::ItemIsSelectable);
         ui.listWidget_applyFriend->insertItem(0, item);
         ui.listWidget_applyFriend->setItemWidget(item, apply_item);
-        if (apply->_status) {
+        if (apply->m_status) {
             apply_item->showButtonAdd(false);
         }
         else {

@@ -23,6 +23,10 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+
+signals:
+    void friendApplyReceived(std::shared_ptr<AddFriendApply> info);
+
 private slots:
     void switchToRegisterDlg();
     void switchToResetDlg();
@@ -36,6 +40,8 @@ private:
     LoginDlg*           m_loginDlg;
     RegisterDlg*        m_registerDlg;
     ResetDlg*           m_resetDlg;
+
+    std::weak_ptr<IMClient> m_spClient;
 
 };
 

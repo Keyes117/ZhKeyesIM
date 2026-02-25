@@ -10,7 +10,7 @@ bool ZhKeyesIM::Protocol::IMMessageDispatcher::registerHandler(MessageType type,
     }
 
     m_messageHandlers[type] = std::move(handler);
-
+    return true;
 }
 
 bool ZhKeyesIM::Protocol::IMMessageDispatcher::hasRegistered(MessageType type)
@@ -67,7 +67,7 @@ bool ZhKeyesIM::Protocol::IMMessageDispatcher::dispatch(std::shared_ptr<IMMessag
     }
     catch (const std::exception& e)
     {
-       
+        //TODO: ·µ»Ø´íÎóÐÅÏ¢
         return false;
     }
     catch (...)

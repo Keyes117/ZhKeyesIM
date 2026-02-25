@@ -1,4 +1,4 @@
-// LoginTask.h
+ï»¿// LoginTask.h
 #ifndef ZHKEYESIMCLIENT_TASK_USERLOGINTASK_H_
 #define ZHKEYESIMCLIENT_TASK_USERLOGINTASK_H_
 
@@ -13,13 +13,16 @@
 #include <Http/HttpResponse.h>
 
 /**
- * ÓÃ»§µÇÂ¼ÈÎÎñ
+ * ç”¨æˆ·ç™»å½•ä»»åŠ¡
  */
 class UserLoginTask : public Task
 {
+    Q_OBJECT
 public:
-    UserLoginTask(std::shared_ptr<IMClient> client,
+    UserLoginTask(
+        Task::ConstructorKey key,
         Task::TaskId id,
+        std::shared_ptr<IMClient> client,
         std::string email,
         std::string password);
 
@@ -30,6 +33,7 @@ public:
 private:
     void onHttpResponse(const ZhKeyesIM::Net::Http::HttpResponse& response);
     void onHttpSuccess(const User& data);
+
 
 private:
     std::shared_ptr<IMClient> m_client;

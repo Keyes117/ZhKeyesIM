@@ -62,6 +62,8 @@ ChatDialog::ChatDialog( QWidget* parent) :
 
     ui.lineEdit_search->addAction(m_clearAction, QLineEdit::TrailingPosition);
 
+    m_searchListWidget->setSearchEdit(ui.lineEdit_search);
+
     connect(ui.label_side_chat, &StateWidget::clicked, this, &ChatDialog::onLabelSideChatClicked);
     connect(ui.label_side_contact, &StateWidget::clicked, this, &ChatDialog::onLabelSideContactClicked);
     connect(ui.lineEdit_search, &QLineEdit::textChanged, this, &ChatDialog::onLineEditSearchChanged);
@@ -78,6 +80,7 @@ ChatDialog::ChatDialog( QWidget* parent) :
     this->installEventFilter(this);
 
     ui.label_side_chat->setSelected(true);
+  
 
     ui.lineEdit_search->setMaxLength(15);
 
@@ -256,4 +259,17 @@ void ChatDialog::onLabelSideContactClicked()
 void ChatDialog::onSwitchApplyFriendPage()
 {
     ui.stackedWidget_chat->setCurrentWidget(ui.page_applyFriend);
+}
+
+void ChatDialog::onFriendApplyReceived(std::shared_ptr<AddFriendApply> apply)
+{
+
+    bool b_already = UserSession::getInstance().alreadyApply(apply->_from_uid);
+    if (b_already) {
+        return;
+    }
+
+    ui.label_side_contact->showRedPoint(true);
+    ui.label_side_chat->showRedPoint(true);
+    ui.page_applyFriend->addNewApply(apply);
 }

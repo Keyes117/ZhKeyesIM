@@ -1,4 +1,4 @@
-#ifndef ZHKEYESIMCLIENT_TASK_TASKBUILDER_H_
+ï»¿#ifndef ZHKEYESIMCLIENT_TASK_TASKBUILDER_H_
 #define ZHKEYESIMCLIENT_TASK_TASKBUILDER_H_
 
 #include <atomic>
@@ -6,6 +6,8 @@
 #include <memory>
 #include <functional>
 #include <string>
+#include <type_traits>
+#include <utility>
 
 #include "Task/Task.h"
 #include "Task/HttpResponseTask.h"
@@ -13,68 +15,79 @@
 
 
 /**
- * @brief ÈÎÎñÍ³Ò»¹¹½¨Àà
+ * @brief ä»»åŠ¡ç»Ÿä¸€æ„å»ºç±»
  */
-class TaskBuilder
+class TaskFactory
 {
 public:
-    ~TaskBuilder() = default;
+    ~TaskFactory() = default;
 
-    static TaskBuilder& getInstance();
+    static TaskFactory& getInstance();
 
     bool init(std::shared_ptr<IMClient> client);
 
-    // ==================== ÈÎÎñ¹¹½¨·½·¨ ====================
-
-    /**
-     * ×¢²áÈÎÎñ
-     */
-    std::shared_ptr<Task> buildRegisterTask(
-        const std::string& username,
-        const std::string& email,
-        const std::string& password,
-        const std::string& code
-    );
-
-    /**
-     * µÇÂ¼ÈÎÎñ
-     */
-    std::shared_ptr<Task> buildLoginTask(
-        const std::string& email,
-        const std::string& password
-     );
-
-    /**
-     * ÑéÖ¤ÂëÈÎÎñ
-     */
-    std::shared_ptr<Task> buildVerifyCodeTask(
-        const std::string& email
-    );
-
-    /**
-     * ÖØÖÃÃÜÂë
-     */
-    std::shared_ptr<Task> buildResetPasswordTask(
-        const std::string& email,
-        const std::string& newPassword,
-        const std::string& code
-   );
+    // ==================== ä»»åŠ¡æ„å»ºæ–¹æ³• ====================
     
-    std::shared_ptr<Task> buildHttpResponseTask(
-        std::string responseBody,
-        HttpResponseTask::ResponseFunc responseFunc
-    );
-
-    std::shared_ptr<Task> buildTcpConnectTask(
-        std::string ip,
-        uint16_t port
-    );
+    template<class TaskT, typename... Args>
+    std::shared_ptr<TaskT> buildTask(Args&&... args);
 
 private:
-    TaskBuilder() = default;
+    /*
+    * SFINAE åŸç†
+        ç¼–è¯‘å™¨åœ¨åŒ¹é…æ¨¡æ¿æ—¶ï¼Œå¦‚æœæ›¿æ¢å¤±è´¥ï¼Œä¼šé™é»˜å¿½ç•¥è¯¥å€™é€‰ï¼Œç»§ç»­å°è¯•å…¶ä»–å€™é€‰ã€‚
+    */
+
+    template<class TaskT, typename... Args>
+    static constexpr bool needsClient() {
+        return std::is_constructible_v<
+            TaskT,
+            Task::ConstructorKey,
+            Task::TaskId,
+            std::shared_ptr<IMClient>,
+            Args...
+        >;
+    }
+
+    // éœ€è¦ client çš„ç‰ˆæœ¬
+    template<class TaskT, typename... Args>
+    std::shared_ptr<TaskT> buildTaskImpl(std::true_type, Args&&... args) {
+        Task::TaskId taskId = generateTaskId();
+        return std::make_shared<TaskT>(
+            Task::ConstructorKey{},
+            taskId,
+            m_client,  
+            std::forward<Args>(args)...
+        );
+    }
+
+    // ä¸éœ€è¦ client çš„ç‰ˆæœ¬
+    template<class TaskT, typename... Args>
+    std::shared_ptr<TaskT> buildTaskImpl(std::false_type, Args&&... args) {
+        Task::TaskId taskId = generateTaskId();
+        return std::make_shared<TaskT>(
+            Task::ConstructorKey{},
+            taskId,
+            std::forward<Args>(args)...  // ä¸æ³¨å…¥ client
+        );
+    }
+
+private:
+    TaskFactory() = default;
     Task::TaskId generateTaskId();
 
     std::shared_ptr<IMClient> m_client;
 };
 
 #endif
+
+template<class TaskT, typename ...Args>
+inline std::shared_ptr<TaskT> TaskFactory::buildTask(Args && ...args)
+{
+    static_assert(std::is_base_of<Task, TaskT>::value,
+        "TaskT must derive from Task");
+
+    // ä½¿ç”¨ std::integral_constant ä½œä¸ºæ ‡ç­¾ï¼Œæ ¹æ® needsClient çš„ç»“æœé€‰æ‹©é‡è½½
+    using needs_client = std::integral_constant<bool, needsClient<TaskT, Args...>()>;
+
+    return buildTaskImpl<TaskT>(needs_client{}, std::forward<Args>(args)...);
+}

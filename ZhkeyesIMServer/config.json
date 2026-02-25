@@ -6,10 +6,12 @@
         "connNumber":10
     },
     "IMServer":{
+        "serverName":"chatServer1",
         "threadNum":4,
         "ip":"127.0.0.1",
         "port":9000,
-        "IOType":2
+        "grpcPort":50053,
+        "IOType":0
     },
     "mysql":{
         "host":"172.25.224.240",

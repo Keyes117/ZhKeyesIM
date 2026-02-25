@@ -25,6 +25,8 @@ public:
 
     void setUserInfo(uint32_t uid, const std::string& token);
 
+    uint32_t getUid() const { return  m_uid; }
+
 private:
     static uint32_t generateID();
 

@@ -1,5 +1,5 @@
-#ifndef infrastructure_STATUSGRPCCLIENT_H_
-#define infrastructure_STATUSGRPCCLIENT_H_
+#ifndef INFRASTRUCTURE_STATUSGRPCCLIENT_H_
+#define INFRASTRUCTURE_STATUSGRPCCLIENT_H_
 
 #include <memory>
 #include <functional>

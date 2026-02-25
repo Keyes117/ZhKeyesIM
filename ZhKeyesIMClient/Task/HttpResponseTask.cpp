@@ -1,9 +1,10 @@
 #include "HttpResponseTask.h"
 
 HttpResponseTask::HttpResponseTask(
+    Task::ConstructorKey key,
     Task::TaskId id,
     std::string responseBody, ResponseFunc responseFunc)
-    :Task(id,TaskType::TASK_TYPE_HTTPRESPONSE),
+    :Task(key,id,TaskType::TASK_TYPE_HTTPRESPONSE),
     m_responseBody(std::move(responseBody)), 
     m_responseFunc(std::move(responseFunc))
 {

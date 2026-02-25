@@ -36,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_registerDlg, &RegisterDlg::switchLoginDlg, this, &MainWindow::switchToLoginDlg);
     connect(m_resetDlg, &ResetDlg::switchLoginDlg, this, &MainWindow::switchToLoginDlg);
 
+    connect(this, &MainWindow::friendApplyReceived, m_chatDlg, &ChatDialog::onFriendApplyReceived);
 }
 
 MainWindow::~MainWindow()

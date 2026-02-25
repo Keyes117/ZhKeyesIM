@@ -12,6 +12,7 @@
 
 #include "Task/TaskBuilder.h"
 #include "Task/TaskHandler.h"
+#include "Task/FetchFriendApplyListTask.h"
 
 
 LoginDlg::LoginDlg(QWidget* parent)
@@ -50,19 +51,33 @@ LoginDlg::~LoginDlg()
 
 void LoginDlg::onLoginSuccess()
 {
-    //m_ui.button_login->setEnabled(true);
+    m_ui.button_logon->setEnabled(true);
     QMessageBox::information(this, "成功",
         QString("欢迎回来，%1！").arg(QString::fromStdString(UserSession::getInstance().getUsername())));
 
     emit loginSuccess();
 
+    auto task = TaskFactory::getInstance().
+        buildTask<FetchFriendApplyListTask>(UserSession::getInstance().getUid());
+
+    connect(task.get(), &FetchFriendApplyListTask::taskFailed, this, &LoginDlg::onFetchApplyListError);
+
+    TaskHandler::getInstance().registerNetTask(std::move(task));
 }
 
-void LoginDlg::onLoginError(const std::string& error)
+void LoginDlg::onLoginError(const QString& error)
 {
+    m_ui.button_logon->setEnabled(true);
     QMessageBox::warning(this,
         "注册失败",
-        QString::fromStdString(error));
+        error);
+}
+
+void LoginDlg::onFetchApplyListError(const QString& error)
+{
+    QMessageBox::critical(this,
+        "错误",
+        error);
 }
 
 
@@ -100,6 +115,8 @@ void LoginDlg::hideFieldError(const QString& fieldName)
 
 void LoginDlg::onLoginButtonClicked()
 {
+    //emit loginSuccess();
+    //return;
 
     if (!checkEmailValid())
     {
@@ -114,12 +131,14 @@ void LoginDlg::onLoginButtonClicked()
     QString email = m_ui.lineEdit_accout->text();
     QString password = m_ui.lineEdit_password->text();
 
-    auto loginTask = TaskBuilder::getInstance().buildLoginTask(
+    m_ui.button_logon->setEnabled(false);
+
+    auto loginTask = TaskFactory::getInstance().buildTask<UserLoginTask>(
         email.toStdString(),
         password.toStdString());
 
-    connect(loginTask.get(), &Task::taskSuccess, this, LoginDlg::onLoginSuccess);
-    connect(loginTask.get(), &Task::taskFinished, this, LoginDlg::onLoginError);
+    connect(loginTask.get(), &Task::taskSuccess, this, &LoginDlg::onLoginSuccess);
+    connect(loginTask.get(), &Task::taskFailed, this, &LoginDlg::onLoginError);
 
     TaskHandler::getInstance().registerNetTask(std::move(loginTask));
 }

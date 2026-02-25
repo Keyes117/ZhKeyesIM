@@ -42,7 +42,7 @@ public:
      * @brief 获取用户ID
      * @return 用户ID，如果未登录则返回0
      */
-    int64_t getUid() const;
+    uint32_t getUid() const;
 
     /**
      * @brief 获取用户名
@@ -81,6 +81,15 @@ public:
     std::vector<std::shared_ptr<FriendInfo>> GetContactUserListPerPage();
 
     void UpdateContactLoadedCount();
+
+    /**
+     * @brief 标识已经发送了好友申请的用户
+     * @param uid 好友uid
+     * @return 
+     */
+    bool alreadyApply(uint32_t uid);
+
+    void addApply(std::shared_ptr<ApplyInfo>&& applyInfo);
 
 private:
     UserSession() = default;

@@ -137,6 +137,9 @@ set(CLIENT_UI_SOURCE
     UI/ApplyFriendItem.ui
     UI/ApplyFriendList.h
     UI/ApplyFriendList.cpp
+    UI/AuthenFriendDialog.cpp
+    UI/AuthenFriendDialog.h
+    UI/AuthenFriendDialog.ui
 
     UI/resource.qrc
     UI/style/styleSheet.qss
@@ -162,7 +165,14 @@ set(CLIENT_TASK_SOURCE
     Task/UserLoginTask.cpp
     Task/TcpConnectTask.h
     Task/TcpConnectTask.cpp
-
+    Task/SearchUserTask.h
+    Task/SearchUserTask.cpp
+    Task/AddFriendTask.h
+    Task/AddFriendTask.cpp
+    Task/FetchFriendApplyListTask.h
+    Task/FetchFriendApplyListTask.cpp
+    Task/AuthenFriendApplyTask.h
+    Task/AuthenFriendApplyTask.cpp
 )
 
 # Qt配置

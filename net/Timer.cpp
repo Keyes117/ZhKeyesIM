@@ -52,7 +52,7 @@ void Timer::doTimer(int64_t timerId, int64_t nowMs)
         }
         else if (m_mode == TimerMode::TimerMode_FixedRate)
         {
-            m_nextTriggeredTimeMs += nowMs + m_intervalMs;
+            m_nextTriggeredTimeMs = nowMs + m_intervalMs;
         }
     }
 

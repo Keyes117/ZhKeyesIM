@@ -7,6 +7,10 @@
 #include "Base/global.h"
 #include "UI/ClickedLabel.h"
 
+#include "Task/AddFriendTask.h"
+#include "Task/TaskBuilder.h"
+#include "Task/TaskHandler.h"
+
 ApplyFriendDialog::ApplyFriendDialog(QWidget *parent)
     : QDialog(parent)
 {
@@ -450,7 +454,10 @@ void ApplyFriendDialog::onLabelTipClickedOnce(QString text)
 
 void ApplyFriendDialog::onApplyConfirm()
 {
-    this->hide();
+    auto uid = m_searchInfo->m_uid;
+    auto addFriendTask = TaskFactory::getInstance().buildTask<AddFriendTask>(uid);
+    TaskHandler::getInstance().registerNetTask(std::move(addFriendTask));
+    this->hide();  
     deleteLater();
 }
 

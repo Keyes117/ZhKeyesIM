@@ -17,8 +17,8 @@ ChatServerInfo StatusService::getChatServer(int32_t uid)
 
         // 1. 从 Repository 获取连接数最少的服务器（负载均衡）
         auto serverOpt = m_spChatServerRepo->getServerWithMinConnections();
-
-        if (!serverOpt.has_value()) {
+        if (!serverOpt.has_value())
+        {
             LOG_ERROR("StatusService: 没有可用的聊天服务器");
             info.error = 1;
             return info;
@@ -27,7 +27,8 @@ ChatServerInfo StatusService::getChatServer(int32_t uid)
         info = serverOpt.value();
 
         // 验证服务器信息是否完整
-        if (info.host.empty() || info.port == 0) {
+        if (info.host.empty() || info.port == 0) 
+        {
             LOG_ERROR("StatusService: 服务器信息不完整, name=%s", info.name.c_str());
             info.error = 1;
             return info;

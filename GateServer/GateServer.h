@@ -64,8 +64,6 @@ protected:
     virtual void onHttpRequestAsync(const ZhKeyesIMHttp::HttpRequest& request, ZhKeyesIMHttp::HttpServer::AsyncDone done);
 
 
-
-    // ... 其他路由处理函数保持不变，但添加异步版本
     virtual void handleGetRootAsync(const ZhKeyesIMHttp::HttpRequest& request, 
         ZhKeyesIMHttp::HttpServer::AsyncDone done,
         const std::map<std::string, std::string>& params);

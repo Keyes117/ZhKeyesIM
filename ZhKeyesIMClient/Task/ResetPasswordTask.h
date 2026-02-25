@@ -1,4 +1,4 @@
-// ResetPasswordTask.h
+ï»¿// ResetPasswordTask.h
 #ifndef ZHKEYESIMCLIENT_TASK_RESETPASSWORDTASK_H_
 #define ZHKEYESIMCLIENT_TASK_RESETPASSWORDTASK_H_
 
@@ -14,18 +14,23 @@
 #include "NetWork/IMClient.h"
 
 /**
- * ÖØÖÃÃÜÂëÈÎÎñ
+ * é‡ç½®å¯†ç ä»»åŠ¡
  */
-class ResetPasswordTask : public Task {
+class ResetPasswordTask : public Task 
+{
+    Q_OBJECT
+
 public:
-    ResetPasswordTask(std::shared_ptr<IMClient> client,
+    ResetPasswordTask(
+        Task::ConstructorKey key,
         Task::TaskId id,
+        std::shared_ptr<IMClient> client, 
         std::string email,
         std::string newPassword,
         std::string code
   );
 
-    ~ResetPasswordTask() override = default;
+    virtual ~ResetPasswordTask() override = default;
 
     void doTask() override;
 

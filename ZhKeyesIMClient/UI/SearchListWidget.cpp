@@ -3,13 +3,16 @@
 #include <QEvent>
 #include <QWheelEvent>
 #include <QScrollBar>
+#include <QMessageBox>
 
+#include "Base/UserData.h"
 #include "UI/AddUserItem.h"
 #include "UI/CustomizeEdit.h"
 #include "UI/LoadingDialog.h"
 #include "UI/FindSuccessDialog.h"
-
-#include "Base/UserData.h"
+#include "Task/TaskBuilder.h"
+#include "Task/TaskHandler.h"
+#include "Task/SearchUserTask.h"
 
 SearchListWidget::SearchListWidget(QWidget* parent):
     QListWidget(parent)
@@ -33,8 +36,9 @@ void SearchListWidget::closeFindDlg()
 {
 }
 
-void SearchListWidget::setSearchEdit(QWidget* eidt)
+void SearchListWidget::setSearchEdit(QWidget* edit)
 {
+    m_searchEdit = edit;
 }
 
 bool SearchListWidget::eventFilter(QObject* watched, QEvent* event)
@@ -62,10 +66,6 @@ bool SearchListWidget::eventFilter(QObject* watched, QEvent* event)
     }
 
     return QListWidget::eventFilter(watched, event);
-}
-
-void SearchListWidget::waitPending(bool pending)
-{
 }
 
 void SearchListWidget::addTipItem()
@@ -135,8 +135,15 @@ void SearchListWidget::onItemClicked(QListWidgetItem* item)
         waitPending(true);
         
         auto searchEdit = dynamic_cast<CustomizeEdit*>(m_searchEdit);
-
         auto strUid = searchEdit->text();
+
+        uint32_t uid = strUid.toUInt();
+        auto task = TaskFactory::getInstance().buildTask<SearchUserTask>(uid);
+
+        connect(task.get(), &SearchUserTask::userSearched, this, &SearchListWidget::onUserSearch);
+
+        TaskHandler::getInstance().registerNetTask(std::move(task));
+
 
     }
 
@@ -145,5 +152,21 @@ void SearchListWidget::onItemClicked(QListWidgetItem* item)
 
 void SearchListWidget::onUserSearch(std::shared_ptr<SearchInfo> info)
 {
+    waitPending(false);
+    if (info == nullptr)
+    {
+        //TODO:查找失败
+        //m_findDialog = std::make_shared
+        QMessageBox::information(nullptr, "查询结果", "查询失败,该用户未注册", "确定");
+    }
+    else
+    {
 
+        //TODO: 查找是否已经是好友
+        //查找成功
+        m_findDialog = std::make_shared<FindSuccessDialog>(this);
+        std::dynamic_pointer_cast<FindSuccessDialog>(m_findDialog)->SetSearchInfo(info);
+
+        m_findDialog->show();
+    }
 }

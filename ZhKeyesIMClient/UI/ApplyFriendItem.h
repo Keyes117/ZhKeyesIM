@@ -24,7 +24,7 @@ public:
     }
 
     int GetUid() {
-        return m_applyInfo->_uid;
+        return m_applyInfo->m_uid;
     }
 
 signals:

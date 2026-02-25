@@ -31,11 +31,11 @@ private:
     void hideFieldError(const QString& fieldName);
 
 
-    void onRegisterSuccess(int uid);
-    void onRegisterError(const std::string& error);
+    void onRegisterSuccess();
+    void onRegisterError(const QString& error);
          
     void onVerifyCodeSuccess();
-    void onVerifyCodeError(const std::string& error);
+    void onVerifyCodeError(const QString& error);
 
 signals:
     void switchLoginDlg();

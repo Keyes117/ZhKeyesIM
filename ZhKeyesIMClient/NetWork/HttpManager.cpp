@@ -80,18 +80,4 @@ void HttpManager::requestUserLogin(const std::string& jsonString,
     );
 }
 
-void HttpManager::onResponseVerificationCode(SuccessCallback onSuccess, ErrorCallback onError, const ZhKeyesIM::Net::Http::HttpResponse& response)
-{
-   
-}
-
-void HttpManager::onResponseUserLogin(DataCallback<User> onSuccess, ErrorCallback onError, const ZhKeyesIM::Net::Http::HttpResponse& response)
-{   
-}
-
-void HttpManager::onResponseResetPassword(SuccessCallback onSuccess, ErrorCallback onError, const ZhKeyesIM::Net::Http::HttpResponse& response)
-{
-
-    
-}
 

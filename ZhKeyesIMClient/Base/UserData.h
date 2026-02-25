@@ -1,4 +1,4 @@
-#ifndef ZHKEYESIMCLIENT_UI_USERDATA_H_
+﻿#ifndef ZHKEYESIMCLIENT_UI_USERDATA_H_
 #define ZHKEYESIMCLIENT_UI_USERDATA_H_
 
 
@@ -11,48 +11,48 @@
 class SearchInfo {
 public:
     SearchInfo(int uid, QString name, QString nick, QString desc, int sex, QString icon = "");
-	int     m_uid;
-	QString m_name;
-	QString m_nick;
-	QString m_desc;
-	int     m_sex;
-    QString m_icon;
+	uint32_t        m_uid;
+	QString         m_name;
+	QString         m_nick;
+	QString         m_desc;
+	uint32_t        m_sex;
+    QString         m_icon;
 };
 
 class AddFriendApply {
 public:
-    AddFriendApply(int from_uid, QString name, QString desc,
-                   QString icon, QString nick, int sex);
-	int _from_uid;
+    AddFriendApply(uint32_t from_uid, QString name, QString desc,
+                   QString icon, QString nick, uint32_t sex);
+    uint32_t _from_uid;
 	QString _name;
 	QString _desc;
     QString _icon;
     QString _nick;
-    int     _sex;
+    uint32_t _sex;
 };
 
 struct ApplyInfo {
     ApplyInfo(int uid, QString name, QString desc,
         QString icon, QString nick, int sex, int status)
-        :_uid(uid),_name(name),_desc(desc),
-        _icon(icon),_nick(nick),_sex(sex),_status(status){}
+        :m_uid(uid),m_name(name),m_desc(desc),
+        m_icon(icon),m_nick(nick),m_sex(sex),m_status(status){}
 
     ApplyInfo(std::shared_ptr<AddFriendApply> addinfo)
-        :_uid(addinfo->_from_uid),_name(addinfo->_name),
-          _desc(addinfo->_desc),_icon(addinfo->_icon),
-          _nick(addinfo->_nick),_sex(addinfo->_sex),
-          _status(0)
+        :m_uid(addinfo->_from_uid),m_name(addinfo->_name),
+          m_desc(addinfo->_desc),m_icon(addinfo->_icon),
+          m_nick(addinfo->_nick),m_sex(addinfo->_sex),
+          m_status(0)
     {}
     void SetIcon(QString head){
-        _icon = head;
+        m_icon = head;
     }
-    int _uid;
-    QString _name;
-    QString _desc;
-    QString _icon;
-    QString _nick;
-    int _sex;
-    int _status;
+    int     m_uid;
+    QString m_name;
+    QString m_desc;
+    QString m_icon;
+    QString m_nick;
+    int     m_sex;
+    int     m_status;
 };
 
 struct AuthInfo {
@@ -176,5 +176,13 @@ struct TextChatMsg{
     std::vector<std::shared_ptr<TextChatData>> _chat_msgs;
 };
 
+Q_DECLARE_METATYPE(SearchInfo)
+Q_DECLARE_METATYPE(ApplyInfo)
+Q_DECLARE_METATYPE(AuthInfo)
+Q_DECLARE_METATYPE(AuthRsp)
+Q_DECLARE_METATYPE(FriendInfo)
+Q_DECLARE_METATYPE(UserInfo)
+Q_DECLARE_METATYPE(TextChatData)
+Q_DECLARE_METATYPE(TextChatMsg)
 
 #endif  

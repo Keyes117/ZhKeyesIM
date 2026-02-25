@@ -1,4 +1,4 @@
-#include "IMSession.h"
+﻿#include "IMSession.h"
 
 #include "IMProtocol/IMProtocol.h"
 #include "IMProtocol/IMMessage.h"
@@ -29,6 +29,7 @@ void IMSession::setUserInfo(uint32_t uid, const std::string& token)
 {
     m_uid = uid;
     m_token = token;
+    m_pServer->setUserSession(uid, std::dynamic_pointer_cast<IMSession>(shared_from_this()));
 }
 
 uint32_t IMSession::generateID()
@@ -53,19 +54,23 @@ void IMSession::onRead(Buffer& buf)
 
         bool foundMagic = false;
         size_t magicOffset = 0;
-        
-        size_t searchLimit = std::min(readable - ZhKeyesIM::Protocol::HEADER_SIZE + 1, 
+
+        size_t searchLimit = std::min(readable - ZhKeyesIM::Protocol::HEADER_SIZE + 1,
             ZhKeyesIM::Protocol::MAX_PACKET_SIZE);
 
-          // 在可读数据中搜索 magic（最多搜索到 readable - HEADER_SIZE + 1 的位置）
-        //magic 是 uint32_t，需要按字节对齐搜索
+        // 在可读数据中搜索 magic（最多搜索到 readable - HEADER_SIZE + 1 的位置）
+      //magic 是 uint32_t，需要按字节对齐搜索
         for (size_t i = 0; i <= searchLimit; ++i)
         {
             // 检查当前位置是否可能是 magic（需要至少 4 字节）
             if (i + 4 <= readable)
             {
-                const uint32_t* magicPtr = reinterpret_cast<const uint32_t*>(data + i);
-                if (*magicPtr == ZhKeyesIM::Protocol::PROTOCOL_MAGIC)
+                // 使用 memcpy 避免对齐问题
+                uint32_t magicValue;
+                std::memcpy(&magicValue, data + i, 4);
+                // 将读取的值转换为网络字节序（因为网络数据是大端序）
+                magicValue = ZhKeyes::Util::ByteOrder::networkToHost32(magicValue);
+                if (magicValue == ZhKeyesIM::Protocol::PROTOCOL_MAGIC)
                 {
                     foundMagic = true;
                     magicOffset = i;
@@ -73,13 +78,13 @@ void IMSession::onRead(Buffer& buf)
                 }
             }
         }
-        
+
         // 如果没找到 magic
         if (!foundMagic)
         {
-          // 理论上，如果搜索超过一个最大包的大小还没找到 magic，说明肯定有问题
+            // 理论上，如果搜索超过一个最大包的大小还没找到 magic，说明肯定有问题
             if (readable > ZhKeyesIM::Protocol::MAX_PACKET_SIZE)
-            {                
+            {
                 buf.retrieveAll();
                 break;
             }
@@ -93,7 +98,7 @@ void IMSession::onRead(Buffer& buf)
             }
             break;
         }
-        
+
         // 找到了 magic，如果不在开头，丢弃前面的垃圾数据
         if (magicOffset > 0)
         {
@@ -109,13 +114,16 @@ void IMSession::onRead(Buffer& buf)
         if (!msg)
             break;
 
-        auto self = shared_from_this();
-        m_pServer->handleMsg(msg,self);
-
         size_t msgLen = msg->getLength();
         buf.retrieve(msgLen);
 
+        auto self = shared_from_this();
+        m_pServer->handleMsg(msg, self);
+
+
+
     }
+
 }
 
 void IMSession::onWrite()

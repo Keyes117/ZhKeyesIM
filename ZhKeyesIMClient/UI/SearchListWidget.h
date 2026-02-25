@@ -13,7 +13,7 @@ class SearchListWidget : public QListWidget
 public:
     SearchListWidget(QWidget* parent = nullptr);
     void closeFindDlg();
-    void setSearchEdit(QWidget* eidt);
+    void setSearchEdit(QWidget* edit);
 
 protected:
     bool eventFilter(QObject* watched, QEvent* event);
@@ -21,7 +21,6 @@ protected:
 private:
     void waitPending(bool pending = true);
     void addTipItem();
-    void waitPending(bool pending);
 
 
 private slots:

@@ -26,5 +26,17 @@ CREATE TABLE `user_id` (
 
 -- 初始化数据
 INSERT INTO `user_id` (`id`) VALUES (10000);
+
+-- 创建好友申请记录表
+CREATE TABLE `friend_apply` (
+    `id` INT AUTO_INCREMENT PRIMARY KEY COMMENT '申请ID',
+    `from_uid` INT NOT NULL COMMENT '申请人UID',
+    `to_uid` INT NOT NULL COMMENT '目标用户UID',
+    `status` TINYINT NOT NULL DEFAULT 0 COMMENT '状态: 0=待处理, 1=已同意, 2=已拒绝',
+    `apply_time` BIGINT DEFAULT NULL COMMENT '申请时间（Unix时间戳）',
+    UNIQUE KEY `uk_from_to` (`from_uid`, `to_uid`),
+    KEY `idx_to_uid` (`to_uid`),
+    KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='好友申请表';
 ```
 

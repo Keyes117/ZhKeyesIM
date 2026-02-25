@@ -42,7 +42,7 @@ void FindSuccessDialog::SetSearchInfo(std::shared_ptr<SearchInfo> searchInfo)
 
 void FindSuccessDialog::onButtonAddFriendClicked()
 {
-    //TODO: 添加好友界面弹出
+    this->hide();
 
     auto applyFriendDialog = new ApplyFriendDialog(m_parent);
     applyFriendDialog->setSearchInfo(m_searchInfo);

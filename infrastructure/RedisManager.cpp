@@ -579,3 +579,52 @@ bool RedisManager::HIncrBy(const std::string& key, const std::string& field, int
     return true;
     
 }
+
+bool RedisManager::Expire(const std::string& key, int seconds)
+{
+    if (!m_inited)
+        return false;
+
+    redisContext* pConnection = m_spConnPool->getConnection();
+    if (pConnection == nullptr)
+    {
+        LOG_ERROR("Redis: Failed to get redis Connection");
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    redisReply* pReply = static_cast<redisReply*>(
+        redisCommand(pConnection, "EXPIRE %s %d", key.c_str(), seconds)
+        );
+
+    if (!pReply)
+    {
+        LOG_ERROR("Redis: failed to execute [ EXPIRE %s %d ] (null reply)", key.c_str(), seconds);
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    // EXPIRE 返回整数：1 = 成功设置过期时间；0 = key 不存在或未设置
+    if (pReply->type != REDIS_REPLY_INTEGER)
+    {
+        LOG_ERROR("Redis: invalid reply type for [ EXPIRE %s %d ]", key.c_str(), seconds);
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    if (pReply->integer == 0)
+    {
+        LOG_WARN("Redis: Key [ %s ] not found, EXPIRE %d failed", key.c_str(), seconds);
+        freeReplyObject(pReply);
+        m_spConnPool->returnConnection(pConnection);
+        return false;
+    }
+
+    LOG_INFO("Redis: succeed to execute [ EXPIRE %s %d ], key will expire in %d seconds",
+        key.c_str(), seconds, seconds);
+
+    freeReplyObject(pReply);
+    m_spConnPool->returnConnection(pConnection);
+    return true;
+}

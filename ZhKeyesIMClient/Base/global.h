@@ -44,7 +44,7 @@ static std::vector<QString> names = {
  * 登录数据结构
  */
 struct User {
-    uint64_t uid = 0;
+    uint32_t uid = 0;
     std::string username;
     std::string email;
     std::string token;
@@ -83,7 +83,7 @@ enum ChatUIMode {
     SettingsMode, //设置模式
 };
 
-//自定义QListWidgetItem的几种类型
+//QListWidgetItem的几种类型
 enum ListItemType {
     CHAT_USER_ITEM, //聊天用户
     CONTACT_USER_ITEM, //联系人用户

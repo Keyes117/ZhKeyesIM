@@ -42,7 +42,7 @@ void AddFriendTask::onAddFriendResponse(std::shared_ptr<ZhKeyesIM::Protocol::IMM
 {
     auto fail = [this](const std::string& reason)
         {
-            LOG_WARN("TcpManager: AUTH_RESP 失败: %s", reason.c_str());
+            LOG_WARN("AddFriendTask 失败: %s", reason.c_str());
             onTaskError(reason);
         };
 

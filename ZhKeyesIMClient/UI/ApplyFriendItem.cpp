@@ -23,12 +23,12 @@ void ApplyFriendItem::setInfo(std::shared_ptr<ApplyInfo> spApplyInfo)
 {
     m_applyInfo = spApplyInfo;
 
-    QPixmap pixmap(m_applyInfo->_icon);
+    QPixmap pixmap(m_applyInfo->m_icon);
     // 设置图片自动缩放
     ui.label_icon->setPixmap(pixmap.scaled(ui.label_icon->size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     ui.label_icon->setScaledContents(true);
-    ui.label_username->setText(m_applyInfo->_name);
-    ui.label_userchat->setText(m_applyInfo->_desc);
+    ui.label_username->setText(m_applyInfo->m_name);
+    ui.label_userchat->setText(m_applyInfo->m_desc);
 }
 
 void ApplyFriendItem::showButtonAdd(bool bShow)

@@ -12,6 +12,7 @@
 
 #include "Task/TaskBuilder.h"
 #include "Task/TaskHandler.h"
+#include "Task/FetchFriendApplyListTask.h"
 
 
 LoginDlg::LoginDlg(QWidget* parent)
@@ -56,6 +57,12 @@ void LoginDlg::onLoginSuccess()
 
     emit loginSuccess();
 
+    auto task = TaskFactory::getInstance().
+        buildTask<FetchFriendApplyListTask>(UserSession::getInstance().getUid());
+
+    connect(task.get(), &FetchFriendApplyListTask::taskFailed, this, &LoginDlg::onFetchApplyListError);
+
+    TaskHandler::getInstance().registerNetTask(std::move(task));
 }
 
 void LoginDlg::onLoginError(const QString& error)
@@ -63,6 +70,13 @@ void LoginDlg::onLoginError(const QString& error)
     m_ui.button_logon->setEnabled(true);
     QMessageBox::warning(this,
         "注册失败",
+        error);
+}
+
+void LoginDlg::onFetchApplyListError(const QString& error)
+{
+    QMessageBox::critical(this,
+        "错误",
         error);
 }
 

@@ -37,6 +37,11 @@ public:
 
     bool searchUser(uint32_t uid, TcpResponseHandler onResponse, ErrorCallback onError = nullptr);
 
+    bool fetchFriendApplyList(uint32_t uid, TcpResponseHandler onResponse, ErrorCallback onError = nullptr);
+
+    bool authenFriendApply(uint32_t uid, uint32_t toUid, uint8_t decision, const std::string backName,
+        TcpManager::TcpResponseHandler onResponse, ErrorCallback onError = nullptr);
+
     void setConnectCallback(ConnectionCallback&& onSuccess)
     {
         m_connectionCallback = std::move(onSuccess);

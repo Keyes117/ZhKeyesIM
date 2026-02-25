@@ -58,7 +58,13 @@ namespace ZhKeyesIM {
             SEARCH_USER_RESP = 301,         //搜索好友 
             APPLY_USER_REQ = 302,           //申请好友
             APPLY_USER_RESP = 303,          //申请好友
-            NOTIFY_FRIEND_APPLY = 304,  // 服务端推送：有人申请加你为好友
+            NOTIFY_FRIEND_APPLY = 304,      //服务端推送：有人申请加你为好友
+            FETCH_FRIEND_APPLY_LIST_REQ = 305,  //拉取好友申请列表
+            FETCH_FRIEND_APPLY_LIST_RESP = 306,
+            AUTH_FRIEND_APPLY_REQ = 307,        //确认好友申请
+            AUTH_FRIEND_APPLY_RESP = 308,
+            NOTIFY_FRIEND_AUTH = 309,
+
             //用户状态(400-499)
 
             //错误(900)

@@ -52,12 +52,17 @@ public:
 
     void tcpDisconnect();
 
-    void auth(uint32_t uid, const std::string& token, 
+    bool auth(uint32_t uid, const std::string& token, 
         TcpManager::TcpResponseHandler onResponse = nullptr, ErrorCallback onError = nullptr);
 
-    void applyFriend(uint32_t uid,TcpManager::TcpResponseHandler onResponse, ErrorCallback onError =nullptr);
+    bool applyFriend(uint32_t uid,TcpManager::TcpResponseHandler onResponse, ErrorCallback onError =nullptr);
 
-    void searchUser(uint32_t uid, TcpManager::TcpResponseHandler onResponse, ErrorCallback onError = nullptr);
+    bool searchUser(uint32_t uid, TcpManager::TcpResponseHandler onResponse, ErrorCallback onError = nullptr);
+
+    bool fetchFriendApplyList(uint32_t uid, TcpManager::TcpResponseHandler onResponse, ErrorCallback onError = nullptr);
+
+    bool authenFriendApply(uint32_t uid, uint32_t toUid, uint8_t decision, const std::string backName,
+        TcpManager::TcpResponseHandler onResponse, ErrorCallback onError = nullptr);
 
 private:
     void networkThreadFunc();
@@ -66,9 +71,13 @@ private:
 
 signals:
     void friendApplyReceived(std::shared_ptr< AddFriendApply> applyInfo);
+    void authFriendApplyReceived(std::shared_ptr< AuthenApplyNotification> info);
 
 private:
     void onNotifyApplyFriend(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg,
+        std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender);
+
+    void onNotifyAuthenFriendApply(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg,
         std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender);
 
 private:

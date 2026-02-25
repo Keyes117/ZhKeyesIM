@@ -35,6 +35,17 @@ public:
     void applyFriend(uint32_t toUid, uint64_t seqId,
         std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender);
 
+    void fetchFriendApplyList(uint32_t uid, uint64_t seqId,
+        std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender);
+
+    void authFriendApply(uint32_t fromUid,
+        uint32_t toUid,
+        uint8_t  decision,
+        const std::string backName,
+        uint64_t seqId,
+        std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender);
+
+
     void setNotifyCallback(NotifyUserCallback callback)
     {
         m_notifyCallback = std::move(callback);

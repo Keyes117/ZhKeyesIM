@@ -73,3 +73,31 @@ void IMUserController::applyFriend(std::shared_ptr<ZhKeyesIM::Protocol::IMMessag
 
     m_spUserService->applyFriend(toUid, seqId, sender);
 }
+
+void IMUserController::getFriendApplyList(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg,
+    std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender)
+{
+    std::string msgBody = msg->getBody();
+    ZhKeyesIM::Protocol::BinaryReader reader(msgBody);
+
+    uint64_t seqId = msg->getSeqId();
+    uint32_t uid;
+
+    if (!reader.readUInt32(uid))
+    {
+        // ½âÎöÊ§°Ü£¬·¢ËÍ´íÎóÏìÓ¦
+        ZhKeyesIM::Protocol::IMMessage resp;
+        resp.setSeqId(seqId);
+        resp.setType(ZhKeyesIM::Protocol::MessageType::APPLY_USER_RESP);
+
+        ZhKeyesIM::Protocol::BinaryWriter writer;
+        writer.writeUInt8(0);           // success = false
+        writer.writeUInt32(0);
+        writer.writeString("Invalid request data");
+        resp.setBody(writer.getData());
+        sender->sendMessage(resp);
+        return;
+    }
+
+    m_spUserService->fetchFriendApplyList(uid, seqId, sender);
+}

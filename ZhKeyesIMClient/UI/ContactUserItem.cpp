@@ -32,7 +32,7 @@ void ContactUserItem::setInfo(std::shared_ptr<AuthInfo> spAuthInfo)
 }
 
 
-void ContactUserItem::setInfo(std::shared_ptr<AuthRsp>  spAuthRsp)
+void ContactUserItem::setInfo(std::shared_ptr<AuthenApplyNotification>  spAuthRsp)
 {
     m_info = std::make_shared<UserInfo>(spAuthRsp);
 

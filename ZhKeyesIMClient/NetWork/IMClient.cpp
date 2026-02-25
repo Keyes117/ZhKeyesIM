@@ -1,5 +1,6 @@
  #include "IMClient.h"
 #include <iostream>
+#include <Base/UserSession.h>
 
 
 #include <QMessageBox>
@@ -108,22 +109,36 @@ void IMClient::requestUserLogin(const std::string& jsonString,
     m_spHttpManager->requestUserLogin(jsonString, onResponse, onError);
 }
 
-void IMClient::auth(uint32_t uid, const std::string& token,
+bool IMClient::auth(uint32_t uid, const std::string& token,
     TcpManager::TcpResponseHandler onResponse, ErrorCallback onError/* = nullptr*/)
 {
-    m_spTcpManager->authenticate(uid, token, std::move(onResponse),std::move(onError));
+    return m_spTcpManager->authenticate(uid, token, std::move(onResponse),std::move(onError));
 }
 
-void IMClient::applyFriend(uint32_t uid, TcpManager::TcpResponseHandler onResponse,
+bool IMClient::applyFriend(uint32_t uid, TcpManager::TcpResponseHandler onResponse,
     ErrorCallback onError)
 {
-    m_spTcpManager->applyFriend(uid, std::move(onResponse), std::move(onError));
+    return m_spTcpManager->applyFriend(uid, std::move(onResponse), std::move(onError));
 }
 
-void IMClient::searchUser(uint32_t uid, TcpManager::TcpResponseHandler onResponse, ErrorCallback onError)
+bool IMClient::searchUser(uint32_t uid, TcpManager::TcpResponseHandler onResponse, ErrorCallback onError)
 {
-    m_spTcpManager->searchUser(uid, onResponse, onError);
+    return m_spTcpManager->searchUser(uid, onResponse, onError);
 }
+
+bool IMClient::fetchFriendApplyList(uint32_t uid, TcpManager::TcpResponseHandler onResponse,
+    ErrorCallback onError)
+{
+    return m_spTcpManager->fetchFriendApplyList(uid, std::move(onResponse), std::move(onError));
+}
+
+bool IMClient::authenFriendApply(uint32_t uid, uint32_t toUid, uint8_t decision,
+            const std::string backName, TcpManager::TcpResponseHandler onResponse, ErrorCallback onError)
+{
+    return m_spTcpManager->authenFriendApply(uid, toUid, decision, backName, std::move(onResponse), std::move(onError));
+}
+
+
 
 void IMClient::networkThreadFunc()
 {
@@ -140,6 +155,12 @@ void IMClient::registerMessageHandlers()
     m_spTcpManager->registerHandler(
         ZhKeyesIM::Protocol::MessageType::NOTIFY_FRIEND_APPLY,
         std::bind(&IMClient::onNotifyApplyFriend, this,
+            std::placeholders::_1, std::placeholders::_2)
+    );
+
+    m_spTcpManager->registerHandler(
+        ZhKeyesIM::Protocol::MessageType::NOTIFY_FRIEND_AUTH,
+        std::bind(&IMClient::onNotifyAuthenFriendApply, this,
             std::placeholders::_1, std::placeholders::_2)
     );
 }
@@ -177,4 +198,73 @@ void IMClient::onNotifyApplyFriend(std::shared_ptr<ZhKeyesIM::Protocol::IMMessag
         sex
     );
     emit friendApplyReceived( friendApply);
+}
+
+void IMClient::onNotifyAuthenFriendApply(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg,
+    std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender)
+{
+    if (!msg || !msg->hasBody())
+    {
+        LOG_WARN("IMClient::onNotifyAuthenFriendApply: empty body");
+        return;
+    }
+
+    ZhKeyesIM::Protocol::BinaryReader reader(msg->getBody());
+
+    uint32_t fromUid = 0;   // 原申请人（当前客户端）
+    uint32_t toUid = 0;   // 处理方
+    uint8_t  decision = 0;
+
+    uint32_t peerUid = 0;
+    std::string peerName, peerNick, peerDesc, peerIcon;
+    uint32_t peerSex = 0;
+
+    // 按服务端写入顺序读取
+    if (!reader.readUInt32(fromUid) ||
+        !reader.readUInt32(toUid) ||
+        !reader.readUInt8(decision) ||
+        !reader.readUInt32(peerUid) ||
+        !reader.readString(peerName) ||
+        !reader.readString(peerNick) ||
+        !reader.readString(peerDesc) ||
+        !reader.readUInt32(peerSex) ||
+        !reader.readString(peerIcon))
+    {
+        LOG_WARN("IMClient::onNotifyAuthenFriendApply: parse failed");
+        return;
+    }
+
+    LOG_INFO("IMClient::onNotifyAuthenFriendApply: fromUid=%u, toUid=%u, decision=%u, peer=%u",
+        fromUid, toUid, decision, peerUid);
+
+    // 这里只处理“对我”的结果通知，防止逻辑混乱
+    auto selfUid = static_cast<uint32_t>(UserSession::getInstance().getUid());
+    if (fromUid != selfUid)
+    {
+        LOG_INFO("IMClient::onNotifyAuthenFriendApply: notify not for this uid, ignore. self=%u, from=%u",
+            selfUid, fromUid);
+        return;
+    }
+
+    // 决策为同意才更新 UI / 好友列表，如果你希望拒绝也有提醒，可在 decision==2 时做单独处理
+    if (decision != 1)
+    {
+        LOG_INFO("IMClient::onNotifyAuthenFriendApply: decision=%u, not accepted", decision);
+        // TODO: 这里可以弹个提示 “对方已拒绝你的好友申请”
+        return;
+    }
+
+    // 构造 AuthRsp，方便 UI 使用（ApplyFriendPage / 联系人列表）
+    auto spRsp = std::make_shared<AuthenApplyNotification>(
+        static_cast<int>(peerUid),
+        QString::fromStdString(peerName),
+        QString::fromStdString(peerNick),
+        QString::fromStdString(peerIcon),
+        static_cast<int>(peerSex)
+    );
+
+    // 这里可以顺便把 desc 存到 Session 的好友列表里，如果需要：
+    // UserSession::getInstance().addFriend(std::make_shared<FriendInfo>(spRsp));
+
+    emit authFriendApplyReceived(spRsp);
 }

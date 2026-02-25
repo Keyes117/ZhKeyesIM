@@ -26,7 +26,7 @@ private:
     void loadApplyList();
 
 public slots:
-    void onAuthResponse(std::shared_ptr<AuthRsp> spRsp);
+    void onAuthResponse(std::shared_ptr<AuthenApplyNotification> spRsp);
 
 signals:
     void showSearch(bool);

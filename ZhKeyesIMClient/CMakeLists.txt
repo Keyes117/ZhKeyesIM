@@ -169,6 +169,10 @@ set(CLIENT_TASK_SOURCE
     Task/SearchUserTask.cpp
     Task/AddFriendTask.h
     Task/AddFriendTask.cpp
+    Task/FetchFriendApplyListTask.h
+    Task/FetchFriendApplyListTask.cpp
+    Task/AuthenFriendApplyTask.h
+    Task/AuthenFriendApplyTask.cpp
 )
 
 # Qt配置

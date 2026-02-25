@@ -8,6 +8,10 @@
 #include <QPushButton>
 #include <QFontMetrics>
 
+#include "Base/UserSession.h"
+#include "Task/TaskBuilder.h"
+#include "Task/TaskHandler.h"
+#include "Task/AuthenFriendApplyTask.h"
 
 AuthenFriendDialog::AuthenFriendDialog(QWidget *parent) :
     QDialog(parent),
@@ -120,7 +124,7 @@ bool AuthenFriendDialog::eventFilter(QObject *obj, QEvent *event)
 void AuthenFriendDialog::SetApplyInfo(std::shared_ptr<ApplyInfo> apply_info)
 {
     m_apply_info = apply_info;
-    m_ui->lineEdit_back->setPlaceholderText(apply_info->_name);
+    m_ui->lineEdit_back->setPlaceholderText(apply_info->m_name);
 }
 
 void AuthenFriendDialog::onMoreLabelClicked()
@@ -417,23 +421,25 @@ void AuthenFriendDialog::onButtonConfirmClicked()
 {
     qDebug() << "Slot Apply Sure ";
     //添加发送逻辑
-    //QJsonObject jsonObj;
-    //auto uid = UserMgr::GetInstance()->GetUid();
-    //jsonObj["fromuid"] = uid;
-    //jsonObj["touid"] = _apply_info->_uid;
-    //QString back_name = "";
-    //if(ui->back_ed->text().isEmpty()){
-    //    back_name = ui->back_ed->placeholderText();
-    //}else{
-    //    back_name = ui->back_ed->text();
-    //}
-    //jsonObj["back"] = back_name;
 
-    //QJsonDocument doc(jsonObj);
-    //QByteArray jsonData = doc.toJson(QJsonDocument::Compact);
+    auto uid = UserSession::getInstance().getUid();
+    auto toUid = m_apply_info->m_uid;
+    QString back_name = "";
+    if (m_ui->lineEdit_back->text().isEmpty())
+    {
+        back_name = m_ui->lineEdit_back->placeholderText();
+    }
+    else
+    {
+        back_name = m_ui->lineEdit_back->text();
+    }
 
-    ////发送tcp请求给chat server
-    //emit TcpMgr::GetInstance()->sig_send_data(ReqId::ID_AUTH_FRIEND_REQ, jsonData);
+    uint8_t decision = 1;
+    auto task = TaskFactory::getInstance().buildTask<AuthenFriendApplyTask>(
+        uid, toUid,decision, back_name.toStdString()
+    );
+
+    TaskHandler::getInstance().registerNetTask(std::move(task));
 
     this->hide();
     deleteLater();
@@ -441,6 +447,35 @@ void AuthenFriendDialog::onButtonConfirmClicked()
 
 void AuthenFriendDialog::onButtonCancelClicked()
 {
+    auto uid = UserSession::getInstance().getUid();
+    auto toUid = m_apply_info->m_uid;
+    QString back_name = "";
+    if (m_ui->lineEdit_back->text().isEmpty())
+    {
+        back_name = m_ui->lineEdit_back->placeholderText();
+    }
+    else
+    {
+        back_name = m_ui->lineEdit_back->text();
+    }
+
+    uint8_t decision = 2;
+    auto task = TaskFactory::getInstance().buildTask<AuthenFriendApplyTask>(
+        uid, toUid, decision, back_name.toStdString()
+    );
+
+    TaskHandler::getInstance().registerNetTask(std::move(task));
+
     this->hide();
     deleteLater();
+}
+
+void AuthenFriendDialog::onAuthenFriendTaskSuccess()
+{
+
+}
+
+void AuthenFriendDialog::onAuthenFriendTaskFailed()
+{
+
 }

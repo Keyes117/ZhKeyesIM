@@ -19,7 +19,7 @@ public:
 
     virtual QSize sizeHint() const override;
     void setInfo(std::shared_ptr<AuthInfo> spAuthInfo);
-    void setInfo(std::shared_ptr<AuthRsp>  spAuthRsp);
+    void setInfo(std::shared_ptr<AuthenApplyNotification>  spAuthRsp);
     void setInfo(int uid, const QString& name, const QString& icon);
     void showRedPoint(bool bShow = false);
 

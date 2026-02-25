@@ -8,7 +8,7 @@
 #include "infrastructure/RedisManager.h"
 #include "infrastructure/MySqlManager.h"
 #include "Model/User.h"
-
+#include "Model/FriendApply.h"
 
 constexpr const char* code_prefix = "code_";
 constexpr const char* token_prefix = "token_";
@@ -102,7 +102,24 @@ public:
     */
     bool areFriends(int32_t uid1, int32_t uid2);
 
+    /**
+    * @brief 获取某个用户收到的好友申请列表
+    * @param toUid 目标用户UID（被申请人）
+    * @return 好友申请列表（包含申请人用户信息）
+    */
+    std::vector<FriendApplyInfo> getFriendAppliesForUser(int32_t toUid);
 
+
+    /**
+    * @brief 同意好友申请：更新 friend_apply.status 并插入双向好友关系
+    * @param fromUid  申请人 UID
+    * @param toUid    当前用户 UID（被申请人）
+    * @return true 成功，false 失败
+    */
+    bool acceptFriendApply(int32_t fromUid, int32_t toUid);
+
+
+    bool rejectFriendApply(int32_t fromUid, int32_t toUid);
 private:
     std::shared_ptr<RedisManager> m_spRedis;
     std::shared_ptr<MySqlManager> m_spMysql;

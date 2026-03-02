@@ -272,7 +272,11 @@ void IMServer::registerHandler()
         std::bind(&IMUserController::getFriendApplyList, m_spUserController,
             std::placeholders::_1, std::placeholders::_2));
 
-    
+    m_dispatcher.registerHandler(
+        ZhKeyesIM::Protocol::MessageType::AUTH_FRIEND_APPLY_REQ,
+        std::bind(&IMUserController::authApplyFriend, m_spUserController,
+            std::placeholders::_1, std::placeholders::_2)
+    )
 }
 
 

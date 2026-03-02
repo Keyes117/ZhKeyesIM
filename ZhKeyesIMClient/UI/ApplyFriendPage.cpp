@@ -81,11 +81,11 @@ void ApplyFriendPage::loadApplyList()
             m_unAuthItems[uid] = apply_item;
         }
         //收到审核好友信号
-        connect(apply_item, &ApplyFriendItem::authFriend, [this](std::shared_ptr<ApplyInfo> apply_info) {
-            //            auto* authFriend = new AuthenFriend(this);
-            //            authFriend->setModal(true);
-            //            authFriend->SetApplyInfo(apply_info);
-            //            authFriend->show();
+        connect(apply_item, &ApplyFriendItem::authFriend, [this](std::shared_ptr<ApplyInfo> applyInfo) {
+                auto* authenFriendDialog = new AuthenFriendDialog(this);
+                authenFriendDialog->setModal(true);
+                authenFriendDialog->SetApplyInfo(applyInfo);
+                authenFriendDialog->show();
             });
     }
     // 模拟假数据，创建QListWidgetItem，并设置自定义的widget

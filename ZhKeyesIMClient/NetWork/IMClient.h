@@ -71,9 +71,9 @@ private:
 
 signals:
     void friendApplyReceived(std::shared_ptr< AddFriendApply> applyInfo);
-
     void authFriendApplyReceived(std::shared_ptr< AuthenApplyNotification> info);
 
+    void authFriendApplyResponse(std::shared_ptr< AuthInfo> info);
 private:
     void onNotifyApplyFriend(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage> msg,
         std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender> sender);

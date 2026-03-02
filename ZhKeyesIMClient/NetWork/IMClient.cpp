@@ -219,7 +219,7 @@ void IMClient::onNotifyAuthenFriendApply(std::shared_ptr<ZhKeyesIM::Protocol::IM
     std::string peerName, peerNick, peerDesc, peerIcon;
     uint32_t peerSex = 0;
 
-    // 按服务端写入顺序读取
+    // 读取消息
     if (!reader.readUInt32(fromUid) ||
         !reader.readUInt32(toUid) ||
         !reader.readUInt8(decision) ||
@@ -246,7 +246,7 @@ void IMClient::onNotifyAuthenFriendApply(std::shared_ptr<ZhKeyesIM::Protocol::IM
         return;
     }
 
-    // 决策为同意才更新 UI / 好友列表，如果你希望拒绝也有提醒，可在 decision==2 时做单独处理
+    // 决策为同意才更新 UI / 好友列表
     if (decision != 1)
     {
         LOG_INFO("IMClient::onNotifyAuthenFriendApply: decision=%u, not accepted", decision);

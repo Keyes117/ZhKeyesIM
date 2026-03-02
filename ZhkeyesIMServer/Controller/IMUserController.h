@@ -25,6 +25,8 @@ public:
     void getFriendApplyList(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage>,
         std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender>);
 
+    void authApplyFriend(std::shared_ptr<ZhKeyesIM::Protocol::IMMessage>,
+        std::shared_ptr<ZhKeyesIM::Protocol::IMMessageSender>);
     
 private:
     std::shared_ptr<IMUserService> m_spUserService;

@@ -186,6 +186,7 @@ bool TcpManager::authenFriendApply(uint32_t uid, uint32_t toUid, uint8_t decisio
     ZhKeyesIM::Protocol::BinaryWriter bodyWriter;
     bodyWriter.writeUInt32(uid);
     bodyWriter.writeUInt32(toUid);
+    bodyWriter.writeUInt8(decision);
     bodyWriter.writeString(backName);
 
     // 请求体为空，只需要消息类型
